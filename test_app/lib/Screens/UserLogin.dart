@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/templates/GradientContainer.dart';
+
+import 'package:test_app/Templates/GradientContainer.dart';
+import 'package:test_app/Templates/UserCredentials.dart';
+
 import 'package:test_app/utils/Location.dart';
+
+import 'package:test_app/Screens/LoginScreen.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserLogin extends StatefulWidget {
   static final String id = '/UserLogin';
@@ -39,11 +46,25 @@ class _UserLoginState extends State<UserLogin> {
     return true;
   }
 
+  Future<void> _signOut() async{
+    await FirebaseAuth.instance.signOut();
+
+    print(FirebaseAuth.instance.currentUser!.email );
+
+    // changing the user screen to LoginScreen
+    Navigator.pushReplacementNamed(context, LoginScreen.id );
+  }
+
   @override
   Widget build(BuildContext context) {
+    print('new page');
+
     return FutureBuilder(
       future: loadCoordinates(),
       builder: (context, snapshot) {
+
+        final creds = ModalRoute.of(context)!.settings.arguments as UserCredentials;
+
         if( interrupt == false ) {
           // data fetched successfully, perform further processes
           return MaterialApp(
@@ -55,7 +76,8 @@ class _UserLoginState extends State<UserLogin> {
                     children: [
                       MaterialButton(
                         onPressed: () {
-
+                            // logging the user out
+                            // _signOut( );
                         },
                         child: Text('Log Out'),
                       ),
@@ -74,7 +96,11 @@ class _UserLoginState extends State<UserLogin> {
                             Text(
                               'range status : $rangeStatus',
                               textDirection: TextDirection.ltr,
-                            )
+                            ),
+                            // Text(
+                            //   'User email - ${creds.user.email}',
+                            //   textDirection: TextDirection.ltr,
+                            // ),
                           ],
                         ),
                       ),

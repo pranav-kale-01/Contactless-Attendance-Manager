@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+
 import 'package:test_app/Screens/RegisterScreen.dart';
+import 'package:test_app/Screens/UserLogin.dart';
+
+import 'package:test_app/Templates/UserCredentials.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:test_app/Screens/UserLogin.dart';
+
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
 
 class LoginScreen extends StatefulWidget {
   static final String id = '/login';
@@ -18,6 +26,18 @@ class _LoginScreenState extends State<LoginScreen> {
   late String _email;
   late String _pass;
   String statusString ='';
+
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/credentials.txt');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         }
-
         else if( snapshot.connectionState == ConnectionState.done ){
           return Scaffold(
             body: SafeArea(
@@ -68,32 +87,44 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   MaterialButton(
                     onPressed: () {
-                      // authenticate user login with the credentials
-                      FirebaseAuth auth = FirebaseAuth.instance;
-                      auth.authStateChanges()
-                          .listen( (User? user) async {
-                            try {
-                                UserCredential userCredential = await auth
-                                    .signInWithEmailAndPassword(
-                                  email: this._email,
-                                  password: this._pass,
-                                );
+                      // // authenticate user login with the credentials
 
-                                Navigator.pushReplacementNamed(context, UserLogin.id, arguments: user );
-                            }
-                            on FirebaseAuthException catch( fae ) {
-                              if(fae.code == 'email-already-in-use' ) {
-                                this.statusString = 'account already exists';
-                              }
-                              else
-                                this.statusString = fae.code;
-
-                              setState( () {} );
-                            }
-                            catch (e) {
-                              print('exception $e');
-                            }
-                          });
+                      // FirebaseAuth auth = FirebaseAuth.instance;
+                      // auth.authStateChanges()
+                      //     .listen( (User? user) async {
+                      //       if( user == null ) {
+                      //         print("user - null ");
+                      //       }
+                      //       else{
+                      //         print('user - ${user.email}' );
+                      //       }
+                      //       try {
+                      //           UserCredential userCredential = await auth.signInWithEmailAndPassword(
+                      //             email: this._email,
+                      //             password: this._pass,
+                      //           );
+                      //
+                      //           // creating new UserCredentials Object
+                      //           UserCredentials creds = UserCredentials(auth: auth, user: user! );
+                      //
+                      //           // cancelling the subscription
+                      //
+                      //
+                      //           Navigator.pushNamed(context, UserLogin.id, arguments: creds );
+                      //       }
+                      //       on FirebaseAuthException catch( fae ) {
+                      //         if(fae.code == 'email-already-in-use' ) {
+                      //           this.statusString = 'account already exists';
+                      //         }
+                      //         else
+                      //           this.statusString = fae.code;
+                      //
+                      //         setState( () {} );
+                      //       }
+                      //       catch (e) {
+                      //         print('exception $e');
+                      //       }
+                      //     });
                     },
                     child: Text(
                         "Login",
@@ -104,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // if not a registered user go to RegisterScreen
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed( context, RegisterScreen.id );
+                      Navigator.pushNamed( context, '/register' );
                     },
                     child: Text(
                         'new user? Sign up here',
