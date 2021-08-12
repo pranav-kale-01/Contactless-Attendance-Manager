@@ -32,10 +32,5 @@ class IntroScreen extends StatelessWidget {
         }
       }
     );
-
-    // return new SplashScreen(
-    //   navigateAfterSeconds: result != null? Home( uid: result.uid ): SignUp(),
-    //   seconds: 5,
-    // );
   }
 }
