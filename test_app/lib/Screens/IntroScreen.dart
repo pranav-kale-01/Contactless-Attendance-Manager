@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:test_app/Screens/Home.dart';
 import 'package:test_app/Screens/SignUp.dart';
 
-// import 'package:splashscreen/splashscreen.dart' show SplashScreen;
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

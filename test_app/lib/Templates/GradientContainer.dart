@@ -12,9 +12,9 @@ class GradientContainer extends StatelessWidget {
       padding: EdgeInsets.all( 20.0 ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.white, Colors.grey, Colors.white ],
+          colors: [Color(0xFFFFFFFF), Color(0xFFECECEC), Color(0xFFC2C2C2), ],
           begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
+          end: Alignment.centerLeft,
         ),
      ),
      child: this.child,

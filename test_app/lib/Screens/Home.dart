@@ -1,12 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
-import 'package:test_app/Screens/SignUp.dart';
-
-import 'package:test_app/Templates/GradientContainer.dart';
-
 import 'package:flutter/material.dart';
-
+import 'package:test_app/Screens/SignUp.dart';
+import 'package:test_app/Templates/GradientContainer.dart';
+import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/Location.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class Home extends StatefulWidget {
@@ -60,89 +58,70 @@ class _HomeState extends State<Home> {
           if( snapshot.connectionState == ConnectionState.done ){
               // data fetched successfully, perform further processes
               return MaterialApp(
-                home: Scaffold(
-                  appBar: AppBar(
-                      title: Text('Home'),
-                      actions: [
-                        IconButton(
-                            icon: Icon(
-                              Icons.exit_to_app,
-                              color: Colors.white,
-                            ),
-                            onPressed: () {
-                              FirebaseAuth auth = FirebaseAuth.instance;
-                              auth.signOut().then((res) {
-                                Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => SignUp()
-                                    ),
-                                        (Route<dynamic> route) => false
-                                );
-                              });
-                            }
-                        ),
-                      ]
-                  ),
-                  body: GradientContainer(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'latitude - ${coords['lat']}',
-                                  textDirection: TextDirection.ltr,
-                                ),
-                                Text(
-                                  'longitude - ${coords['lon']}',
-                                  textDirection: TextDirection.ltr,
-                                ),
-                                Text(
-                                  'range status : $rangeStatus',
-                                  textDirection: TextDirection.ltr,
-                                ),
-                                Text(
-                                  'User email - ${FirebaseAuth.instance.currentUser!.email}',
-                                  textDirection: TextDirection.ltr,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // adding a button which onPressed will print the new location
-                          Expanded(
-                            child: Container(
-                              alignment: Alignment.bottomCenter,
-                              child: MaterialButton(
-                                padding: EdgeInsets.all(20.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all( Radius.circular( 20.0) ),
-                                ),
-                                color: Colors.blueAccent,
-                                onPressed: ()  async {
-                                  if( interrupt == false ) {
-                                    await loadCoordinates();
-                                  }
-                                  setState( () {} );
-                                },
-                                child: Text("refresh"),
+                home: HomeScreenBuilder(
+                    body: GradientContainer(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'latitude - ${coords['lat']}',
+                                    textDirection: TextDirection.ltr,
+                                  ),
+                                  Text(
+                                    'longitude - ${coords['lon']}',
+                                    textDirection: TextDirection.ltr,
+                                  ),
+                                  Text(
+                                    'range status : $rangeStatus',
+                                    textDirection: TextDirection.ltr,
+                                  ),
+                                  Text(
+                                    'User email - ${FirebaseAuth.instance.currentUser!.email}',
+                                    textDirection: TextDirection.ltr,
+                                  ),
+                                  Text(
+                                    'User ID - ${FirebaseAuth.instance.currentUser!.uid}',
+                                    textDirection: TextDirection.ltr,
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                        ],
-                      )
+
+                            // adding a button which onPressed will print the new location
+                            Expanded(
+                              child: Container(
+                                alignment: Alignment.bottomCenter,
+                                child: MaterialButton(
+                                  padding: EdgeInsets.all(20.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all( Radius.circular( 20.0) ),
+                                  ),
+                                  color: Colors.blueAccent,
+                                  onPressed: ()  async {
+                                    if( interrupt == false ) {
+                                      await loadCoordinates();
+                                    }
+                                    setState( () {} );
+                                  },
+                                  child: Text("Refresh"),
+                                ),
+                              ),
+                            )
+                          ],
+                        )
+                    ),
                   ),
-                ),
               );
           }
           else if( snapshot.hasError == true ) {
             // failed to fetch the location
             return MaterialApp(
-                home: Scaffold(
+                home: HomeScreenBuilder(
                   body: GestureDetector(
                     onTap: ()  async {
                       setState(() { });
@@ -158,33 +137,9 @@ class _HomeState extends State<Home> {
             );
           }
           else{
-            return Scaffold(
-                appBar: AppBar(
-                  title: Text('Home'),
-                  actions: [
-                    IconButton(
-                        icon: Icon(
-                          Icons.exit_to_app,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          FirebaseAuth auth = FirebaseAuth.instance;
-                          auth.signOut().then((res) {
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SignUp()
-                                ),
-                                    (Route<dynamic> route) => false
-                            );
-                          });
-                        }
-                    ),
-                  ]
-              ),
+            return HomeScreenBuilder(
               body: SafeArea(
-                child: Container(
-                  alignment: Alignment.center,
+                child: GradientContainer(
                   child: CircularProgressIndicator(),
                 ),
               ),
