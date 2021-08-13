@@ -4,8 +4,9 @@ import 'package:test_app/Screens/SignUp.dart';
 
 class HomeScreenBuilder extends StatelessWidget {
   late Widget body;
+  late ListView? listView;
 
-  HomeScreenBuilder( {Key? key, required this.body } ) : super( key: key );
+  HomeScreenBuilder( {Key? key, required this.body, this.listView } ) : super( key: key );
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,7 @@ class HomeScreenBuilder extends StatelessWidget {
       drawer: Container(
         width: 180.0,
         child: Drawer(
-          child: ListView(
+          child: this.listView == null ? ListView(
             children: [
               DrawerHeader(
                 decoration: BoxDecoration(
@@ -50,7 +51,8 @@ class HomeScreenBuilder extends StatelessWidget {
                 },
               ),
             ],
-          ),
+          )
+          : this.listView,
         ),
       ),
       appBar: AppBar(
