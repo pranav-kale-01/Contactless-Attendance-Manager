@@ -34,6 +34,7 @@ dependencies:
   path_provider: ^2.0.2
   flutter_barcode_scanner: ^2.0.0
   syncfusion_flutter_barcodes: ^19.2.55
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:

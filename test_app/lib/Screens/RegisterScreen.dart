@@ -4,13 +4,20 @@ import 'package:test_app/Screens/Home.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 class RegisterScreen extends StatelessWidget {
   late String _email;
   late String _pass;
   late String statusString;
+  late Map<String,dynamic> data;
+
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
-  void registerToFb(BuildContext context){
+  Future<void> registerUser(BuildContext context) async {
+
+    // register the user on firebase authentication system
     firebaseAuth
         .createUserWithEmailAndPassword(
       email: this._email,
@@ -40,6 +47,14 @@ class RegisterScreen extends StatelessWidget {
           }
       );
     });
+
+    // adding the user details to the mysql database
+    String url = "https://test-pranav-kale.000webhostapp.com/insert.php?";
+
+    http.Response response = await http.get( Uri.parse( url ) );
+    data = jsonDecode( response.body ) ;
+
+    print( data );
   }
 
   @override
@@ -67,8 +82,8 @@ class RegisterScreen extends StatelessWidget {
                   obscureText: true,
                 ),
                 MaterialButton(
-                  onPressed: () {
-                    registerToFb( context );
+                  onPressed: () async {
+                    await registerUser( context );
                   },
                   child: Text('Register'),
                 ),
