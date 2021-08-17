@@ -17,7 +17,7 @@ class IntroScreen extends StatelessWidget {
         if( snapshot.connectionState == ConnectionState.done ) {
           User? result =  FirebaseAuth.instance.currentUser;
 
-          return result != null ? Home( email: result.email!,) : SignUp();
+          return result != null ? Home( email: result.email!, ) : SignUp();
         }
         else {
           return Scaffold(
