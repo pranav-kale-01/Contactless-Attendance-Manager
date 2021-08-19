@@ -3,7 +3,7 @@ import 'package:test_app/utils/Location.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Screens/BarCode.dart';
+import 'package:test_app/Templates/BarCode.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 
