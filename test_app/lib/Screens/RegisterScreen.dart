@@ -18,18 +18,34 @@ class RegisterScreen extends StatelessWidget {
   Future<void> registerUser(BuildContext context) async {
 
     // register the user on firebase authentication system
-    firebaseAuth
+    await firebaseAuth
         .createUserWithEmailAndPassword(
       email: this._email,
       password: this._pass,
-    ).then( (result) {
-      Navigator.pushReplacement(
-        context, MaterialPageRoute(
-        builder: (context) => Home( email: result.user!.email! ),
-      ),
+    )
+      .then( (result) async {
+      // adding the user details to the mysql database
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?id='${result.user!.uid}'&user='${result.user!.email}'&authority='emp'";
+      print( url );
+
+      http.Response response = await http.get(
+          Uri.parse( url ),
+          headers: {
+            "Accept": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          }
       );
-    }).catchError( (err) {
-      showDialog(
+      print( response.body );
+
+      // directing to the Home screen
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(
+          builder: (context) => Home( email: result.user!.email! ),
+        ),
+        );
+      })
+      .catchError( (err) {
+        showDialog(
           context: context,
           builder: (BuildContext context ){
             return AlertDialog(
@@ -45,16 +61,8 @@ class RegisterScreen extends StatelessWidget {
                 ]
             );
           }
-      );
-    });
-
-    // adding the user details to the mysql database
-    String url = "https://test-pranav-kale.000webhostapp.com/insert.php?";
-
-    http.Response response = await http.get( Uri.parse( url ) );
-    data = jsonDecode( response.body ) ;
-
-    print( data );
+        );
+      });
   }
 
   @override

@@ -5,8 +5,8 @@ import 'package:test_app/Templates/GradientContainer.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 
-class UserLogin extends StatelessWidget {
-  const UserLogin({Key? key}) : super(key: key);
+class Employee extends StatelessWidget {
+  const Employee({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class UserLogin extends StatelessWidget {
         ],
       ),
       body: GradientContainer(
-        child: Text('user login'),
+        child: Text('user'),
       ),
     );
   }

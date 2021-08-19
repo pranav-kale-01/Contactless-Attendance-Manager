@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/Screens/BranchAdmin.dart';
+import 'package:test_app/Screens/OrgAdmin.dart';
 import 'package:test_app/utils/Location.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/Screens/SignUp.dart';
+import 'package:test_app/Screens/Employee.dart';
+import 'package:test_app/Screens/SuperAdmin.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -36,16 +40,49 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> loadMainScreen( ) async {
-    // FirebaseAuth.instance.currentUser.uid
-
     // creating the url to send the data
-    String url = "https://test-pranav-kale.000webhostapp.com/get_user.php?uid=${FirebaseAuth.instance.currentUser!.uid}";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get_user.php?UID='${FirebaseAuth.instance.currentUser!.uid}'";
     print( url ) ;
 
-    http.Response response = await http.get( Uri.parse(url) );
-    this.data = jsonDecode( response.body );
+    http.Response response = await http.get(
+        Uri.parse(url),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        }
+    );
+    if( response.body != 'false' ){
+      this.data = jsonDecode( response.body );
 
-    print(this.data);
+
+      // checking the authority of the user
+      if( this.data['authority'] == 's-admin' ){
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute( builder: (context) => SuperAdmin() ),
+        );
+      }
+      else if( this.data['authority'] == 'org-admin' ){
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute( builder: (context) => OrgAdmin() ),
+        );
+      }
+      else if( this.data['authority'] == 'br-admin' ){
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute( builder: (context) => BranchAdmin() ),
+        );
+      }
+      else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute( builder: (context) => Employee() ),
+        );
+      }
+
+    }
+    else
+      print('No such user');
   }
 
   @override
