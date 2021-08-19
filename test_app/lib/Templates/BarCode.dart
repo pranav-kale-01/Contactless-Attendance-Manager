@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
 
 class BarCode extends StatelessWidget{
