@@ -1,4 +1,4 @@
-name: test_app
+name: web_server_test
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -28,12 +28,6 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  geolocator: ^7.4.0
-  firebase_core: ^1.4.0
-  firebase_auth: ^3.0.1
-  path_provider: ^2.0.2
-  flutter_barcode_scanner: ^2.0.0
-  syncfusion_flutter_barcodes: ^19.2.55
   http: ^0.13.3
 
 dev_dependencies:

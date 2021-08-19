@@ -4,25 +4,48 @@ import 'package:test_app/Screens/Home.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 class RegisterScreen extends StatelessWidget {
   late String _email;
   late String _pass;
   late String statusString;
+  late Map<String,dynamic> data;
+
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
-  void registerToFb(BuildContext context){
-    firebaseAuth
+  Future<void> registerUser(BuildContext context) async {
+
+    // register the user on firebase authentication system
+    await firebaseAuth
         .createUserWithEmailAndPassword(
       email: this._email,
       password: this._pass,
-    ).then( (result) {
-      Navigator.pushReplacement(
-        context, MaterialPageRoute(
-        builder: (context) => Home( email: result.user!.email! ),
-      ),
+    )
+      .then( (result) async {
+      // adding the user details to the mysql database
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?id='${result.user!.uid}'&user='${result.user!.email}'&authority='emp'";
+      print( url );
+
+      http.Response response = await http.get(
+          Uri.parse( url ),
+          headers: {
+            "Accept": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          }
       );
-    }).catchError( (err) {
-      showDialog(
+      print( response.body );
+
+      // directing to the Home screen
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(
+          builder: (context) => Home( email: result.user!.email! ),
+        ),
+        );
+      })
+      .catchError( (err) {
+        showDialog(
           context: context,
           builder: (BuildContext context ){
             return AlertDialog(
@@ -38,8 +61,8 @@ class RegisterScreen extends StatelessWidget {
                 ]
             );
           }
-      );
-    });
+        );
+      });
   }
 
   @override
@@ -67,8 +90,8 @@ class RegisterScreen extends StatelessWidget {
                   obscureText: true,
                 ),
                 MaterialButton(
-                  onPressed: () {
-                    registerToFb( context );
+                  onPressed: () async {
+                    await registerUser( context );
                   },
                   child: Text('Register'),
                 ),

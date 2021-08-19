@@ -17,12 +17,16 @@ class SignUp extends StatelessWidget {
         email: this._email,
         password: this._pass,
     ).then( (result) {
+      // directing the user to home Screen
       Navigator.pushReplacement(
         context, MaterialPageRoute(
           builder: (context) => Home( email: result.user!.email! ),
         ),
       );
     }).catchError( (err) {
+
+      print( err.message );
+
       showDialog(
           context: context,
           builder: (BuildContext context ){

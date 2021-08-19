@@ -58,7 +58,7 @@ class HomeScreenBuilder extends StatelessWidget {
       appBar: AppBar(
           backgroundColor: Color(0xFF10B5FC),
           title: Text('Home'),
-          centerTitle: true,
+          // centerTitle: true,
       ),
       body: this.body,
     );
