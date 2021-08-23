@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_app/Screens/SignUp.dart';
+import 'package:test_app/utils/CredentialController.dart';
 
 class HomeScreenBuilder extends StatelessWidget {
   late Widget body;
@@ -35,19 +36,20 @@ class HomeScreenBuilder extends StatelessWidget {
                 title: Text(
                     'Sign Out',
                 ),
-                onTap: () {
-                  // Signing the User Out
+                onTap: () async {
 
-                  FirebaseAuth auth = FirebaseAuth.instance;
-                  auth.signOut().then((res) {
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SignUp()
-                        ),
-                            (Route<dynamic> route) => false
-                    );
-                  });
+                  // Signing the User Out
+                  if( !kIsWeb) {
+                    await CredentialController.clearFile();
+                  }
+
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SignUp()
+                      ),
+                          (Route<dynamic> route) => false
+                  );
                 },
               ),
             ],

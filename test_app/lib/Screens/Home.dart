@@ -11,12 +11,11 @@ import 'package:test_app/Screens/SuperAdmin.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart';
-
 class Home extends StatefulWidget {
   late String email;
+  late String uid;
 
-  Home({Key? key, required this.email }) : super( key: key );
+  Home({Key? key, required this.email, required this.uid }) : super( key: key );
 
   @override
   _HomeState createState() => _HomeState();
@@ -41,7 +40,7 @@ class _HomeState extends State<Home> {
 
   Future<void> loadMainScreen( ) async {
     // creating the url to send the data
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get_user.php?UID='${FirebaseAuth.instance.currentUser!.uid}'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get_user.php?UID='${widget.uid}'";
     print( url ) ;
 
     http.Response response = await http.get(
@@ -115,17 +114,24 @@ class _HomeState extends State<Home> {
                     title: Text( 'Sign Out', ),
                     onTap: () {
                       // Signing the User Out
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SignUp()
+                          ),
+                              (Route<dynamic> route) => false
+                      );
 
-                      FirebaseAuth auth = FirebaseAuth.instance;
-                      auth.signOut().then((res) {
-                        Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SignUp()
-                            ),
-                                (Route<dynamic> route) => false
-                        );
-                      });
+                      // FirebaseAuth auth = FirebaseAuth.instance;
+                      // auth.signOut().then((res) {
+                      //   Navigator.pushAndRemoveUntil(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //           builder: (context) => SignUp()
+                      //       ),
+                      //           (Route<dynamic> route) => false
+                      //   );
+                      // });
                     },
                   ),
                 ],
@@ -152,11 +158,9 @@ class _HomeState extends State<Home> {
           );
         }
         else{
-          return HomeScreenBuilder(
-            body: SafeArea(
-              child: GradientContainer(
-                child: CircularProgressIndicator(),
-              ),
+          return SafeArea(
+            child: GradientContainer(
+              child: CircularProgressIndicator(),
             ),
           );
         }

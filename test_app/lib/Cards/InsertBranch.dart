@@ -1,16 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:test_app/Cards/InsertBranch.dart';
-import 'package:test_app/Cards/ViewBranch.dart';
 import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
+import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
-class OrgAdmin extends StatelessWidget {
-  const OrgAdmin({Key? key}) : super(key: key);
+import 'ViewBranch.dart';
 
+class InsertBranch extends StatefulWidget {
+  const InsertBranch({Key? key}) : super(key: key);
+
+  @override
+  _InsertBranchState createState() => _InsertBranchState();
+}
+
+class _InsertBranchState extends State<InsertBranch> {
   @override
   Widget build(BuildContext context) {
     return HomeScreenBuilder(
@@ -34,18 +38,18 @@ class OrgAdmin extends StatelessWidget {
           ListTile(
             title: Text( 'insert branch', ),
             onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => InsertBranch(),
-                  ),
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => InsertBranch(),
+                ),
               );
             },
           ),
           ListTile(
             title: Text( 'View branches', ),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ViewBranch(),
@@ -73,8 +77,8 @@ class OrgAdmin extends StatelessWidget {
         ],
       ),
       body: GradientContainer(
-        child: Text('organization admin'),
-      ),
+        child: Text("Insert branch"),
+      )
     );
   }
 }

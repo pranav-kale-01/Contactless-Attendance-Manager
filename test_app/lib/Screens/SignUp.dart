@@ -2,37 +2,31 @@ import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/Home.dart';
 import 'package:test_app/Screens/RegisterScreen.dart';
+import 'package:test_app/utils/CredentialController.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as  http ;
+import 'dart:convert';
 
 class SignUp extends StatelessWidget {
   late String _email;
   late String _pass;
   late String statusString;
-  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
-  void registerToFb(BuildContext context){
-    firebaseAuth
-      .signInWithEmailAndPassword(
-        email: this._email,
-        password: this._pass,
-    ).then( (result) {
-      // directing the user to home Screen
-      Navigator.pushReplacement(
-        context, MaterialPageRoute(
-          builder: (context) => Home( email: result.user!.email! ),
-        ),
-      );
-    }).catchError( (err) {
+  Future<void> registerToFb(BuildContext context) async {
+    // getting the uid for current mail ID
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/sign_in.php?mail='${this._email}'";
 
-      print( err.message );
+    http.Response response = await http.get( Uri.parse( url ) );
 
+    if( response.body == 'no-user' ) {
+      // this means that there is no user with provided credentials
       showDialog(
           context: context,
           builder: (BuildContext context ){
             return AlertDialog(
               title: Text("Error"),
-              content:  Text(err.message),
+              content:  Text('User not Registered'),
               actions: [
                 TextButton(
                   child: Text("Ok"),
@@ -44,7 +38,40 @@ class SignUp extends StatelessWidget {
             );
           }
       );
-    });
+    }
+    else {
+      var data = jsonDecode(response.body);
+
+      // checking if the password matches
+      if( data['password'] == this._pass ) {
+
+      }
+      else {
+        showDialog(
+            context: context,
+            builder: (BuildContext context ) {
+              return AlertDialog(
+                title: Text("Incorrect password"),
+                content: Text('The entered password is incorrect please re-enter the password'),
+              );
+            }
+        );
+
+        return;
+      }
+
+      // providing CredentialController current credentials
+      if( !kIsWeb ) {
+        await CredentialController.writeFile( "{ \"user\": \"${this._email}\", \"pass\": \"${this._pass}\" }" );
+      }
+
+      // directing the user to home Screen
+      Navigator.pushReplacement(
+        context, MaterialPageRoute(
+          builder: (context) => Home( email: this._email, uid: data['UID'] ),
+        ),
+      );
+    }
   }
 
   @override
