@@ -1,0 +1,4 @@
+#Sat Aug 21 13:57:09 IST 2021
+base.0=C\:\\Users\\Suraj\\StudioProjects\\web_server_test\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
+renamed.0=classes.dex
+path.0=classes.dex
