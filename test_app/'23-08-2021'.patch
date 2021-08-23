@@ -1,0 +1,1934 @@
+Index: test_app/lib/Cards/InsertBranch.dart
+===================================================================
+diff --git a/test_app/lib/Cards/InsertBranch.dart b/test_app/lib/Cards/InsertBranch.dart
+new file mode 100644
+--- /dev/null	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
++++ b/test_app/lib/Cards/InsertBranch.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -0,0 +1,84 @@
++import 'package:flutter/foundation.dart';
++import 'package:flutter/material.dart';
++import 'package:test_app/Screens/SignUp.dart';
++import 'package:test_app/Templates/GradientContainer.dart';
++import 'package:test_app/Templates/HomeScreenBuilder.dart';
++import 'package:test_app/utils/CredentialController.dart';
++
++import 'ViewBranch.dart';
++
++class InsertBranch extends StatefulWidget {
++  const InsertBranch({Key? key}) : super(key: key);
++
++  @override
++  _InsertBranchState createState() => _InsertBranchState();
++}
++
++class _InsertBranchState extends State<InsertBranch> {
++  @override
++  Widget build(BuildContext context) {
++    return HomeScreenBuilder(
++      listView: ListView(
++        children: [
++          DrawerHeader(
++            decoration: BoxDecoration(
++                gradient: LinearGradient(
++                    colors: [
++                      Colors.blue,
++                      Colors.blueAccent,
++                      Colors.lightBlueAccent,
++                    ]
++                )
++            ),
++            child: Icon(
++              Icons.account_circle,
++              color: Colors.white,
++            ),
++          ),
++          ListTile(
++            title: Text( 'insert branch', ),
++            onTap: () {
++              Navigator.pushReplacement(
++                context,
++                MaterialPageRoute(
++                  builder: (context) => InsertBranch(),
++                ),
++              );
++            },
++          ),
++          ListTile(
++            title: Text( 'View branches', ),
++            onTap: () {
++              Navigator.pushReplacement(
++                context,
++                MaterialPageRoute(
++                  builder: (context) => ViewBranch(),
++                ),
++              );
++            },
++          ),
++          ListTile(
++            title: Text( 'Sign Out', ),
++            onTap: () async {
++              // Signing the User Out
++              if( !kIsWeb) {
++                await CredentialController.clearFile();
++              }
++
++              Navigator.pushAndRemoveUntil(
++                  context,
++                  MaterialPageRoute(
++                      builder: (context) => SignUp()
++                  ),
++                      (Route<dynamic> route) => false
++              );
++            },
++          ),
++        ],
++      ),
++      body: GradientContainer(
++        child: Text("Insert branch"),
++      )
++    );
++  }
++}
+Index: test_app/lib/Cards/InsertOrganization.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Cards/InsertOrganization.dart b/test_app/lib/Cards/InsertOrganization.dart
+--- a/test_app/lib/Cards/InsertOrganization.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Cards/InsertOrganization.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -1,9 +1,14 @@
+ import 'package:flutter/material.dart';
+ 
++import 'package:test_app/Cards/ViewOrganizations.dart';
++import 'package:test_app/Cards/ManageOrganizationAdmins.dart';
++import 'package:test_app/Screens/SignUp.dart';
+ import 'package:test_app/Templates/HomeScreenBuilder.dart';
++import 'package:test_app/utils/CredentialController.dart';
+ 
+ import 'package:http/http.dart' as http;
+-import 'dart:convert';
++import 'package:flutter/foundation.dart' show kIsWeb;
++
+ 
+ class InsertOrganization extends StatefulWidget {
+   const InsertOrganization({Key? key}) : super(key: key);
+@@ -13,7 +18,6 @@
+ }
+ 
+ class _InsertOrganizationState extends State<InsertOrganization> {
+-  // `org_name`, `org_email`, `db_name`, `db_user`
+   late String org_name;
+   late String org_email='';
+ 
+@@ -21,11 +25,6 @@
+     String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_org.php?name='${this.org_name}'&mail='${this.org_email}'";
+ 
+     http.Response response = await http.get( Uri.parse( url ) );
+-
+-    print("inserted");
+-    // Map<String,dynamic> jsonData = jsonDecode( response.body ) ;
+-    //
+-    // print( jsonDecode );
+   }
+ 
+ 
+@@ -33,6 +32,75 @@
+   Widget build(BuildContext context) {
+     return MaterialApp(
+       home: HomeScreenBuilder(
++        listView: ListView(
++          children: [
++            DrawerHeader(
++              decoration: BoxDecoration(
++                  gradient: LinearGradient(
++                      colors: [
++                        Colors.blue,
++                        Colors.blueAccent,
++                        Colors.lightBlueAccent,
++                      ]
++                  )
++              ),
++              child: Icon(
++                Icons.account_circle,
++                color: Colors.white,
++              ),
++            ),
++            ListTile(
++              title: Text( 'View all Organizations', ),
++              onTap: () {
++                Navigator.push(
++                    context,
++                    MaterialPageRoute(
++                      builder: (context)=> ViewOrganizations(),
++                    )
++                );
++              },
++            ),
++            ListTile(
++              title: Text( 'Add new Organization', ),
++              onTap: () {
++                Navigator.push(
++                    context,
++                    MaterialPageRoute(
++                      builder: (context)=> InsertOrganization(),
++                    )
++                );
++              },
++            ),
++            ListTile(
++              title: Text( 'Manage Organization admin', ),
++              onTap: () {
++                Navigator.push(
++                    context,
++                    MaterialPageRoute(
++                      builder: (context)=> ManageOrganizationsAdmins(),
++                    )
++                );
++              },
++            ),
++            ListTile(
++              title: Text( 'Sign Out', ),
++              onTap: () async {
++                // Signing the User Out
++                if( !kIsWeb) {
++                  await CredentialController.clearFile();
++                }
++
++                Navigator.pushAndRemoveUntil(
++                    context,
++                    MaterialPageRoute(
++                        builder: (context) => SignUp()
++                    ),
++                        (Route<dynamic> route) => false
++                );
++              },
++            ),
++          ],
++        ),
+         body: Container(
+             padding: EdgeInsets.all( 20.0 ),
+             // `org_id`, `org_name`, `org_email`, `db_name`, `db_user`
+@@ -70,7 +138,19 @@
+                     onPressed: () async {
+                       await insertOrg( );
+ 
+-                      print("organization added to the list");
++                      // popping the current Screen
++                      Navigator.pop(context);
++
++                      // showing a AlertDialog
++                      showDialog(
++                        context: context,
++                        builder: (BuildContext) {
++                            return AlertDialog(
++                              title: Text("Organization Added"),
++                              content: Text("Organization added to the List"),
++                            );
++                        }
++                      );
+                     },
+                     child: Text(
+                       'Add New Organization',
+@@ -86,4 +166,4 @@
+       ),
+     );
+   }
+-}
++}
+\ No newline at end of file
+Index: test_app/lib/Cards/ManageOrganizationAdmins.dart
+===================================================================
+diff --git a/test_app/lib/Cards/ManageOrganizationAdmins.dart b/test_app/lib/Cards/ManageOrganizationAdmins.dart
+new file mode 100644
+--- /dev/null	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
++++ b/test_app/lib/Cards/ManageOrganizationAdmins.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -0,0 +1,385 @@
++import 'package:flutter/material.dart';
++
++import 'package:test_app/Screens/SignUp.dart';
++import 'package:test_app/Cards/InsertOrganization.dart';
++import 'package:test_app/Cards/ViewOrganizations.dart';
++import 'package:test_app/Templates/HomeScreenBuilder.dart';
++import 'package:test_app/utils/CredentialController.dart';
++
++import 'package:flutter/foundation.dart' show kIsWeb;
++import 'package:http/http.dart' as http;
++import 'dart:convert';
++
++
++class ManageOrganizationsAdmins extends StatefulWidget {
++  const ManageOrganizationsAdmins({Key? key}) : super(key: key);
++
++  @override
++  _ManageOrganizationsAdminsState createState() => _ManageOrganizationsAdminsState();
++}
++
++class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
++  var nameController = TextEditingController();
++  var emailController = TextEditingController();
++
++  late String username;
++  late String password;
++  late String orgID;
++
++  late dynamic jsonData;
++  List<Container> organizations = [ ];
++
++  Future<void> insertOrgAdmin( ) async {
++    // adding the user details to the mysql database
++    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}";
++
++    http.Response response = await http.get( Uri.parse( url ) );
++  }
++
++  Future<void> viewOrgAdmins( ) async {
++    organizations.clear();
++
++    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users";
++
++    http.Response response = await http.get( Uri.parse( url ) );
++
++    jsonData = jsonDecode( response.body ) ;
++
++    // adding header
++    organizations.add( containerBuilder( "ID", 'username', 'org_id', false , false ) );
++
++    for (int j = 0; j < jsonData.length; j++) {
++      Map<String, dynamic> data = jsonDecode(jsonData[j]);
++      // adding the information to the organizations list for displaying
++      if( data['authority'] == 'org-admin' )
++        organizations.add( containerBuilder(data['UID'], data['username'], data['org_id'], true, true) );
++    }
++
++    // adding a add new organization admin button at the last
++    organizations.add(
++        Container(
++          alignment: Alignment.center,
++          child: MaterialButton(
++            onPressed: () {
++              showDialog(
++                  context: context,
++                  builder: (BuildContext context ) {
++                    return AlertDialog(
++                      content: Column(
++                        mainAxisSize: MainAxisSize.min,
++                        children: [
++                          TextField(
++                            onChanged: (value) {
++                              this.username = value;
++                            },
++                            decoration: InputDecoration(
++                              labelText: "user email"
++                            ),
++                          ),
++                          TextField(
++                            onChanged: (value) {
++                              this.orgID = value;
++                            },
++                            decoration: InputDecoration(
++                                labelText: "organization ID"
++                            ),
++                          ),
++                          TextField(
++                            onChanged: (value) {
++                              this.password = value;
++                            },
++                            decoration: InputDecoration(
++                              labelText: "password",
++                            ),
++                          ),
++                          MaterialButton(
++                            onPressed: () {
++                              // adding the user to the users table
++                              insertOrgAdmin();
++
++                              // closing the Popup
++                              Navigator.pop(context);
++
++                              // showing the confirmation message
++                              showDialog(
++                                  context: context,
++                                  builder: (BuildContext context ) {
++                                    return AlertDialog(
++                                      title: Text("User Added Successfully"),
++                                    );
++                                  }
++                              );
++                              
++                              setState( ( ) {} );
++                            },
++                            child: Text("Add"),
++                          )
++                        ]
++                      ),
++                    );
++                  }
++              );
++            },
++            child: Row(
++              children: [
++                Icon(
++                  Icons.add,
++                  color: Colors.blue,
++                ),
++                Text("Add new Organization Admin"),
++              ],
++            ),
++          ),
++        )
++    );
++  }
++
++  Container containerBuilder( UID , String username, String orgID , bool addEdit, bool addDelete ) {
++    return Container(
++      color: Colors.white60,
++      padding: EdgeInsets.all( 20.0 ),
++      margin: EdgeInsets.all( 2.5 ),
++      child: Row(
++        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++        children: [
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( UID )
++          ),
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( username )
++          ),
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( orgID )
++          ),
++          addEdit ? MaterialButton(
++              onPressed: () {
++                showDialog(
++                    context: context,
++                    builder: (BuildContext context ) {
++                      this.username = username;
++
++                      return AlertDialog(
++                        content: Column(
++                          mainAxisSize: MainAxisSize.min,
++                          children: [
++                            TextField(
++                              onChanged: (value) {
++                                this.username = value;
++                              },
++                              decoration: InputDecoration(
++                                labelText: "username",
++                              ),
++                            ),
++                            MaterialButton(
++                              onPressed: () async {
++                                String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$UID&name='${this.username}'";
++                                print( url );
++
++                                http.Response response = await http.get( Uri.parse( url ) );
++
++                                // if response.body == 1, editing user details was successful
++                                if( response.body == '1') {
++                                  Navigator.pop( context );
++
++                                  setState(() { });
++                                }
++                              },
++                              child: Text("Edit"),
++                            ),
++                          ],
++                        ),
++                      );
++                    }
++                );
++              },
++              child: Container(
++                width: 150.0,
++                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++                  children: [
++                    Icon(
++                      Icons.edit,
++                      color: Colors.black,
++                    ),
++                    Text(
++                      'Edit',
++                      style: TextStyle(
++                        color: Colors.blue,
++                        decoration: TextDecoration.underline,
++                      ),
++                    )
++                  ],
++                ),
++              ),
++          ) : Container(
++            width: 210.0,
++            height: 50.0,
++          ),
++          addDelete? MaterialButton(
++              onPressed: () async {
++                // delete the User
++                String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$username'";
++
++                http.Response response = await http.get( Uri.parse( url ) );
++
++                print( response.body );
++
++                if( response.body == "1" ) {
++
++                  showDialog(
++                      context: context,
++                      builder: (BuildContext context) {
++                        return AlertDialog(
++                          content: Text("User Deleted.."),
++                        );
++                      }
++                  );
++
++                  setState( () {} );
++                }
++              },
++              child: Container(
++                width: 150.0,
++                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++                  children: [
++                    Icon(
++                      Icons.indeterminate_check_box_outlined,
++                      color: Colors.red,
++                    ),
++                    Text(
++                      'Delete',
++                      style: TextStyle(
++                        color: Colors.red,
++                        decoration: TextDecoration.underline,
++                      ),
++                    )
++                  ],
++                ),
++              )
++          ) : Container(
++            width: 210.0,
++            height: 50.0,
++          ),
++        ],
++      ),
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return FutureBuilder(
++        future: viewOrgAdmins(),
++        builder: (context,snapshot) {
++          if( snapshot.connectionState == ConnectionState.done ) {
++            return HomeScreenBuilder(
++              listView: ListView(
++                children: [
++                  DrawerHeader(
++                    decoration: BoxDecoration(
++                        gradient: LinearGradient(
++                            colors: [
++                              Colors.blue,
++                              Colors.blueAccent,
++                              Colors.lightBlueAccent,
++                            ]
++                        )
++                    ),
++                    child: Icon(
++                      Icons.account_circle,
++                      color: Colors.white,
++                    ),
++                  ),
++                  ListTile(
++                    title: Text( 'View all Organizations', ),
++                    onTap: () {
++                      Navigator.push(
++                          context,
++                          MaterialPageRoute(
++                            builder: (context)=> ViewOrganizations(),
++                          )
++                      );
++                    },
++                  ),
++                  ListTile(
++                    title: Text( 'Add new Organization', ),
++                    onTap: () {
++                      Navigator.push(
++                          context,
++                          MaterialPageRoute(
++                            builder: (context)=> InsertOrganization(),
++                          )
++                      );
++                    },
++                  ),
++                  ListTile(
++                    title: Text( 'Manage Organization admin', ),
++                    onTap: () {
++                      Navigator.push(
++                          context,
++                          MaterialPageRoute(
++                            builder: (context)=> ManageOrganizationsAdmins(),
++                          )
++                      );
++                    },
++                  ),
++                  ListTile(
++                    title: Text( 'Sign Out', ),
++                    onTap: () async {
++                      // Signing the User Out
++                      if( !kIsWeb) {
++                        await CredentialController.clearFile();
++                      }
++
++                      Navigator.pushAndRemoveUntil(
++                          context,
++                          MaterialPageRoute(
++                              builder: (context) => SignUp()
++                          ),
++                              (Route<dynamic> route) => false
++                      );
++                    },
++                  ),
++                ],
++              ),
++              body: Container(
++                  child: SingleChildScrollView(
++                    scrollDirection: Axis.horizontal,
++                    child : Container(
++                      child: SingleChildScrollView(
++                        scrollDirection: Axis.vertical,
++                        child: Column(
++                          children: organizations,
++                        ),
++                      ),
++                    ),
++                  )
++              ),
++            );
++          }
++          else if( snapshot.hasError ) {
++            return Container(
++              child: Text( snapshot.error.toString() ),
++            );
++          }
++          else {
++            return Container(
++              alignment: Alignment.center,
++              child: CircularProgressIndicator(),
++            );
++          }
++        }
++    );
++  }
++}
+\ No newline at end of file
+Index: test_app/lib/Cards/ViewBranch.dart
+===================================================================
+diff --git a/test_app/lib/Cards/ViewBranch.dart b/test_app/lib/Cards/ViewBranch.dart
+new file mode 100644
+--- /dev/null	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
++++ b/test_app/lib/Cards/ViewBranch.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -0,0 +1,238 @@
++import 'package:flutter/foundation.dart';
++import 'package:flutter/material.dart';
++import 'package:test_app/Screens/SignUp.dart';
++import 'package:test_app/Templates/GradientContainer.dart';
++import 'package:test_app/Templates/HomeScreenBuilder.dart';
++import 'package:test_app/utils/CredentialController.dart';
++import 'InsertBranch.dart';
++
++import 'package:http/http.dart' as http;
++import 'dart:convert';
++
++class ViewBranch extends StatefulWidget {
++  const ViewBranch({Key? key}) : super(key: key);
++
++  @override
++  _ViewBranchState createState() => _ViewBranchState();
++}
++
++class _ViewBranchState extends State<ViewBranch> {
++
++  List<Widget> branches = [];
++
++  // initialize the branches list
++  Future<void> _init() async {
++    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches";
++
++    http.Response response = await http.get( Uri.parse( url ) ) ;
++
++    if( response.body == 'false' ) {
++      print("something went wrong");
++    }
++    else {
++      // decoding the data
++      var data = jsonDecode( response.body );
++      print(data);
++
++      // insert the data to the branches list
++      for (int j = 0; j < data.length; j++) {
++        Map<String, dynamic> jsonData = jsonDecode( data[j]);
++
++        branches.add(
++            ContainerBuilder( jsonData['org_id'], jsonData['branch_id'], jsonData['branch_name'], jsonData['address'], false, false )
++        );
++      }
++    }
++  }
++
++  Widget ContainerBuilder( ID , branchID, branchName , address , addEdit, addDelete ) {
++    return Container(
++      alignment: Alignment.centerLeft,
++      color: Colors.white60,
++      padding: EdgeInsets.all( 20.0 ),
++      margin: EdgeInsets.symmetric(vertical: 2.5 ),
++      child: Row(
++        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++        children: [
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( ID )
++          ),
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( branchID )
++          ),
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( branchName )
++          ),Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( address )
++          ),
++          addEdit? MaterialButton(
++              onPressed: () {
++                // nameController.text= name ;
++                // emailController.text= mail ;
++                //
++                // showDialog(
++                //   context: context,
++                //   builder: (BuildContext context) => _buildPopupDialog( name , mail , ID),
++                // );
++              },
++              child: Container(
++                width: 150.0,
++                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++                  children: [
++                    Icon(
++                      Icons.edit,
++                      color: Colors.black,
++                    ),
++                    Text(
++                      'Edit',
++                      style: TextStyle(
++                        color: Colors.blue,
++                        decoration: TextDecoration.underline,
++                      ),
++                    )
++                  ],
++                ),
++              )
++          ) : Container(
++            width: 210.0,
++            height: 50.0,
++          ),
++          addDelete ? MaterialButton(
++              onPressed: () { },
++              child: Container(
++                width: 150.0,
++                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++                  children: [
++                    Icon(
++                      Icons.indeterminate_check_box_outlined,
++                      color: Colors.red,
++                    ),
++                    Text(
++                      'Delete',
++                      style: TextStyle(
++                        color: Colors.red,
++                        decoration: TextDecoration.underline,
++                      ),
++                    )
++                  ],
++                ),
++              )
++          ) : Container(
++            width: 210.0,
++            height: 50.0,
++          ),
++        ],
++      ),
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return FutureBuilder(
++      future: _init(),
++      builder: ( context, snapshot ) {
++        if( snapshot.connectionState == ConnectionState.done ) {
++          return HomeScreenBuilder(
++            listView: ListView(
++              children: [
++                DrawerHeader(
++                  decoration: BoxDecoration(
++                      gradient: LinearGradient(
++                          colors: [
++                            Colors.blue,
++                            Colors.blueAccent,
++                            Colors.lightBlueAccent,
++                          ]
++                      )
++                  ),
++                  child: Icon(
++                    Icons.account_circle,
++                    color: Colors.white,
++                  ),
++                ),
++                ListTile(
++                  title: Text( 'insert branch', ),
++                  onTap: () {
++                    Navigator.pushReplacement(
++                      context,
++                      MaterialPageRoute(
++                        builder: (context) => InsertBranch(),
++                      ),
++                    );
++                  },
++                ),
++                ListTile(
++                  title: Text( 'View branches', ),
++                  onTap: () {
++                    Navigator.pushReplacement(
++                      context,
++                      MaterialPageRoute(
++                        builder: (context) => ViewBranch(),
++                      ),
++                    );
++                  },
++                ),
++                ListTile(
++                  title: Text( 'Sign Out', ),
++                  onTap: () async {
++                    // Signing the User Out
++                    if( !kIsWeb) {
++                      await CredentialController.clearFile();
++                    }
++
++                    Navigator.pushAndRemoveUntil(
++                        context,
++                        MaterialPageRoute(
++                            builder: (context) => SignUp()
++                        ),
++                            (Route<dynamic> route) => false
++                    );
++                  },
++                ),
++              ],
++            ),
++            body:  Container(
++                  child: SingleChildScrollView(
++                    scrollDirection: Axis.horizontal,
++                    child : Container(
++                      child: SingleChildScrollView(
++                        scrollDirection: Axis.vertical,
++                        child: Column(
++                          mainAxisAlignment: MainAxisAlignment.start,
++                          children: branches,
++                        ),
++                      ),
++                    ),
++                  )
++              ),
++          );
++        }
++        else {
++          return HomeScreenBuilder(
++              body: Center(
++                child: GradientContainer(
++                  child: CircularProgressIndicator()
++                ),
++              )
++          );
++        }
++      }
++    );
++  }
++}
+Index: test_app/lib/Cards/ViewOrganizations.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Cards/ViewOrganizations.dart b/test_app/lib/Cards/ViewOrganizations.dart
+--- a/test_app/lib/Cards/ViewOrganizations.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Cards/ViewOrganizations.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -1,8 +1,12 @@
+ import 'package:flutter/material.dart';
+-import 'package:test_app/Templates/GradientContainer.dart';
+ 
++import 'package:test_app/Screens/SignUp.dart';
++import 'package:test_app/Cards/InsertOrganization.dart';
++import 'package:test_app/Cards/ManageOrganizationAdmins.dart';
+ import 'package:test_app/Templates/HomeScreenBuilder.dart';
++import 'package:test_app/utils/CredentialController.dart';
+ 
++import 'package:flutter/foundation.dart' show kIsWeb;
+ import 'package:http/http.dart' as http;
+ import 'dart:convert';
+ 
+@@ -14,7 +18,14 @@
+ }
+ 
+ class _ViewOrganizationsState extends State<ViewOrganizations> {
++  var nameController = TextEditingController();
++  var emailController = TextEditingController();
++
++  late String org_name;
++  late String org_email='';
++
+   late dynamic jsonData;
++  List<Widget> organizations = [ ];
+ 
+ 
+   Future<void> viewOrg( ) async {
+@@ -22,19 +33,206 @@
+ 
+     http.Response response = await http.get( Uri.parse( url ) );
+ 
+-    print("fetched");
+-    print( response.body );
+ 
+     jsonData = jsonDecode( response.body ) ;
+ 
++    // clearing organizations list
++    organizations.clear();
++
++    // adding header
++    organizations.add( ContainerBuilder( "ID", "NAME", "MAIL",false, false ) );
++
+     for (int j = 0; j < jsonData.length; j++) {
+-      Map<String,dynamic> data = jsonDecode(jsonData[j]);
+-      print( data['org_id'] );
+-      print( data['org_name'] );
+-      print( data['org_email'] );
++      Map<String, dynamic> data = jsonDecode(jsonData[j]);
++      // adding the information to the organizations list for displaying
++      organizations.add( ContainerBuilder(data['org_id'], data['org_name'], data['org_mail'], true, true ) );
+     }
+   }
++
++  Future<void> editOrg( String name, String email, String ID ) async {
++    if( name == "" ) {
++      showDialog(
++          context: context,
++          builder: (BuildContext context) {
++            return AlertDialog(
++              title: Text('Invalid Data '),
++              content: Text('Organization Name cannot be Empty'),
++            );
++          }
++      );
++      return;
++    }
++
++    String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_org.php?id=$ID&name='$name'&mail='$email'";
++
++    http.Response response = await http.get( Uri.parse( url ) );
++
++    if( response.body != '1' )
++      print( response.body ) ;
++
++    // closing the AlertBox
++    Navigator.pop(context);
++
++    // setting the State
++    setState( () {} ) ;
++  }
++
++  Widget _buildPopupDialog( String name, String email, String ID ) {
++    this.org_name = name ;
++    this.org_email = email ;
++
++    return AlertDialog(
++      content: Container(
++          padding: EdgeInsets.all( 20.0 ),
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.center,
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Container(
++                alignment: Alignment.centerLeft,
++                width: 450,
++                child:TextField(
++                  controller: nameController,
++                  decoration: InputDecoration(
++                    labelText: 'Organization Name',
++                  ),
++                  onChanged: (value) {
++                    this.org_name = value;
++                  },
++                ),
++              ),
++              Container(
++                alignment: Alignment.centerLeft,
++                width: 450,
++                child:TextField(
++                  controller: emailController,
++                  decoration: InputDecoration(
++                    labelText: 'Organization Email',
++                  ),
++                  onChanged: (value) {
++                    this.org_email = value;
++                  },
++                ),
++              ),
++              Container(
++                margin: EdgeInsets.all( 20.0 ),
++                child: MaterialButton(
++                  color: Colors.blue,
++                  onPressed: () async {
++                    await editOrg( this.org_name, this.org_email, ID );
++                  },
++                  child: Text(
++                    'Edit Organization',
++                    style: TextStyle(
++                      color: Colors.white,
++                    ),
++                  ),
++                ),
++              )
++            ],
++          )
++      ),
++    );
++  }
+ 
++  Widget ContainerBuilder( ID , String name, String mail , bool addEdit, bool addDelete ) {
++    return Container(
++      alignment: Alignment.centerLeft,
++      color: Colors.white60,
++      padding: EdgeInsets.all( 20.0 ),
++      margin: EdgeInsets.symmetric(vertical: 2.5 ),
++      child: Row(
++        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++        children: [
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( ID )
++          ),
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( name )
++          ),
++          Container(
++              width: 150.0,
++              height: 50.0,
++              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++              child: Text( mail )
++          ),
++          addEdit? MaterialButton(
++              onPressed: () {
++                nameController.text= name ;
++                emailController.text= mail ;
++
++                showDialog(
++                    context: context,
++                    builder: (BuildContext context) => _buildPopupDialog( name , mail , ID),
++                );
++              },
++              child: Container(
++                width: 150.0,
++                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++                  children: [
++                    Icon(
++                          Icons.edit,
++                          color: Colors.black,
++                    ),
++                    Text(
++                      'Edit',
++                      style: TextStyle(
++                        color: Colors.blue,
++                        decoration: TextDecoration.underline,
++                      ),
++                    )
++                  ],
++                ),
++              )
++          ) : Container(
++            width: 210.0,
++            height: 50.0,
++          ),
++          addDelete ? MaterialButton(
++              onPressed: () {
++                // delete the User
++                // String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='${}'";
++                //
++                // http.Response response = await http.get( Uri.parse( url ) );
++                //
++                // print( response.body );
++              },
++              child: Container(
++                width: 150.0,
++                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++                  children: [
++                    Icon(
++                          Icons.indeterminate_check_box_outlined,
++                          color: Colors.red,
++                    ),
++                    Text(
++                      'Delete',
++                      style: TextStyle(
++                        color: Colors.red,
++                        decoration: TextDecoration.underline,
++                      ),
++                    )
++                  ],
++                ),
++              )
++          ) : Container(
++            width: 210.0,
++            height: 50.0,
++          ),
++        ],
++      ),
++    );
++  }
+ 
+   @override
+   Widget build(BuildContext context) {
+@@ -43,23 +241,103 @@
+         builder: (context,snapshot) {
+           if( snapshot.connectionState == ConnectionState.done ) {
+             return HomeScreenBuilder(
+-                body: GradientContainer(
+-                  child: Container(),
+-                ),
+-            );
+-          }
+-          else if( snapshot.hasError ) {
+-            return Container(
+-              child: Text( snapshot.error.toString() ),
+-            );
+-          }
+-          else {
+-            return Container(
+-              alignment: Alignment.center,
+-              child: CircularProgressIndicator(),
+-            );
+-          }
+-        }
++              listView: ListView(
++                children: [
++                  DrawerHeader(
++                    decoration: BoxDecoration(
++                        gradient: LinearGradient(
++                            colors: [
++                              Colors.blue,
++                              Colors.blueAccent,
++                              Colors.lightBlueAccent,
++                            ]
++                        )
++                    ),
++                    child: Icon(
++                      Icons.account_circle,
++                      color: Colors.white,
++                    ),
++                  ),
++                  ListTile(
++                    title: Text( 'View all Organizations', ),
++                    onTap: () {
++                      Navigator.push(
++                          context,
++                          MaterialPageRoute(
++                            builder: (context)=> ViewOrganizations(),
++                          )
++                      );
++                    },
++                  ),
++                  ListTile(
++                    title: Text( 'Add new Organization', ),
++                    onTap: () {
++                      Navigator.push(
++                          context,
++                          MaterialPageRoute(
++                            builder: (context)=> InsertOrganization(),
++                          )
++                      );
++                    },
++                  ),
++                  ListTile(
++                    title: Text( 'Manage Organization admin', ),
++                    onTap: () {
++                      Navigator.push(
++                          context,
++                          MaterialPageRoute(
++                            builder: (context)=> ManageOrganizationsAdmins(),
++                          )
++                      );
++                    },
++                  ),
++                  ListTile(
++                    title: Text( 'Sign Out', ),
++                    onTap: () async {
++                      // Signing the User Out
++                      if( !kIsWeb) {
++                        await CredentialController.clearFile();
++                      }
++
++                      Navigator.pushAndRemoveUntil(
++                          context,
++                          MaterialPageRoute(
++                              builder: (context) => SignUp()
++                          ),
++                              (Route<dynamic> route) => false
++                      );
++                    },
++                  ),
++                ],
++              ),
++              body: Container(
++                  child: SingleChildScrollView(
++                  scrollDirection: Axis.horizontal,
++                  child : Container(
++                      child: SingleChildScrollView(
++                        scrollDirection: Axis.vertical,
++                        child: Column(
++                          mainAxisAlignment: MainAxisAlignment.start,
++                          children: organizations,
++                        ),
++                      ),
++                  ),
++                )
++              ),
++          );
++        }
++        else if( snapshot.hasError ) {
++          return Container(
++            child: Text( snapshot.error.toString() ),
++          );
++        }
++        else {
++          return Container(
++            alignment: Alignment.center,
++            child: CircularProgressIndicator(),
++          );
++        }
++      }
+     );
+   }
+-}
++}
+\ No newline at end of file
+Index: test_app/lib/Screens/Home.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Screens/Home.dart b/test_app/lib/Screens/Home.dart
+--- a/test_app/lib/Screens/Home.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Screens/Home.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -11,12 +11,11 @@
+ import 'package:http/http.dart' as http;
+ import 'dart:convert';
+ 
+-import 'package:firebase_auth/firebase_auth.dart';
+-
+ class Home extends StatefulWidget {
+   late String email;
++  late String uid;
+ 
+-  Home({Key? key, required this.email }) : super( key: key );
++  Home({Key? key, required this.email, required this.uid }) : super( key: key );
+ 
+   @override
+   _HomeState createState() => _HomeState();
+@@ -41,7 +40,7 @@
+ 
+   Future<void> loadMainScreen( ) async {
+     // creating the url to send the data
+-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get_user.php?UID='${FirebaseAuth.instance.currentUser!.uid}'";
++    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get_user.php?UID='${widget.uid}'";
+     print( url ) ;
+ 
+     http.Response response = await http.get(
+@@ -115,17 +114,24 @@
+                     title: Text( 'Sign Out', ),
+                     onTap: () {
+                       // Signing the User Out
+-
+-                      FirebaseAuth auth = FirebaseAuth.instance;
+-                      auth.signOut().then((res) {
+-                        Navigator.pushAndRemoveUntil(
+-                            context,
+-                            MaterialPageRoute(
+-                                builder: (context) => SignUp()
+-                            ),
+-                                (Route<dynamic> route) => false
+-                        );
+-                      });
++                      Navigator.pushAndRemoveUntil(
++                          context,
++                          MaterialPageRoute(
++                              builder: (context) => SignUp()
++                          ),
++                              (Route<dynamic> route) => false
++                      );
++
++                      // FirebaseAuth auth = FirebaseAuth.instance;
++                      // auth.signOut().then((res) {
++                      //   Navigator.pushAndRemoveUntil(
++                      //       context,
++                      //       MaterialPageRoute(
++                      //           builder: (context) => SignUp()
++                      //       ),
++                      //           (Route<dynamic> route) => false
++                      //   );
++                      // });
+                     },
+                   ),
+                 ],
+@@ -152,11 +158,9 @@
+           );
+         }
+         else{
+-          return HomeScreenBuilder(
+-            body: SafeArea(
+-              child: GradientContainer(
+-                child: CircularProgressIndicator(),
+-              ),
++          return SafeArea(
++            child: GradientContainer(
++              child: CircularProgressIndicator(),
+             ),
+           );
+         }
+Index: test_app/lib/Screens/IntroScreen.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Screens/IntroScreen.dart b/test_app/lib/Screens/IntroScreen.dart
+--- a/test_app/lib/Screens/IntroScreen.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Screens/IntroScreen.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -3,26 +3,66 @@
+ import 'package:test_app/Screens/Home.dart';
+ import 'package:test_app/Screens/SignUp.dart';
+ 
+-import 'package:firebase_core/firebase_core.dart';
+-import 'package:firebase_auth/firebase_auth.dart';
++import 'package:test_app/utils/CredentialController.dart';
++
++import 'package:flutter/foundation.dart' show kIsWeb;
++
++import 'package:http/http.dart' as http ;
++import 'dart:convert';
+ 
+ class IntroScreen extends StatelessWidget {
+-  Future<FirebaseApp> _initialization = Firebase.initializeApp();
++  late bool has_user;
++  var data;
++  var uid;
++
++  Future<void> _init() async {
++    if( !kIsWeb ) {
++      // checking if Credential controller has any user data
++      String user = await CredentialController.readFile();
++
++      if( user == '' ) {
++        this.has_user = false ;
++        return;
++      }
++
++      data = jsonDecode(user);
++
++      // getting the uid for the user
++      String url = "https://test-pranav-kale.000webhostapp.com/scripts/sign_in.php?mail='${data['user']}'";
++
++      http.Response response = await http.get( Uri.parse( url ) );
++
++      if( response.body == 'no-user' ) {
++        this.has_user = false;
++        return;
++      }
++
++      // assigning the UID
++      var uid = jsonDecode(response.body);
++      this.uid = uid['UID'];
++
++      this.has_user = true;
++      return;
++
++    }
++
++    this.has_user = false;
++    return;
++  }
+ 
+   @override
+   Widget build( BuildContext context ){
+     return FutureBuilder(
+-      future: _initialization,
++      future: _init(),
+       builder: ( context, snapshot) {
+         if( snapshot.connectionState == ConnectionState.done ) {
+-          User? result =  FirebaseAuth.instance.currentUser;
+-
+-          return result != null ? Home( email: result.email!, ) : SignUp();
++          return this.has_user ? Home( email: data['user'], uid: this.uid ) : SignUp();
+         }
+         else {
+           return Scaffold(
+             body: SafeArea(
+               child: Container(
++                alignment: Alignment.center,
+                 child: CircularProgressIndicator(),
+               ),
+             ),
+Index: test_app/lib/Screens/OrgAdmin.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Screens/OrgAdmin.dart b/test_app/lib/Screens/OrgAdmin.dart
+--- a/test_app/lib/Screens/OrgAdmin.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Screens/OrgAdmin.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -1,9 +1,12 @@
++import 'package:flutter/foundation.dart';
+ import 'package:flutter/material.dart';
++
++import 'package:test_app/Cards/InsertBranch.dart';
++import 'package:test_app/Cards/ViewBranch.dart';
+ import 'package:test_app/Screens/SignUp.dart';
+ import 'package:test_app/Templates/HomeScreenBuilder.dart';
+ import 'package:test_app/Templates/GradientContainer.dart';
+-
+-import 'package:firebase_auth/firebase_auth.dart';
++import 'package:test_app/utils/CredentialController.dart';
+ 
+ class OrgAdmin extends StatelessWidget {
+   const OrgAdmin({Key? key}) : super(key: key);
+@@ -28,21 +31,43 @@
+               color: Colors.white,
+             ),
+           ),
++          ListTile(
++            title: Text( 'insert branch', ),
++            onTap: () {
++              Navigator.push(
++                  context,
++                  MaterialPageRoute(
++                    builder: (context) => InsertBranch(),
++                  ),
++              );
++            },
++          ),
++          ListTile(
++            title: Text( 'View branches', ),
++            onTap: () {
++              Navigator.push(
++                context,
++                MaterialPageRoute(
++                  builder: (context) => ViewBranch(),
++                ),
++              );
++            },
++          ),
+           ListTile(
+             title: Text( 'Sign Out', ),
+-            onTap: () {
++            onTap: () async {
+               // Signing the User Out
++              if( !kIsWeb) {
++                await CredentialController.clearFile();
++              }
+ 
+-              FirebaseAuth auth = FirebaseAuth.instance;
+-              auth.signOut().then((res) {
+-                Navigator.pushAndRemoveUntil(
+-                    context,
+-                    MaterialPageRoute(
+-                        builder: (context) => SignUp()
+-                    ),
+-                        (Route<dynamic> route) => false
+-                );
+-              });
++              Navigator.pushAndRemoveUntil(
++                  context,
++                  MaterialPageRoute(
++                      builder: (context) => SignUp()
++                  ),
++                      (Route<dynamic> route) => false
++              );
+             },
+           ),
+         ],
+Index: test_app/lib/Screens/RegisterScreen.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Screens/RegisterScreen.dart b/test_app/lib/Screens/RegisterScreen.dart
+--- a/test_app/lib/Screens/RegisterScreen.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Screens/RegisterScreen.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -1,11 +1,9 @@
+ import 'package:flutter/material.dart';
+-
+ import 'package:test_app/Screens/Home.dart';
+-
+-import 'package:firebase_auth/firebase_auth.dart';
+-
+ import 'package:http/http.dart' as http;
+ import 'dart:convert';
++import 'package:test_app/utils/CredentialController.dart';
++import 'package:flutter/foundation.dart' show kIsWeb;
+ 
+ class RegisterScreen extends StatelessWidget {
+   late String _email;
+@@ -13,56 +11,33 @@
+   late String statusString;
+   late Map<String,dynamic> data;
+ 
+-  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+-
+   Future<void> registerUser(BuildContext context) async {
+-
+-    // register the user on firebase authentication system
+-    await firebaseAuth
+-        .createUserWithEmailAndPassword(
+-      email: this._email,
+-      password: this._pass,
+-    )
+-      .then( (result) async {
+-      // adding the user details to the mysql database
+-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?id='${result.user!.uid}'&user='${result.user!.email}'&authority='emp'";
+-      print( url );
++    // adding the user details to the mysql database
++    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this._email}'&pass='${this._pass}'&authority='s-admin'&org_id=";
+ 
+-      http.Response response = await http.get(
+-          Uri.parse( url ),
+-          headers: {
+-            "Accept": "application/json",
+-            "Access-Control-Allow-Origin": "*",
+-          }
+-      );
+-      print( response.body );
++    http.Response response = await http.get(
++        Uri.parse( url ),
++        headers: {
++          "Accept": "application/json",
++          "Access-Control-Allow-Origin": "*",
++        }
++    );
++
++    var data= jsonDecode( response.body );
+ 
++    // writing the data into a file for future auto logins
++    if( !kIsWeb ) {
++      await CredentialController.writeFile( "{ \"user\": \"${this._email}\", \"pass\": \"${this._pass}\" }" );
++    }
++
++    if( response.body != "" ) {
+       // directing to the Home screen
+       Navigator.pushReplacement(
+-          context, MaterialPageRoute(
+-          builder: (context) => Home( email: result.user!.email! ),
++        context, MaterialPageRoute(
++          builder: (context) => Home( uid: data['UID'], email: this._email, ),
+         ),
+-        );
+-      })
+-      .catchError( (err) {
+-        showDialog(
+-          context: context,
+-          builder: (BuildContext context ){
+-            return AlertDialog(
+-                title: Text("Error"),
+-                content:  Text(err.message),
+-                actions: [
+-                  TextButton(
+-                      child: Text("Ok"),
+-                      onPressed: () {
+-                        Navigator.of(context).pop();
+-                      }
+-                  ),
+-                ]
+-            );
+-          }
+-        );
+-      });
++      );
++    }
+   }
+ 
+   @override
+Index: test_app/lib/Screens/SignUp.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Screens/SignUp.dart b/test_app/lib/Screens/SignUp.dart
+--- a/test_app/lib/Screens/SignUp.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Screens/SignUp.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -2,37 +2,31 @@
+ 
+ import 'package:test_app/Screens/Home.dart';
+ import 'package:test_app/Screens/RegisterScreen.dart';
++import 'package:test_app/utils/CredentialController.dart';
++import 'package:flutter/foundation.dart' show kIsWeb;
+ 
+-import 'package:firebase_auth/firebase_auth.dart';
++import 'package:http/http.dart' as  http ;
++import 'dart:convert';
+ 
+ class SignUp extends StatelessWidget {
+   late String _email;
+   late String _pass;
+   late String statusString;
+-  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+ 
+-  void registerToFb(BuildContext context){
+-    firebaseAuth
+-      .signInWithEmailAndPassword(
+-        email: this._email,
+-        password: this._pass,
+-    ).then( (result) {
+-      // directing the user to home Screen
+-      Navigator.pushReplacement(
+-        context, MaterialPageRoute(
+-          builder: (context) => Home( email: result.user!.email! ),
+-        ),
+-      );
+-    }).catchError( (err) {
++  Future<void> registerToFb(BuildContext context) async {
++    // getting the uid for current mail ID
++    String url = "https://test-pranav-kale.000webhostapp.com/scripts/sign_in.php?mail='${this._email}'";
+ 
+-      print( err.message );
++    http.Response response = await http.get( Uri.parse( url ) );
+ 
++    if( response.body == 'no-user' ) {
++      // this means that there is no user with provided credentials
+       showDialog(
+           context: context,
+           builder: (BuildContext context ){
+             return AlertDialog(
+               title: Text("Error"),
+-              content:  Text(err.message),
++              content:  Text('User not Registered'),
+               actions: [
+                 TextButton(
+                   child: Text("Ok"),
+@@ -44,7 +38,40 @@
+             );
+           }
+       );
+-    });
++    }
++    else {
++      var data = jsonDecode(response.body);
++
++      // checking if the password matches
++      if( data['password'] == this._pass ) {
++
++      }
++      else {
++        showDialog(
++            context: context,
++            builder: (BuildContext context ) {
++              return AlertDialog(
++                title: Text("Incorrect password"),
++                content: Text('The entered password is incorrect please re-enter the password'),
++              );
++            }
++        );
++
++        return;
++      }
++
++      // providing CredentialController current credentials
++      if( !kIsWeb ) {
++        await CredentialController.writeFile( "{ \"user\": \"${this._email}\", \"pass\": \"${this._pass}\" }" );
++      }
++
++      // directing the user to home Screen
++      Navigator.pushReplacement(
++        context, MaterialPageRoute(
++          builder: (context) => Home( email: this._email, uid: data['UID'] ),
++        ),
++      );
++    }
+   }
+ 
+   @override
+Index: test_app/lib/Screens/SuperAdmin.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Screens/SuperAdmin.dart b/test_app/lib/Screens/SuperAdmin.dart
+--- a/test_app/lib/Screens/SuperAdmin.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Screens/SuperAdmin.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -1,97 +1,22 @@
+ import 'package:flutter/material.dart';
+-import 'package:test_app/Screens/SignUp.dart';
+-import 'package:test_app/Templates/HomeScreenBuilder.dart';
+-import 'package:test_app/Templates/GradientContainer.dart';
+-import 'package:test_app/Cards/InsertOrganization.dart';
+ import 'package:test_app/Cards/ViewOrganizations.dart';
+ 
+-import 'package:firebase_auth/firebase_auth.dart';
+-
+ import 'package:http/http.dart' as http;
+-import 'dart:convert';
+ 
+ class SuperAdmin extends StatelessWidget {
+-  // `org_name`, `org_email`, `db_name`, `db_user`
+   late String org_name;
+   late String org_email='';
+ 
+   SuperAdmin({Key? key}) : super(key: key);
+ 
+-  Future<void> insertOrg( ) async {
+-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_org.php?name='${this.org_name}'&mail='${this.org_email}'";
+-
+-    http.Response response = await http.get( Uri.parse( url ) );
+-
+-    print("inserted");
+-    // Map<String,dynamic> jsonData = jsonDecode( response.body ) ;
+-    //
+-    // print( jsonDecode );
+-  }
++  // Future<void> insertOrg( ) async {
++  //   String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_org.php?name='${this.org_name}'&mail='${this.org_email}'";
++  //
++  //   await http.get( Uri.parse( url ) );
++  // }
+ 
+   @override
+   Widget build(BuildContext context) {
+-    return HomeScreenBuilder(
+-      listView: ListView(
+-        children: [
+-          DrawerHeader(
+-            decoration: BoxDecoration(
+-                gradient: LinearGradient(
+-                    colors: [
+-                      Colors.blue,
+-                      Colors.blueAccent,
+-                      Colors.lightBlueAccent,
+-                    ]
+-                )
+-            ),
+-            child: Icon(
+-              Icons.account_circle,
+-              color: Colors.white,
+-            ),
+-          ),
+-          ListTile(
+-            title: Text( 'View all Organizations', ),
+-            onTap: () {
+-              Navigator.push(
+-                  context,
+-                  MaterialPageRoute(
+-                    builder: (context)=> ViewOrganizations(),
+-                  )
+-              );
+-            },
+-          ),
+-          ListTile(
+-            title: Text( 'Add new Organization', ),
+-            onTap: () {
+-              Navigator.push(
+-                context,
+-                MaterialPageRoute(
+-                  builder: (context)=> InsertOrganization(),
+-                )
+-              );
+-            },
+-          ),
+-          ListTile(
+-            title: Text( 'Sign Out', ),
+-            onTap: () {
+-              // Signing the User Out
+-
+-              FirebaseAuth auth = FirebaseAuth.instance;
+-              auth.signOut().then((res) {
+-                Navigator.pushAndRemoveUntil(
+-                    context,
+-                    MaterialPageRoute(
+-                        builder: (context) => SignUp()
+-                    ),
+-                        (Route<dynamic> route) => false
+-                );
+-              });
+-            },
+-          ),
+-        ],
+-      ),
+-      body: GradientContainer(
+-        child: null,
+-      ),
+-    );
++    return ViewOrganizations();
+   }
+ }
+Index: test_app/lib/Templates/GradientContainer.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Templates/GradientContainer.dart b/test_app/lib/Templates/GradientContainer.dart
+--- a/test_app/lib/Templates/GradientContainer.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Templates/GradientContainer.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -12,7 +12,7 @@
+       padding: EdgeInsets.all( 20.0 ),
+       decoration: BoxDecoration(
+         gradient: LinearGradient(
+-          colors: [Color(0xFFFFFFFF), Color(0xFFECECEC), Color(0xFFC2C2C2), ],
++          colors: [Color(0xFFECECEC), Color(0xFFC2C2C2), ],
+           begin: Alignment.topRight,
+           end: Alignment.centerLeft,
+         ),
+Index: test_app/lib/Templates/HomeScreenBuilder.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/Templates/HomeScreenBuilder.dart b/test_app/lib/Templates/HomeScreenBuilder.dart
+--- a/test_app/lib/Templates/HomeScreenBuilder.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/Templates/HomeScreenBuilder.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -1,6 +1,7 @@
++import 'package:flutter/foundation.dart';
+ import 'package:flutter/material.dart';
+-import 'package:firebase_auth/firebase_auth.dart';
+ import 'package:test_app/Screens/SignUp.dart';
++import 'package:test_app/utils/CredentialController.dart';
+ 
+ class HomeScreenBuilder extends StatelessWidget {
+   late Widget body;
+@@ -35,19 +36,20 @@
+                 title: Text(
+                     'Sign Out',
+                 ),
+-                onTap: () {
++                onTap: () async {
++
+                   // Signing the User Out
++                  if( !kIsWeb) {
++                    await CredentialController.clearFile();
++                  }
+ 
+-                  FirebaseAuth auth = FirebaseAuth.instance;
+-                  auth.signOut().then((res) {
+-                    Navigator.pushAndRemoveUntil(
+-                        context,
+-                        MaterialPageRoute(
+-                            builder: (context) => SignUp()
+-                        ),
+-                            (Route<dynamic> route) => false
+-                    );
+-                  });
++                  Navigator.pushAndRemoveUntil(
++                      context,
++                      MaterialPageRoute(
++                          builder: (context) => SignUp()
++                      ),
++                          (Route<dynamic> route) => false
++                  );
+                 },
+               ),
+             ],
+Index: test_app/lib/main.dart
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_app/lib/main.dart b/test_app/lib/main.dart
+--- a/test_app/lib/main.dart	(revision c0812a6f55d1007d769a209b3f39042960afea97)
++++ b/test_app/lib/main.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -1,4 +1,4 @@
+-import 'package:flutter/material.dart';
++ import 'package:flutter/material.dart';
+ import 'package:test_app/Screens/IntroScreen.dart';
+ 
+ void main() => runApp( Main() );
+Index: test_app/lib/utils/CredentialController.dart
+===================================================================
+diff --git a/test_app/lib/utils/CredentialController.dart b/test_app/lib/utils/CredentialController.dart
+new file mode 100644
+--- /dev/null	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
++++ b/test_app/lib/utils/CredentialController.dart	(revision d64d156dcb64b44de91a2f0aa1e2705f2c37bcd1)
+@@ -0,0 +1,42 @@
++import 'package:path_provider/path_provider.dart';
++import 'dart:io';
++
++class CredentialController {
++  static Future<String> get _localPath async {
++    final directory = await getApplicationDocumentsDirectory();
++
++    return directory.path;
++  }
++
++  static Future<File> get _localFile async {
++    final path = await _localPath;
++    return File('$path/userCredentials.txt');
++  }
++
++  static Future<File> writeFile( String data ) async {
++    final file = await _localFile;
++
++    // Write the file
++    return file.writeAsString(data);
++  }
++
++  static Future<String> readFile() async {
++    try {
++      final file = await _localFile;
++
++      // Read the file
++      final contents = await file.readAsString();
++      return contents;
++
++    } catch (e) {
++      // If encountering an error, return 0
++      return e.toString();
++    }
++  }
++
++  static Future<File> clearFile() async {
++    final file = await _localFile;
++
++    return file.writeAsString("");
++  }
++}
+\ No newline at end of file
