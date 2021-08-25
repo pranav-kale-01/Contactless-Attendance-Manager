@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:test_app/Cards/InsertBranch.dart';
 import 'package:test_app/Cards/ViewBranch.dart';
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
@@ -9,7 +8,9 @@ import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
 class OrgAdmin extends StatelessWidget {
-  const OrgAdmin({Key? key}) : super(key: key);
+  var data;
+
+  OrgAdmin({Key? key, required this.data }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,23 +33,12 @@ class OrgAdmin extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text( 'insert branch', ),
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => InsertBranch(),
-                  ),
-              );
-            },
-          ),
-          ListTile(
             title: Text( 'View branches', ),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ViewBranch(),
+                  builder: (context) => ViewBranch( userInfo: this.data  ),
                 ),
               );
             },

@@ -6,8 +6,9 @@ import 'package:test_app/utils/CredentialController.dart';
 class HomeScreenBuilder extends StatelessWidget {
   late Widget body;
   late ListView? listView;
+  late AppBar? appbar;
 
-  HomeScreenBuilder( {Key? key, required this.body, this.listView } ) : super( key: key );
+  HomeScreenBuilder( {Key? key, required this.body, this.listView, this.appbar } ) : super( key: key );
 
   @override
   Widget build(BuildContext context) {
@@ -57,11 +58,10 @@ class HomeScreenBuilder extends StatelessWidget {
           : this.listView,
         ),
       ),
-      appBar: AppBar(
+      appBar: this.appbar == null ? AppBar(
           backgroundColor: Color(0xFF10B5FC),
           title: Text('Home'),
-          // centerTitle: true,
-      ),
+      ) : this.appbar ,
       body: this.body,
     );
   }

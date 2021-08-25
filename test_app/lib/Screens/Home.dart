@@ -41,7 +41,6 @@ class _HomeState extends State<Home> {
   Future<void> loadMainScreen( ) async {
     // creating the url to send the data
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get_user.php?UID='${widget.uid}'";
-    print( url ) ;
 
     http.Response response = await http.get(
         Uri.parse(url),
@@ -63,7 +62,7 @@ class _HomeState extends State<Home> {
       else if( this.data['authority'] == 'org-admin' ){
         Navigator.pushReplacement(
             context,
-            MaterialPageRoute( builder: (context) => OrgAdmin() ),
+            MaterialPageRoute( builder: (context) => OrgAdmin( data: this.data) ),
         );
       }
       else if( this.data['authority'] == 'br-admin' ){
@@ -121,17 +120,6 @@ class _HomeState extends State<Home> {
                           ),
                               (Route<dynamic> route) => false
                       );
-
-                      // FirebaseAuth auth = FirebaseAuth.instance;
-                      // auth.signOut().then((res) {
-                      //   Navigator.pushAndRemoveUntil(
-                      //       context,
-                      //       MaterialPageRoute(
-                      //           builder: (context) => SignUp()
-                      //       ),
-                      //           (Route<dynamic> route) => false
-                      //   );
-                      // });
                     },
                   ),
                 ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Cards/InsertOrganization.dart';
 import 'package:test_app/Cards/ManageOrganizationAdmins.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
@@ -21,12 +20,42 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   var nameController = TextEditingController();
   var emailController = TextEditingController();
 
-  late String org_name;
-  late String org_email='';
+  late ScrollController scrollController1 = ScrollController();
+  late ScrollController scrollController2 = ScrollController();
+
+  late String orgName;
+  late String orgEmail='';
 
   late dynamic jsonData;
   List<Widget> organizations = [ ];
 
+  @override
+  void initState() {
+    super.initState() ;
+
+    // adding listeners to scrollController1  and scrollController2
+    scrollController1.addListener(() {
+      scrollController2.animateTo(
+          scrollController1.offset,
+          duration: Duration(milliseconds:1),
+          curve: Curves.bounceInOut
+      );
+    });
+
+    scrollController2.addListener(() {
+      scrollController1.animateTo(
+          scrollController2.offset,
+          duration: Duration(milliseconds:1),
+          curve: Curves.bounceInOut
+      );
+    });
+  }
+
+  Future<void> insertOrg( ) async {
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_org.php?name='${this.orgName}'&mail='${this.orgEmail}'";
+
+    await http.get( Uri.parse( url ) );
+  }
 
   Future<void> viewOrg( ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization";
@@ -39,17 +68,14 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     // clearing organizations list
     organizations.clear();
 
-    // adding header
-    organizations.add( ContainerBuilder( "ID", "NAME", "MAIL",false, false ) );
-
     for (int j = 0; j < jsonData.length; j++) {
       Map<String, dynamic> data = jsonDecode(jsonData[j]);
       // adding the information to the organizations list for displaying
-      organizations.add( ContainerBuilder(data['org_id'], data['org_name'], data['org_mail'], true, true ) );
+      organizations.add( containerBuilder(data['org_id'], data['org_name'], data['org_mail'], true, true ) );
     }
   }
 
-  Future<void> editOrg( String name, String email, String ID ) async {
+  Future<void> editOrg( String name, String email, String id ) async {
     if( name == "" ) {
       showDialog(
           context: context,
@@ -63,7 +89,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
       return;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_org.php?id=$ID&name='$name'&mail='$email'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_org.php?id=$id&name='$name'&mail='$email'";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -77,9 +103,9 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     setState( () {} ) ;
   }
 
-  Widget _buildPopupDialog( String name, String email, String ID ) {
-    this.org_name = name ;
-    this.org_email = email ;
+  Widget _buildPopupDialog( String name, String email, String id ) {
+    this.orgName = name ;
+    this.orgEmail = email ;
 
     return AlertDialog(
       content: Container(
@@ -97,7 +123,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                     labelText: 'Organization Name',
                   ),
                   onChanged: (value) {
-                    this.org_name = value;
+                    this.orgName = value;
                   },
                 ),
               ),
@@ -110,7 +136,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                     labelText: 'Organization Email',
                   ),
                   onChanged: (value) {
-                    this.org_email = value;
+                    this.orgEmail = value;
                   },
                 ),
               ),
@@ -119,7 +145,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                 child: MaterialButton(
                   color: Colors.blue,
                   onPressed: () async {
-                    await editOrg( this.org_name, this.org_email, ID );
+                    await editOrg( this.orgName, this.orgEmail, id );
                   },
                   child: Text(
                     'Edit Organization',
@@ -135,7 +161,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     );
   }
 
-  Widget ContainerBuilder( ID , String name, String mail , bool addEdit, bool addDelete ) {
+  Widget containerBuilder( id , String name, String mail , bool addEdit, bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
       color: Colors.white60,
@@ -148,7 +174,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
               width: 150.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( ID )
+              child: Text( id )
           ),
           Container(
               width: 150.0,
@@ -169,7 +195,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
 
                 showDialog(
                     context: context,
-                    builder: (BuildContext context) => _buildPopupDialog( name , mail , ID),
+                    builder: (BuildContext context) => _buildPopupDialog( name , mail , id),
                 );
               },
               child: Container(
@@ -197,14 +223,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
             height: 50.0,
           ),
           addDelete ? MaterialButton(
-              onPressed: () {
-                // delete the User
-                // String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='${}'";
-                //
-                // http.Response response = await http.get( Uri.parse( url ) );
-                //
-                // print( response.body );
-              },
+              onPressed: () { },
               child: Container(
                 width: 150.0,
                 margin: EdgeInsets.symmetric(horizontal: 20.0 ),
@@ -241,6 +260,74 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
         builder: (context,snapshot) {
           if( snapshot.connectionState == ConnectionState.done ) {
             return HomeScreenBuilder(
+              appbar: AppBar(
+                backgroundColor: Color(0xFF10B5FC),
+                actions: [
+                  Container(
+                    margin: EdgeInsets.symmetric( horizontal: 20.0 ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        // showing the dialog box to add the new user
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      labelText: "Organization Name"
+                                    ),
+                                    onChanged: (value) {
+                                      this.orgName = value;
+                                    },
+                                  ),
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      labelText: "Organization Email"
+                                    ),
+                                    onChanged: (value) {
+                                      this.orgEmail = value;
+                                    },
+                                  ),
+                                  MaterialButton(
+                                    onPressed: () async {
+                                      await insertOrg( );
+
+                                      // popping the current Screen
+                                      Navigator.pop(context);
+
+                                      // reloading current screen
+                                      setState( () {} );
+
+                                      // showing a AlertDialog
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: Text("Organization Added"),
+                                              content: Text("Organization added to the List"),
+                                            );
+                                          }
+                                      );
+                                    },
+                                    child: Text("Add"),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        );
+                      },
+                    ),
+                  )
+                ],
+              ),
               listView: ListView(
                 children: [
                   DrawerHeader(
@@ -265,17 +352,6 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                           context,
                           MaterialPageRoute(
                             builder: (context)=> ViewOrganizations(),
-                          )
-                      );
-                    },
-                  ),
-                  ListTile(
-                    title: Text( 'Add new Organization', ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context)=> InsertOrganization(),
                           )
                       );
                     },
@@ -311,18 +387,37 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                 ],
               ),
               body: Container(
-                  child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child : Container(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: organizations,
+                  color: Colors.blueAccent,
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 1400.0,
+                        alignment: Alignment.center,
+                        child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            controller: scrollController1,
+                            child: containerBuilder( "ID", "NAME", "MAIL", false, false ),
                         ),
                       ),
-                  ),
-                )
+                      Container(
+                        height: MediaQuery.of(context).size.height - 151.0 ,
+                        child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        controller: scrollController2,
+                        child : Container(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: organizations,
+                              ),
+                            ),
+                        ),
+                ),
+                      ),
+                    ],
+                  )
               ),
           );
         }

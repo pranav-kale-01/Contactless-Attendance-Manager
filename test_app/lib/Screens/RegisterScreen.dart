@@ -13,7 +13,8 @@ class RegisterScreen extends StatelessWidget {
 
   Future<void> registerUser(BuildContext context) async {
     // adding the user details to the mysql database
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this._email}'&pass='${this._pass}'&authority='s-admin'&org_id=";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this._email}'&pass='${this._pass}'&authority='s-admin'&orgid=";
+    print(url);
 
     http.Response response = await http.get(
         Uri.parse( url ),
@@ -23,7 +24,13 @@ class RegisterScreen extends StatelessWidget {
         }
     );
 
+    print("decoding data");
+
+    print( response.body );
+
     var data= jsonDecode( response.body );
+
+    print( data.toString() );
 
     // writing the data into a file for future auto logins
     if( !kIsWeb ) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Cards/InsertOrganization.dart';
 import 'package:test_app/Cards/ViewOrganizations.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
@@ -33,7 +32,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     // adding the user details to the mysql database
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}";
 
-    http.Response response = await http.get( Uri.parse( url ) );
+    await http.get( Uri.parse( url ) );
   }
 
   Future<void> viewOrgAdmins( ) async {
@@ -46,7 +45,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     jsonData = jsonDecode( response.body ) ;
 
     // adding header
-    organizations.add( containerBuilder( "ID", 'username', 'org_id', false , false ) );
+    // organizations.add( containerBuilder( "ID", 'username', 'org_id', false , false ) );
 
     for (int j = 0; j < jsonData.length; j++) {
       Map<String, dynamic> data = jsonDecode(jsonData[j]);
@@ -54,87 +53,9 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
       if( data['authority'] == 'org-admin' )
         organizations.add( containerBuilder(data['UID'], data['username'], data['org_id'], true, true) );
     }
-
-    // adding a add new organization admin button at the last
-    organizations.add(
-        Container(
-          alignment: Alignment.center,
-          child: MaterialButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context ) {
-                    return AlertDialog(
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            onChanged: (value) {
-                              this.username = value;
-                            },
-                            decoration: InputDecoration(
-                              labelText: "user email"
-                            ),
-                          ),
-                          TextField(
-                            onChanged: (value) {
-                              this.orgID = value;
-                            },
-                            decoration: InputDecoration(
-                                labelText: "organization ID"
-                            ),
-                          ),
-                          TextField(
-                            onChanged: (value) {
-                              this.password = value;
-                            },
-                            decoration: InputDecoration(
-                              labelText: "password",
-                            ),
-                          ),
-                          MaterialButton(
-                            onPressed: () {
-                              // adding the user to the users table
-                              insertOrgAdmin();
-
-                              // closing the Popup
-                              Navigator.pop(context);
-
-                              // showing the confirmation message
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context ) {
-                                    return AlertDialog(
-                                      title: Text("User Added Successfully"),
-                                    );
-                                  }
-                              );
-                              
-                              setState( ( ) {} );
-                            },
-                            child: Text("Add"),
-                          )
-                        ]
-                      ),
-                    );
-                  }
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  Icons.add,
-                  color: Colors.blue,
-                ),
-                Text("Add new Organization Admin"),
-              ],
-            ),
-          ),
-        )
-    );
   }
 
-  Container containerBuilder( UID , String username, String orgID , bool addEdit, bool addDelete ) {
+  Container containerBuilder( uid , String username, String orgID , bool addEdit, bool addDelete ) {
     return Container(
       color: Colors.white60,
       padding: EdgeInsets.all( 20.0 ),
@@ -146,7 +67,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
               width: 150.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( UID )
+              child: Text( uid )
           ),
           Container(
               width: 150.0,
@@ -181,7 +102,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                             ),
                             MaterialButton(
                               onPressed: () async {
-                                String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$UID&name='${this.username}'";
+                                String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$uid&name='${this.username}'";
                                 print( url );
 
                                 http.Response response = await http.get( Uri.parse( url ) );
@@ -284,6 +205,80 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
         builder: (context,snapshot) {
           if( snapshot.connectionState == ConnectionState.done ) {
             return HomeScreenBuilder(
+              appbar: AppBar(
+                backgroundColor: Color(0xFF10B5FC),
+                actions: [
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20.0),
+                    child: IconButton(
+                      icon: Icon(
+                          Icons.add,
+                          color: Colors.white,
+                      ),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context ) {
+                              return AlertDialog(
+                                content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextField(
+                                        onChanged: (value) {
+                                          this.username = value;
+                                        },
+                                        decoration: InputDecoration(
+                                            labelText: "user email"
+                                        ),
+                                      ),
+                                      TextField(
+                                        onChanged: (value) {
+                                          this.orgID = value;
+                                        },
+                                        decoration: InputDecoration(
+                                            labelText: "organization ID"
+                                        ),
+                                      ),
+                                      TextField(
+                                        onChanged: (value) {
+                                          this.password = value;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: "password",
+                                        ),
+                                      ),
+                                      MaterialButton(
+                                        onPressed: () {
+                                          // adding the user to the users table
+                                          insertOrgAdmin();
+
+                                          // closing the Popup
+                                          Navigator.pop(context);
+
+                                          // showing the confirmation message
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context ) {
+                                                return AlertDialog(
+                                                  title: Text("User Added Successfully"),
+                                                );
+                                              }
+                                          );
+
+                                          setState( ( ) {} );
+                                        },
+                                        child: Text("Add"),
+                                      )
+                                    ]
+                                ),
+                              );
+                            }
+                        );
+                      },
+                    ),
+                  ),
+                ]
+              ),
               listView: ListView(
                 children: [
                   DrawerHeader(
@@ -308,17 +303,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           context,
                           MaterialPageRoute(
                             builder: (context)=> ViewOrganizations(),
-                          )
-                      );
-                    },
-                  ),
-                  ListTile(
-                    title: Text( 'Add new Organization', ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context)=> InsertOrganization(),
                           )
                       );
                     },
@@ -354,16 +338,33 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                 ],
               ),
               body: Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child : Container(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Column(
-                          children: organizations,
+                  alignment: Alignment.center,
+                  color: Colors.blueAccent,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 1400.0,
+                        alignment: Alignment.center,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: containerBuilder( "ID", 'username', 'org_id', false , false ),
                         ),
                       ),
-                    ),
+                      Container(
+                        height: MediaQuery.of(context).size.height - 151.0 ,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child : Container(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                children: organizations,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   )
               ),
             );
