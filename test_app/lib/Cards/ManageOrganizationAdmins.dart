@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Cards/ViewOrganizations.dart';
+import 'package:test_app/Cards/ManageOrganizations.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
@@ -25,8 +25,13 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   late String password;
   late String orgID;
 
+  int? index = 0 ;
+
   late dynamic jsonData;
-  List<Container> organizations = [ ];
+  List<Container> orgAdmins = [ ];
+  List<DropdownMenuItem<int>> _items = [];
+  List<String> orgIDs = [];
+
 
   Future<void> insertOrgAdmin( ) async {
     // adding the user details to the mysql database
@@ -36,26 +41,54 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   }
 
   Future<void> viewOrgAdmins( ) async {
-    organizations.clear();
+    orgAdmins.clear();
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=authority&post='org-admin'";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
     jsonData = jsonDecode( response.body ) ;
 
-    // adding header
-    // organizations.add( containerBuilder( "ID", 'username', 'org_id', false , false ) );
-
     for (int j = 0; j < jsonData.length; j++) {
       Map<String, dynamic> data = jsonDecode(jsonData[j]);
       // adding the information to the organizations list for displaying
-      if( data['authority'] == 'org-admin' )
-        organizations.add( containerBuilder(data['UID'], data['username'], data['org_id'], true, true) );
+      orgAdmins.add( containerBuilder(data['UID'], data['username'], data['org_id'], data['branch_id'], true, true) );
     }
   }
 
-  Container containerBuilder( uid , String username, String orgID , bool addEdit, bool addDelete ) {
+  Future<void> viewOrg( ) async {
+    int j;
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=";
+
+    http.Response response = await http.get( Uri.parse( url ) );
+
+    jsonData = jsonDecode( response.body ) ;
+
+    // clearing organizations list
+    _items.clear();
+    orgIDs.clear();
+
+    for ( j = 0; j < jsonData.length; j++) {
+      Map<String, dynamic> data = jsonDecode(jsonData[j]);
+
+      // adding the information to the organizations list for displaying
+      _items.add( DropdownMenuItem(
+          value: j,
+          child: Text( data['org_name'] ),
+        ),
+      );
+
+      orgIDs.add( data['org_id'] );
+    }
+
+    // adding a blank Entry
+    DropdownMenuItem(
+      value:j,
+      child: Text(""),
+    );
+  }
+
+  Container containerBuilder( uid , String username, String orgID , String? branchID, bool addEdit, bool addDelete ) {
     return Container(
       color: Colors.white60,
       padding: EdgeInsets.all( 20.0 ),
@@ -80,6 +113,12 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
               child: Text( orgID )
+          ),
+          Container(
+              width: 150.0,
+              height: 50.0,
+              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+              child: Text( branchID == null ? 'Null' : branchID ),
           ),
           addEdit ? MaterialButton(
               onPressed: () {
@@ -199,6 +238,14 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   }
 
   @override
+  void initState( ) {
+    super.initState();
+
+    // getting all the organization names for later use
+    viewOrg();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: viewOrgAdmins(),
@@ -217,62 +264,75 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                       ),
                       onPressed: () {
                         showDialog(
-                            context: context,
-                            builder: (BuildContext context ) {
-                              return AlertDialog(
-                                content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextField(
-                                        onChanged: (value) {
-                                          this.username = value;
-                                        },
-                                        decoration: InputDecoration(
-                                            labelText: "user email"
-                                        ),
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              content:Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextField(
+                                      onChanged: (value) {
+                                        this.username = value;
+                                      },
+                                      decoration: InputDecoration(
+                                          labelText: "user email"
                                       ),
-                                      TextField(
-                                        onChanged: (value) {
-                                          this.orgID = value;
-                                        },
-                                        decoration: InputDecoration(
-                                            labelText: "organization ID"
-                                        ),
+                                    ),
+                                    StatefulBuilder(
+                                      builder: (BuildContext context, StateSetter setState ) {
+                                        return Container(
+                                          padding: EdgeInsets.zero,
+                                          margin: EdgeInsets.zero,
+                                          child: DropdownButton(
+                                            isExpanded: true,
+                                            value: index,
+                                            items: _items,
+                                            onChanged: (int? value) {
+                                              print(value);
+                                              this.orgID = orgIDs[value!];
+                                              setState(() =>
+                                              index =
+                                                  _items[value].value);
+                                            },
+                                          ),
+                                        );
+                                      }
+                                    ),
+                                    TextField(
+                                      onChanged: (value) {
+                                        this.password = value;
+                                      },
+                                      decoration: InputDecoration(
+                                        labelText: "password",
                                       ),
-                                      TextField(
-                                        onChanged: (value) {
-                                          this.password = value;
-                                        },
-                                        decoration: InputDecoration(
-                                          labelText: "password",
-                                        ),
-                                      ),
-                                      MaterialButton(
-                                        onPressed: () {
-                                          // adding the user to the users table
-                                          insertOrgAdmin();
+                                    ),
+                                    MaterialButton(
+                                      onPressed: () {
+                                        // adding the user to the users table
+                                        insertOrgAdmin();
 
-                                          // closing the Popup
-                                          Navigator.pop(context);
+                                        // closing the Popup
+                                        Navigator.pop(context);
 
-                                          // showing the confirmation message
-                                          showDialog(
-                                              context: context,
-                                              builder: (BuildContext context ) {
-                                                return AlertDialog(
-                                                  title: Text("User Added Successfully"),
-                                                );
-                                              }
-                                          );
+                                        // showing the confirmation message
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context ) {
+                                              return AlertDialog(
+                                                title: Text("User Added Successfully"),
+                                              );
+                                            }
+                                        );
 
-                                          setState( ( ) {} );
-                                        },
-                                        child: Text("Add"),
-                                      )
-                                    ]
-                                ),
-                              );
-                            }
+                                        setState( ( ) {} );
+                                      },
+                                      child: Text("Add"),
+                                    )
+                                  ]
+                              )
+
+                            );
+                          }
                         );
                       },
                     ),
@@ -347,7 +407,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                         alignment: Alignment.center,
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          child: containerBuilder( "ID", 'username', 'org_id', false , false ),
+                          child: containerBuilder( "ID", 'username', 'Organization ID', 'Branch ID', false , false ),
                         ),
                       ),
                       Container(
@@ -358,7 +418,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.vertical,
                               child: Column(
-                                children: organizations,
+                                children: orgAdmins,
                               ),
                             ),
                           ),

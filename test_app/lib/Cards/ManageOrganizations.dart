@@ -20,36 +20,12 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   var nameController = TextEditingController();
   var emailController = TextEditingController();
 
-  late ScrollController scrollController1 = ScrollController();
-  late ScrollController scrollController2 = ScrollController();
 
   late String orgName;
   late String orgEmail='';
 
   late dynamic jsonData;
   List<Widget> organizations = [ ];
-
-  @override
-  void initState() {
-    super.initState() ;
-
-    // adding listeners to scrollController1  and scrollController2
-    scrollController1.addListener(() {
-      scrollController2.animateTo(
-          scrollController1.offset,
-          duration: Duration(milliseconds:1),
-          curve: Curves.bounceInOut
-      );
-    });
-
-    scrollController2.addListener(() {
-      scrollController1.animateTo(
-          scrollController2.offset,
-          duration: Duration(milliseconds:1),
-          curve: Curves.bounceInOut
-      );
-    });
-  }
 
   Future<void> insertOrg( ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_org.php?name='${this.orgName}'&mail='${this.orgEmail}'";
@@ -58,7 +34,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   }
 
   Future<void> viewOrg( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -396,7 +372,6 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                         alignment: Alignment.center,
                         child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            controller: scrollController1,
                             child: containerBuilder( "ID", "NAME", "MAIL", false, false ),
                         ),
                       ),
@@ -404,7 +379,6 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                         height: MediaQuery.of(context).size.height - 151.0 ,
                         child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        controller: scrollController2,
                         child : Container(
                             child: SingleChildScrollView(
                               scrollDirection: Axis.vertical,

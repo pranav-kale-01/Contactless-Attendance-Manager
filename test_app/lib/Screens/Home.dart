@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:test_app/Screens/BranchAdmin.dart';
 import 'package:test_app/Screens/OrgAdmin.dart';
 import 'package:test_app/utils/Location.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
-import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Screens/Employee.dart';
 import 'package:test_app/Screens/SuperAdmin.dart';
 
@@ -77,10 +77,7 @@ class _HomeState extends State<Home> {
           MaterialPageRoute( builder: (context) => Employee() ),
         );
       }
-
     }
-    else
-      print('No such user');
   }
 
   @override
@@ -88,49 +85,7 @@ class _HomeState extends State<Home> {
     return FutureBuilder(
       future: loadMainScreen(),
       builder: (context, snapshot) {
-        if( snapshot.connectionState == ConnectionState.done ){
-          // data fetched successfully, perform further processes
-          return MaterialApp(
-            home: HomeScreenBuilder(
-              listView: ListView(
-                children: [
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [
-                              Colors.blue,
-                              Colors.blueAccent,
-                              Colors.lightBlueAccent,
-                            ]
-                        )
-                    ),
-                    child: Icon(
-                      Icons.account_circle,
-                      color: Colors.white,
-                    ),
-                  ),
-                  ListTile(
-                    title: Text( 'Sign Out', ),
-                    onTap: () {
-                      // Signing the User Out
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SignUp()
-                          ),
-                              (Route<dynamic> route) => false
-                      );
-                    },
-                  ),
-                ],
-              ),
-              body: GradientContainer(
-                  child: null,
-              ),
-            ),
-          );
-        }
-        else if( snapshot.hasError == true ) {
+         if( snapshot.hasError == true ) {
           // failed to fetch the location
           return MaterialApp(
               home: HomeScreenBuilder(
@@ -145,7 +100,7 @@ class _HomeState extends State<Home> {
               )
           );
         }
-        else{
+        else {
           return SafeArea(
             child: GradientContainer(
               child: CircularProgressIndicator(),
