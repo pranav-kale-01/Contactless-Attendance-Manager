@@ -25,7 +25,7 @@ class _ViewBranchState extends State<ViewBranch> {
 
   // initialize the branches list
   Future<void> _init() async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 

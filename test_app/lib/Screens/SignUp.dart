@@ -77,52 +77,60 @@ class SignUp extends StatelessWidget {
   @override
   Widget build( BuildContext context ) {
     return Scaffold(
-        body: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextField(
-                  onChanged: (value) {
-                    this._email = value;
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'email',
-                  ),
-                ),
-                TextField(
-                  onChanged: (value) {
-                    this._pass = value;
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'password',
-                  ),
-                  obscureText: true,
-                ),
-                MaterialButton(
-                    onPressed: () {
-                        registerToFb( context );
-                    },
-                    child: Text('Sign In'),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegisterScreen(),
-                        ),
-                    );
-                  },
-                  child: Text(
-                    'new user? Sign up here',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
+        body: Center(
+          child: Container(
+            alignment: Alignment.center,
+            width: 400.0,
+            child: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      onChanged: (value) {
+                        this._email = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'email',
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            )
+                    TextField(
+                      onChanged: (value) {
+                        this._pass = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'password',
+                      ),
+                      obscureText: true,
+                    ),
+                    MaterialButton(
+                        onPressed: () {
+                            registerToFb( context );
+                        },
+                        child: Text('Sign In'),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RegisterScreen(),
+                            ),
+                        );
+                      },
+                      child: Text(
+                        'new user? Sign up here',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+            ),
+          ),
         )
     );
   }

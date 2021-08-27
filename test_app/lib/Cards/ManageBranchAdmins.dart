@@ -23,8 +23,268 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
   List<Widget> users = [];
 
+  var nameController = TextEditingController();
+  var emailController = TextEditingController();
+
+  late String username;
+  late String password;
+  late String orgID;
+  late String branchID;
+
+  int? index = 0 ;
+  int? index2 = 0 ;
+
+  late dynamic jsonData;
+  List<Container> orgAdmins = [ ];
+  List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("") ) ];
+
+  List<String> orgIDs = [];
+  List<String> branchIDs = [];
+
+  Future<void> insertBranchAdmin( ) async {
+    // confirming that username is not empty
+    if( this.username == '' ) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context ) {
+            return AlertDialog(
+              title: Text("Field Username cannot be empty"),
+            );
+          }
+      );
+      return;
+    }
+    else if( this.password == '' ) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context ) {
+            return AlertDialog(
+              title: Text("Field Password cannot be empty"),
+            );
+          }
+      );
+      return;
+    }
+    else{
+      // adding the user details to the mysql database
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
+
+      await http.get( Uri.parse( url ) );
+
+      // closing the Popup
+      Navigator.pop(context);
+
+      // showing the confirmation message
+      showDialog(
+          context: context,
+          builder: (BuildContext context ) {
+            return AlertDialog(
+              title: Text("User Added Successfully"),
+            );
+          }
+      );
+
+      setState( ( ) {} );
+    }
+  }
+
+  Future<void> setBranches( ) async {
+    int i;
+
+    print(widget.userInfo['org_id']);
+
+    // getting all the branches of the current organization
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=";
+
+    http.Response response = await http.get( Uri.parse(url) );
+    List<dynamic> jsonData = jsonDecode( response.body );
+
+    // clearing the previous list
+    _branches.clear();
+    branchIDs.clear();
+
+    // checking if there are no branches, then adding an empty branch
+    if( jsonData.length == 0 ) {
+      // adding a blank entry
+      _branches.add(
+        DropdownMenuItem(
+          value: 0,
+          child: Text(''),
+        ),
+      ) ;
+
+      return;
+    }
+
+    // adding the data to _branches
+    for( i=0; i< jsonData.length ; i++ ) {
+      Map<String,dynamic> data = jsonDecode( jsonData[i] );
+
+      _branches.add(
+        DropdownMenuItem(
+          value: i,
+          child: Text( data['branch_name'] ),
+        ),
+      ) ;
+
+      branchIDs.add( data['branch_id'] );
+
+      // setting the default value for branchID
+      branchID = branchIDs[0];
+    }
+  }
+
+  Container containerBuilder( uid , String username, String orgID , String? branchID, bool addEdit, bool addDelete ) {
+    return Container(
+      color: Colors.white60,
+      padding: EdgeInsets.all( 20.0 ),
+      margin: EdgeInsets.all( 2.5 ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Container(
+              width: 150.0,
+              height: 50.0,
+              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+              child: Text( uid )
+          ),
+          Container(
+              width: 150.0,
+              height: 50.0,
+              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+              child: Text( username )
+          ),
+          Container(
+              width: 150.0,
+              height: 50.0,
+              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+              child: Text( orgID )
+          ),
+          Container(
+            width: 150.0,
+            height: 50.0,
+            margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+            child: Text( branchID == null ? 'Null' : branchID ),
+          ),
+          addEdit ? MaterialButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context ) {
+                    this.username = username;
+
+                    return AlertDialog(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            onChanged: (value) {
+                              this.username = value;
+                            },
+                            decoration: InputDecoration(
+                              labelText: "username",
+                            ),
+                          ),
+                          MaterialButton(
+                            onPressed: () async {
+                              String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$uid&name='${this.username}'";
+
+                              http.Response response = await http.get( Uri.parse( url ) );
+
+                              // if response.body == 1, editing user details was successful
+                              if( response.body == '1') {
+                                Navigator.pop( context );
+
+                                setState(() { });
+                              }
+                            },
+                            child: Text("Edit"),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+              );
+            },
+            child: Container(
+              width: 150.0,
+              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(
+                    Icons.edit,
+                    color: Colors.black,
+                  ),
+                  Text(
+                    'Edit',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ) : Container(
+            width: 210.0,
+            height: 50.0,
+          ),
+          addDelete? MaterialButton(
+              onPressed: () async {
+                // delete the User
+                String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$username'";
+
+                http.Response response = await http.get( Uri.parse( url ) );
+
+                if( response.body == "1" ) {
+
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Text("User Deleted.."),
+                        );
+                      }
+                  );
+
+                  setState( () {} );
+                }
+              },
+              child: Container(
+                width: 150.0,
+                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Icon(
+                      Icons.indeterminate_check_box_outlined,
+                      color: Colors.red,
+                    ),
+                    Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: Colors.red,
+                        decoration: TextDecoration.underline,
+                      ),
+                    )
+                  ],
+                ),
+              )
+          ) : Container(
+            width: 210.0,
+            height: 50.0,
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _init() async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=authority&post='branch-admin';";
+    // getting the list of organizations for later use
+    setBranches();
+
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=authority&post='br-admin'&condition2=org_id&post2=${widget.userInfo['org_id']}";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 
@@ -48,98 +308,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     }
   }
 
-  Widget containerBuilder( String id , String  username, String orgID ,String authority , bool addEdit, bool addDelete ) {
-    return Container(
-      alignment: Alignment.centerLeft,
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.symmetric(vertical: 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 50.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( id )
-          ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( username )
-          ),
-          Container(
-              width: 100.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( orgID )
-          ),
-          Container(
-              width: 100.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( authority )
-          ),
-          addEdit ? MaterialButton(
-              onPressed: () {
-                // edit user
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: Colors.black,
-                    ),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-          addDelete ? MaterialButton(
-              onPressed: () {
-                // delete user
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context ) {
     return FutureBuilder(
@@ -157,8 +325,73 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                         color: Colors.white,
                       ),
                       onPressed: () {
-                        // showing the insert user popup
+                        // showing the popup to insert users
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context ) {
+                              return AlertDialog(
+                                  content:Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          onChanged: (value) {
+                                            this.username = value;
+                                          },
+                                          decoration: InputDecoration(
+                                              labelText: "user email"
+                                          ),
+                                        ),
+                                        StatefulBuilder(
+                                            builder: (BuildContext context, StateSetter setState ) {
+                                              return Container(
+                                                padding: EdgeInsets.zero,
+                                                margin: EdgeInsets.zero,
+                                                child: DropdownButton(
+                                                  isExpanded: true,
+                                                  value: index2,
+                                                  items: _branches,
+                                                  onChanged: (int? value) {
+                                                      this.branchID = branchIDs[value!];
+                                                      setState(() => index2 = _branches[value].value );
+                                                  },
+                                                ),
+                                              );
+                                            }
+                                        ),
+                                        TextField(
+                                          onChanged: (value) {
+                                            this.password = value;
+                                          },
+                                          decoration: InputDecoration(
+                                            labelText: "password",
+                                          ),
+                                        ),
+                                        MaterialButton(
+                                          onPressed: () {
+                                            // confirming that user has selected a branch
+                                            if( _branches[0].child.toString() == 'Text("")' ) {
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext context ) {
+                                                    return AlertDialog(
+                                                      content: Text("No branch available"),
+                                                    );
+                                                  }
+                                              );
+                                            }
+                                            else {
+                                              // adding the user to the users table
+                                              insertBranchAdmin();
+                                            }
+                                          },
+                                          child: Text("Add"),
+                                        )
+                                      ]
+                                  )
 
+                              );
+                            }
+                        );
                       },
                     ),
                   )
@@ -251,7 +484,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                               ),
                             ),
                           ),
-                        )
+                        ),
                     ),
                   ],
                 ),

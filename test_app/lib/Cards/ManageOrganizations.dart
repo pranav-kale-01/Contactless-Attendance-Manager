@@ -34,7 +34,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   }
 
   Future<void> viewOrg( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=&condition2=&post2=";
 
     http.Response response = await http.get( Uri.parse( url ) );
 

@@ -24,18 +24,24 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   late String username;
   late String password;
   late String orgID;
+  late String branchID;
 
   int? index = 0 ;
+  int? index2 = 0 ;
 
   late dynamic jsonData;
   List<Container> orgAdmins = [ ];
-  List<DropdownMenuItem<int>> _items = [];
+
+  List<DropdownMenuItem<int>> _organizations = [];
+  List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("") ) ];
+
   List<String> orgIDs = [];
+  List<String> branchIDs = [];
 
 
   Future<void> insertOrgAdmin( ) async {
     // adding the user details to the mysql database
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&br_id=";
 
     await http.get( Uri.parse( url ) );
   }
@@ -43,7 +49,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   Future<void> viewOrgAdmins( ) async {
     orgAdmins.clear();
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=authority&post='org-admin'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=authority&post='org-admin'&condition2=&post2=";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -58,21 +64,21 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
   Future<void> viewOrg( ) async {
     int j;
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=&condition2=&post2=";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
     jsonData = jsonDecode( response.body ) ;
 
     // clearing organizations list
-    _items.clear();
+    _organizations.clear();
     orgIDs.clear();
 
     for ( j = 0; j < jsonData.length; j++) {
       Map<String, dynamic> data = jsonDecode(jsonData[j]);
 
       // adding the information to the organizations list for displaying
-      _items.add( DropdownMenuItem(
+      _organizations.add( DropdownMenuItem(
           value: j,
           child: Text( data['org_name'] ),
         ),
@@ -86,6 +92,47 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
       value:j,
       child: Text(""),
     );
+  }
+
+  Future<void> setBranches( ID ) async {
+    int i;
+
+    // getting all the branches of the current organization
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=$ID&condition2=&post2=";
+
+    http.Response response = await http.get( Uri.parse(url) );
+    List<dynamic> jsonData = jsonDecode( response.body );
+
+    // clearing the previous list
+    _branches.clear();
+    branchIDs.clear();
+
+    // checking if there are no branches, then adding an empty branch
+    if( jsonData.length == 0 ) {
+      // adding a blank entry
+      _branches.add(
+        DropdownMenuItem(
+          value: 0,
+          child: Text(''),
+        ),
+      ) ;
+
+      return;
+    }
+
+    // adding the data to _branches
+    for( i=0; i< jsonData.length ; i++ ) {
+      Map<String,dynamic> data = jsonDecode( jsonData[i] );
+
+      _branches.add(
+        DropdownMenuItem(
+          value: i,
+          child: Text( data['branch_name'] ),
+        ),
+      ) ;
+
+      branchIDs.add( data['branch_id'] );
+    }
   }
 
   Container containerBuilder( uid , String username, String orgID , String? branchID, bool addEdit, bool addDelete ) {
@@ -142,7 +189,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                             MaterialButton(
                               onPressed: () async {
                                 String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$uid&name='${this.username}'";
-                                print( url );
 
                                 http.Response response = await http.get( Uri.parse( url ) );
 
@@ -191,8 +237,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                 String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$username'";
 
                 http.Response response = await http.get( Uri.parse( url ) );
-
-                print( response.body );
 
                 if( response.body == "1" ) {
 
@@ -263,6 +307,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           color: Colors.white,
                       ),
                       onPressed: () {
+                        // showing the popup to insert users
                         showDialog(
                           context: context,
                           builder: (BuildContext context ) {
@@ -280,21 +325,30 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                                     ),
                                     StatefulBuilder(
                                       builder: (BuildContext context, StateSetter setState ) {
-                                        return Container(
-                                          padding: EdgeInsets.zero,
-                                          margin: EdgeInsets.zero,
-                                          child: DropdownButton(
-                                            isExpanded: true,
-                                            value: index,
-                                            items: _items,
-                                            onChanged: (int? value) {
-                                              print(value);
-                                              this.orgID = orgIDs[value!];
-                                              setState(() =>
-                                              index =
-                                                  _items[value].value);
-                                            },
-                                          ),
+                                        return Column(
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.zero,
+                                              margin: EdgeInsets.zero,
+                                              child: DropdownButton(
+                                                isExpanded: true,
+                                                value: index,
+                                                items: _organizations,
+                                                onChanged: (int? value) async {
+                                                  this.orgID = orgIDs[value!];
+                                                  index = _organizations[value].value ;
+
+                                                  // getting the branches of the current organization
+                                                  await setBranches( this.orgID );
+
+                                                  // setting the index2 to 0
+                                                  index2 = 0;
+
+                                                  setState( () { } );
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         );
                                       }
                                     ),
