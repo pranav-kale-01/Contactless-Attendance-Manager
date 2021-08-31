@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Cards/ManageOrganizationAdmins.dart';
+import 'package:test_app/Cards/ManageBranch.dart';
+import 'package:test_app/Cards/ManageBranchAdmins.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
@@ -20,7 +22,6 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   var nameController = TextEditingController();
   var emailController = TextEditingController();
 
-
   late String orgName;
   late String orgEmail='';
 
@@ -34,20 +35,22 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   }
 
   Future<void> viewOrg( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=&condition2=&post2=";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition&post&condition2&post2&custom";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
-
     jsonData = jsonDecode( response.body ) ;
+
+    if( jsonData == 'false') {
+      return;
+    }
 
     // clearing organizations list
     organizations.clear();
 
     for (int j = 0; j < jsonData.length; j++) {
-      Map<String, dynamic> data = jsonDecode(jsonData[j]);
       // adding the information to the organizations list for displaying
-      organizations.add( containerBuilder(data['org_id'], data['org_name'], data['org_mail'], true, true ) );
+      organizations.add( containerBuilder(jsonData[j], true, true ) );
     }
   }
 
@@ -137,7 +140,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     );
   }
 
-  Widget containerBuilder( id , String name, String mail , bool addEdit, bool addDelete ) {
+  Widget containerBuilder( var data , bool addEdit, bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
       color: Colors.white60,
@@ -150,33 +153,28 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
               width: 150.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( id )
+              child: Text( data['org_name'] )
           ),
           Container(
               width: 150.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( name )
-          ),
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( mail )
+              child: Text( data['org_mail'] )
           ),
           addEdit? MaterialButton(
               onPressed: () {
-                nameController.text= name ;
-                emailController.text= mail ;
+                nameController.text= data['org_name'] ;
+                emailController.text= data['org_mail'] ;
 
                 showDialog(
                     context: context,
-                    builder: (BuildContext context) => _buildPopupDialog( name , mail , id),
+                    builder: (BuildContext context) => _buildPopupDialog( data['org_name'], data['org_mail'] , data['org_id'] ),
                 );
               },
               child: Container(
                 width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                margin: EdgeInsets.symmetric( horizontal: 20.0 ),
+                padding: EdgeInsets.all(20.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -198,28 +196,36 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
             width: 210.0,
             height: 50.0,
           ),
-          addDelete ? MaterialButton(
-              onPressed: () { },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                          Icons.indeterminate_check_box_outlined,
-                          color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
+          addDelete? Container(
+            width: 150.0,
+            margin: EdgeInsets.symmetric( horizontal: 20.0 ),
+            child: PopupMenuButton(
+              padding: EdgeInsets.all(20.0),
+              offset: Offset(10.0,0.0),
+              icon: Icon( Icons.more_horiz ),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 0,
+                  child: Text("Manage Branches"),
                 ),
-              )
+                PopupMenuItem(
+                  value: 2,
+                  child: Text("Manage Branch Admins"),
+                ),
+              ],
+              onSelected: (int value) {
+                if(value == 0) {
+                  print("Manage branches");
+
+                  _showBranchesDialog( context , data );
+                }
+                else {
+                  print("Manage Branch Admins");
+
+                  _showBranchAdminsDialog( context, data );
+                }
+              },
+            ),
           ) : Container(
             width: 210.0,
             height: 50.0,
@@ -229,12 +235,50 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     );
   }
 
+  void _showBranchesDialog( context, data ) async {
+    // Creating new object of ViewBranch
+    ViewBranch obj = ViewBranch( setState: setState, context: context, userInfo: data );
+
+    // initializing obj
+    await obj.init();
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              child: obj.branchViewBuilder(),
+            ),
+          );
+        }
+    );
+  }
+
+  void _showBranchAdminsDialog(context, data ) async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              child: ManageBranchAdmins( userInfo: data, context: context,  setState: setState, ),
+            ),
+          );
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: viewOrg(),
         builder: (context,snapshot) {
           if( snapshot.connectionState == ConnectionState.done ) {
+            Map<String,dynamic> header = {
+              'org_name': "Name",
+              'org_id': "ID",
+              'org_mail': "Mail",
+            };
+
             return HomeScreenBuilder(
               appbar: AppBar(
                 backgroundColor: Color(0xFF10B5FC),
@@ -372,11 +416,11 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                         alignment: Alignment.center,
                         child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            child: containerBuilder( "ID", "NAME", "MAIL", false, false ),
+                            child: containerBuilder( header , false, false ),
                         ),
                       ),
                       Container(
-                        height: MediaQuery.of(context).size.height - 151.0 ,
+                        height: MediaQuery.of(context).size.height - 165.0 ,
                         child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child : Container(

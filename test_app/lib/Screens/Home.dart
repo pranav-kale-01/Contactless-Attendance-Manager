@@ -68,7 +68,7 @@ class _HomeState extends State<Home> {
       else if( this.data['authority'] == 'br-admin' ){
         Navigator.pushReplacement(
             context,
-            MaterialPageRoute( builder: (context) => BranchAdmin() ),
+            MaterialPageRoute( builder: (context) => BranchAdmin( data: this.data ) ),
         );
       }
       else {

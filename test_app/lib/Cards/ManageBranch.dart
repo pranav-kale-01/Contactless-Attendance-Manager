@@ -12,20 +12,19 @@ import 'dart:convert';
 
 class ViewBranch extends StatefulWidget {
   final userInfo;
-
-  ViewBranch({Key? key, required this.userInfo }) : super(key: key);
-
-  @override
-  _ViewBranchState createState() => _ViewBranchState();
-}
-
-class _ViewBranchState extends State<ViewBranch> {
-
+  final context;
+  final StateSetter setState;
   List<Widget> branches = [];
 
+  ViewBranch({Key? key, required this.userInfo, this.context, required this.setState}) : super(key: key);
+
+  @override
+  ViewBranchState createState() => ViewBranchState();
+
+
   // initialize the branches list
-  Future<void> _init() async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=";
+  Future<void> init() async {
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${userInfo['org_id']}&condition2=&post2=&custom";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 
@@ -34,15 +33,15 @@ class _ViewBranchState extends State<ViewBranch> {
     }
     else {
       // decoding the data
-      var data = jsonDecode( response.body );
+      var jsonData = jsonDecode( response.body );
 
       // clearing the previous list
       branches.clear();
 
       // insert the data to the branches list
-      for (int j = 0; j < data.length ; j++) {
-        Map<String, dynamic> jsonData = jsonDecode( data[j]);
-        branches.add( containerBuilder( jsonData['org_id'], jsonData['branch_id'], jsonData['branch_name'], jsonData['address'], true , true ) );
+      for (int j = 0; j < jsonData.length ; j++) {
+        Map<String, dynamic> data =  jsonData[j];
+        branches.add( containerBuilder( data , true , true ) );
       }
     }
   }
@@ -96,7 +95,7 @@ class _ViewBranchState extends State<ViewBranch> {
       return ;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_branch.php?org_id='${widget.userInfo['org_id']}'&name='$branchName'&address='$address'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_branch.php?org_id='${userInfo['org_id']}'&name='$branchName'&address='$address'";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 
@@ -187,12 +186,12 @@ class _ViewBranchState extends State<ViewBranch> {
       Navigator.pop(context);
 
       showDialog(
-        context: context,
-        builder: ( BuildContext context ) {
-          return AlertDialog(
-            content: Text("Edit saved Successfully"),
-          );
-        }
+          context: context,
+          builder: ( BuildContext context ) {
+            return AlertDialog(
+              content: Text("Edit saved Successfully"),
+            );
+          }
       );
     }
     else{
@@ -220,7 +219,7 @@ class _ViewBranchState extends State<ViewBranch> {
     }
   }
 
-  Widget containerBuilder( String id , String  branchID, String branchName ,String  address , bool addEdit,bool addDelete ) {
+  Widget containerBuilder( data  , bool addEdit,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
       color: Colors.white60,
@@ -230,83 +229,77 @@ class _ViewBranchState extends State<ViewBranch> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Container(
-              width: 50.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( id )
-          ),
-          Container(
               width: 100.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( branchID )
+              child: Text( data['branch_id'] )
           ),
           Container(
               width: 200.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( branchName )
+              child: Text( data['branch_name'] )
           ),
           Container(
               width: 300.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( address )
+              child: Text( data['address'] )
           ),
           addEdit ? MaterialButton(
               onPressed: () {
                 // edit branch
                 showDialog(
-                  context: context,
-                  builder: (BuildContext context ) {
-                    String _branchName = branchName ;
-                    String _address = address ;
+                    context: context,
+                    builder: (BuildContext context ) {
+                      String _branchName = data['branch_name'] ;
+                      String _address = data['address'] ;
 
-                    var branchNameController = TextEditingController();
-                    var addressController = TextEditingController();
+                      var branchNameController = TextEditingController();
+                      var addressController = TextEditingController();
 
-                    branchNameController.text = branchName ;
-                    addressController.text = address ;
+                      branchNameController.text = data['branch_name'] ;
+                      addressController.text = data['address'] ;
 
-                    return AlertDialog(
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            textDirection: TextDirection.ltr,
-                            controller: branchNameController,
-                            onChanged: (String value) {
+                      return AlertDialog(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              textDirection: TextDirection.ltr,
+                              controller: branchNameController,
+                              onChanged: (String value) {
                                 // reversing the output value before giving it to the controller
-                               _branchName = value  ;
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'branch Name',
+                                _branchName = value  ;
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'branch Name',
+                              ),
                             ),
-                          ),
 
-                          TextField(
-                            textDirection: TextDirection.ltr,
-                            controller: addressController,
-                            onChanged: (value) {
-                              _address = value;
-                            },
-                            decoration: InputDecoration(
-                              labelText: "Address",
+                            TextField(
+                              textDirection: TextDirection.ltr,
+                              controller: addressController,
+                              onChanged: (value) {
+                                _address = value;
+                              },
+                              decoration: InputDecoration(
+                                labelText: "Address",
+                              ),
                             ),
-                          ),
-                          MaterialButton(
+                            MaterialButton(
                               onPressed: () {
                                 // save user changes
-                                editBranch( branchID , _branchName, _address );
+                                editBranch( data['branch_id'] , _branchName, _address );
 
                                 setState( () {} );
                               },
                               child: Text("Save"),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                 );
               },
               child: Container(
@@ -335,7 +328,7 @@ class _ViewBranchState extends State<ViewBranch> {
           addDelete ? MaterialButton(
               onPressed: () {
                 // delete branch
-                removeBranch( branchID );
+                removeBranch( data['branch_id'] );
 
                 setState(() { });
               },
@@ -367,10 +360,52 @@ class _ViewBranchState extends State<ViewBranch> {
     );
   }
 
+  Container branchViewBuilder( ) {
+    Map<String, dynamic> header = {
+      'branch_id': 'BRANCH ID',
+      'branch_name': 'BRANCH NAME',
+      'address': 'ADDRESS',
+    };
+
+    return Container(
+      color: Colors.blueAccent,
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Container(
+            width: 1400.0,
+            alignment: Alignment.center,
+            child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: containerBuilder( header ,false, false)
+            ),
+          ),
+          Container(
+              height: MediaQuery.of(context).size.height - 151.0 ,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child : Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: branches,
+                    ),
+                  ),
+                ),
+              )
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ViewBranchState extends State<ViewBranch>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _init(),
+      future: widget.init(),
       builder: ( context, snapshot ) {
         if( snapshot.connectionState == ConnectionState.done ) {
           return HomeScreenBuilder(
@@ -415,7 +450,7 @@ class _ViewBranchState extends State<ViewBranch> {
                                   MaterialButton(
                                     onPressed: () async {
                                       // adding the new branch
-                                      insertBranch(brName, address);
+                                      widget.insertBranch(brName, address);
                                     },
                                     child: Text("Add"),
                                   ),
@@ -454,7 +489,7 @@ class _ViewBranchState extends State<ViewBranch> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ViewBranch( userInfo: widget.userInfo ),
+                        builder: (context) => ViewBranch( setState: setState, userInfo: widget.userInfo ),
                       ),
                     );
                   },
@@ -465,7 +500,7 @@ class _ViewBranchState extends State<ViewBranch> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ManageBranchAdmins(userInfo: widget.userInfo, ),
+                        builder: (context) => ManageBranchAdmins( setState: setState, context: context, userInfo: widget.userInfo, ),
                       ),
                     );
                   },
@@ -489,37 +524,7 @@ class _ViewBranchState extends State<ViewBranch> {
                 ),
               ],
             ),
-            body: Container(
-              color: Colors.blueAccent,
-              alignment: Alignment.center,
-              child: Column(
-                children: [
-                  Container(
-                    width: 1400.0,
-                    alignment: Alignment.center,
-                    child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: containerBuilder( "ID", 'BRANCH ID', 'BRANCH NAME', 'ADDRESS',false, false)
-                    ),
-                  ),
-                  Container(
-                    height: MediaQuery.of(context).size.height - 151.0 ,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child : Container(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: branches,
-                            ),
-                          ),
-                        ),
-                      )
-                    ),
-                ],
-              ),
-            ),
+            body: widget.branchViewBuilder()
           );
         }
         else {
