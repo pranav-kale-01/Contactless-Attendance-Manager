@@ -13,6 +13,6 @@ class BranchAdmin extends StatefulWidget {
 class _BranchAdminState extends State<BranchAdmin> {
   @override
   Widget build(BuildContext context) {
-    return ManageEmployee(context: context, setState: setState, userInfo: widget.data );
+    return ManageEmployee(context: context, setState1: setState, userInfo: widget.data );
   }
 }

@@ -10,6 +10,8 @@ import 'package:test_app/utils/CredentialController.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'ManageEmployee.dart';
+
 class ManageBranchAdmins extends StatefulWidget {
   final userInfo;
   final context;
@@ -67,8 +69,16 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
       return;
     }
     else{
-      // adding the user details to the mysql database
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
+      String url;
+
+      // checking if the user has selected 'None' from Branch options
+      if( this.branchID == '' ) {
+        url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=";
+      }
+      else{
+        // adding the user details to the mysql database
+        url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
+      }
 
       await http.get( Uri.parse( url ) );
 
@@ -84,6 +94,8 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
             );
           }
       );
+
+      setState(() { });
     }
   }
 
@@ -113,18 +125,20 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
       return;
     }
 
-    //
-    // int index;
-    // if( addEmpty ) {
-    //   _branches.add(
-    //       DropdownMenuItem(
-    //         value: 0,
-    //         child: Text(""),
-    //       )
-    //   );
-    //   index =1 ;
-    // }
-    // else index =0;
+    
+    int index;
+    
+    if( addEmpty ) {
+      index =1 ;
+
+      _branches.add(
+          DropdownMenuItem(
+            value: 0,
+            child: Text(""),
+          )
+      );
+    }
+    else index =0;
 
     // adding the data to _branches
     for( i=0; i< jsonData.length ; i++ ) {
@@ -132,33 +146,41 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
       _branches.add(
         DropdownMenuItem(
-          value: i,
+          value: index,
           child: Text( data['branch_name'] ),
         ),
       ) ;
 
       branchIDs.add( data['branch_id'] );
+      index +=1 ;
     }
 
-    branchID = branchIDs[0];
+    // checking if an empty branch option was added, if added then making it the default selection, else making the first branch of the list the defaul selection
+    if( index == i )
+      branchID = branchIDs[0];
+    else
+      branchID = '';
   }
 
   Future<void> _editBranchAdmin( String uid, String username )  async {
+    // creating a new TextEditingController for username Field
+    TextEditingController usernameController = TextEditingController( text: username );
+    this.username = username;
+
+    // resetting the old index
     this.index2= 0;
 
-    setBranches( widget.userInfo['org_id'] , true );
+    // setBranches( widget.userInfo['org_id'] , true );
 
     showDialog(
         context: context,
         builder: (BuildContext context ) {
-
-          this.username = username;
-
           return AlertDialog(
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
+                  controller: usernameController,
                   onChanged: (value) {
                     this.username = value;
                   },
@@ -216,13 +238,16 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
   }
 
   Future<void> _deleteBranchAdmin( String username ) async {
+    print( username );
+
     // delete the User
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$username;";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$username';";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
-    if( response.body == "1" ) {
+    print( response.body );
 
+    if( response.body == "1" ) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -231,7 +256,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
             );
           }
       );
-
       setState(() { });
     }
   }
@@ -288,21 +312,8 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     ),
                     MaterialButton(
                       onPressed: () {
-                        // confirming that user has selected a branch
-                        if( this._branches[0].child.toString() == 'Text("")' ) {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context ) {
-                                return AlertDialog(
-                                  content: Text("No branch available"),
-                                );
-                              }
-                          );
-                        }
-                        else {
-                          // adding the user to the users table
-                          _insertBranchAdmin();
-                        }
+                        // adding the user to the users table
+                        _insertBranchAdmin();
                       },
                       child: Text("Add"),
                     )
@@ -411,9 +422,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
   Future<void> init() async {
     // getting the list of organizations for later use
-    setBranches( widget.userInfo['org_id'] , false );
-
-    print( widget.userInfo['org_id']);
+    setBranches( widget.userInfo['org_id'] , true );
 
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`branch_id`,`branches`.`branch_id`, `branches`.`branch_name` FROM `users` LEFT JOIN `branches` ON `users`.`branch_id`=`branches`.`branch_id` WHERE `users`.`authority`='br-admin' AND `users`.`org_id`= ${widget.userInfo['org_id']}";
 
@@ -423,8 +432,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
       print("something went wrong");
     }
     else {
-      print(response.body );
-
       // decoding the data
       var jsonData = jsonDecode( response.body );
 
@@ -498,7 +505,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                       ),
                       onPressed: () async {
                         await insertBranchAdmin();
-                        setState(() { });
                       },
                     ),
                   )
@@ -543,6 +549,17 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
                           builder: (context) => ManageBranchAdmins( context: context, setState: setState, userInfo: widget.userInfo, ),
                         ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text( 'Manage Employees', ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context)=> ManageEmployee( context: context,  setState1: setState, userInfo: widget.userInfo, ),
+                          )
                       );
                     },
                   ),

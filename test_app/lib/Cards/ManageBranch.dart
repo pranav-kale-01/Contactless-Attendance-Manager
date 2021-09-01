@@ -10,6 +10,8 @@ import 'package:test_app/utils/CredentialController.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'ManageEmployee.dart';
+
 class ViewBranch extends StatefulWidget {
   final userInfo;
   final context;
@@ -114,7 +116,9 @@ class ViewBranch extends StatefulWidget {
       Navigator.pop(context);
 
       // reloading the screen
-      setState( () {} );
+      setState( () {
+        // reseting the employee list
+      } );
 
       showDialog(
           context: context,
@@ -489,7 +493,7 @@ class ViewBranchState extends State<ViewBranch>{
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ViewBranch( setState: setState, userInfo: widget.userInfo ),
+                        builder: (context) => ViewBranch( context: context, setState: setState, userInfo: widget.userInfo ),
                       ),
                     );
                   },
@@ -500,8 +504,19 @@ class ViewBranchState extends State<ViewBranch>{
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ManageBranchAdmins( setState: setState, context: context, userInfo: widget.userInfo, ),
+                        builder: (context) => ManageBranchAdmins( context: context, setState: setState, userInfo: widget.userInfo, ),
                       ),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Text( 'Manage Employees', ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context)=> ManageEmployee( context: context, setState1: setState, userInfo: widget.userInfo,),
+                        )
                     );
                   },
                 ),

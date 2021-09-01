@@ -9,13 +9,19 @@ import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
+import 'ManageBranch.dart';
+import 'ManageBranchAdmins.dart';
+
 class ManageEmployee extends StatefulWidget {
   final userInfo;
 
   final BuildContext context;
-  final StateSetter setState;
+  final StateSetter setState1;
 
-  ManageEmployee({required this.context, required this.setState, required this.userInfo} ) : super();
+  late bool changedFromDropdown= false;
+  late String branchID;
+
+  ManageEmployee({required this.context, required this.setState1, required this.userInfo} ) : super();
 
   @override
   _ManageEmployeeState createState() => _ManageEmployeeState();
@@ -23,26 +29,43 @@ class ManageEmployee extends StatefulWidget {
 
 class _ManageEmployeeState extends State<ManageEmployee> {
 
-  List<Widget>employees = [];
+  List<Widget> employees = [];
+  List<List> records = [];
   List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("") ) ];
   List<String> branchIDs = [];
 
   late String username;
   late String password;
-  late String branchID;
 
   int? index2;
 
   Future<void> init() async {
-    // initializing the Employees list
-    await getEmployees();
+    // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
+    if( widget.userInfo['authority'] == 'br-admin') {
+      widget.branchID = widget.userInfo['branch_id'] ;
+    }
 
     // initializing the Branches list
-    await setBranches();
+    await setBranches( true );
+
+    if( widget.changedFromDropdown == false ) {
+      // initializing the Employees list,
+      await getEmployees();
+
+      widget.changedFromDropdown = true;
+    }
   }
 
   Future<void> getEmployees() async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=org_id&post=${widget.userInfo['org_id']}&condition2=authority&post2='emp'&custom";
+    String url;
+    // checking if the branch ID is empty, if empty then showing all the employees
+    if( widget.branchID == '' ) {
+     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
+    }
+    else {
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND `users`.`branch_id`=${widget.branchID}";
+    }
+
     http.Response response = await http.get( Uri.parse( url ) );
 
     List<dynamic> jsonData = jsonDecode( response.body );
@@ -53,15 +76,17 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     else {
       // clearing the previous list of Employees
       employees.clear();
+      records.clear();
 
       for( int i=0 ; i < jsonData.length ; i++ ) {
         Map<String,dynamic> data = jsonData[i];
         employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true ) );
+        records.add( [data['UID'], data['branch_id'], data['username'], ] );
       }
     }
   }
 
-  Future<void> setBranches( ) async {
+  Future<void> setBranches( bool addEmpty ) async {
     int i;
 
     // getting all the branches of the current organization
@@ -88,21 +113,37 @@ class _ManageEmployeeState extends State<ManageEmployee> {
       return;
     }
 
+    int index;
+
+    if( addEmpty ) {
+      index =1 ;
+
+      _branches.add(
+          DropdownMenuItem(
+            value: 0,
+            child: Text(""),
+          )
+      );
+      branchIDs.add( '' );
+    }
+    else index =0;
+
     // adding the data to _branches
     for( i=0; i< jsonData.length ; i++ ) {
       Map<String,dynamic> data = jsonData[i];
       _branches.add(
         DropdownMenuItem(
-          value: i,
+          value: index,
           child: Text( data['branch_name'] ),
         ),
       ) ;
 
       branchIDs.add( data['branch_id'] );
+      index+=1;
     }
 
     // setting the default value for branchID
-    branchID = branchIDs[0];
+    widget.branchID = branchIDs[0];
   }
 
   Future<void> _insertEmployee() async {
@@ -131,7 +172,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     }
     else{
       // adding the user details to the mysql database
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}";
 
       await http.get( Uri.parse( url ) );
 
@@ -148,6 +189,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
           }
       );
 
+      getEmployees();
       setState( ( ) {} );
     }
   }
@@ -188,6 +230,8 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         Navigator.pop( context );
                       }
                       else {
+                        getEmployees();
+
                         // reloading the page
                         setState( () {} );
 
@@ -227,6 +271,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
           TextEditingController usernameController = TextEditingController( text: name );
 
           this.username = name ;
+          this.index2 = 0;
 
           return AlertDialog(
             content: Column(
@@ -241,9 +286,34 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     labelText: "username",
                   ),
                 ),
+                widget.userInfo['authority'] == 'org-admin' ?
+                StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState ) {
+                      return Container(
+                        padding: EdgeInsets.zero,
+                        margin: EdgeInsets.zero,
+                        child: DropdownButton(
+                          isExpanded: true,
+                          value: index2,
+                          items: _branches,
+                          onChanged: (int? value) {
+                            if( _branches[value!].child.toString() == "Text(\"\")" ) {
+                              widget.branchID = '';
+                              setState( ( ) => this.index2 = 0 );
+                            }
+                            else {
+                              print('changed to' + this.branchIDs[value] );
+                              widget.branchID = this.branchIDs[value];
+                              setState(() => this.index2 = this._branches[value].value );
+                            }
+                          },
+                        ),
+                      );
+                    }
+                ) : Container(),
                 MaterialButton(
                   onPressed: () async {
-                    // cheking if username has been left empty
+                    // checking if username has been left empty
                     if( this.username == '' ) {
                       showDialog(
                         context: context,
@@ -266,12 +336,24 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                       return;
                     }
 
-                    String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$id&name=${this.username}&branch_id=${ widget.userInfo['branch_id'] }";
+                    String url;
+
+                    print( widget.branchID );
+
+                    // checking if the user has selected the 'None' option for branches
+                    if( widget.branchID == '' ) {
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$id&name=${this.username}&branch_id=";
+                    }
+                    else {
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$id&name=${this.username}&branch_id=${widget.branchID}";
+                    }
 
                     http.Response response = await http.get( Uri.parse( url ) );
 
                     // if response.body == 1, editing user details was successful
                     if( response.body == '1') {
+                      getEmployees();
+
                       setState(() { });
 
                       Navigator.pop( context );
@@ -381,32 +463,87 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     return Container(
       color: Colors.blueAccent,
       alignment: Alignment.center,
-      child: Column(
-        children: [
-          Container(
-            width: 1400.0,
-            alignment: Alignment.center,
-            child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: containerBuilder( "ID", 'BRANCH ID', 'NAME' ,false, false)
-            ),
-          ),
-          Container(
-              height: MediaQuery.of(context).size.height - 151.0 ,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child : Container(
+      child: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState1 ) {
+            return Column(
+              children: [
+                widget.userInfo['authority'] == 'org-admin' ?
+                Container(
+                  width: 1000,
+                  alignment: Alignment.center,
+                  child: StatefulBuilder(
+                      builder: (BuildContext context, StateSetter setState ) {
+                        return Container(
+                          alignment: Alignment.topRight,
+                          padding: EdgeInsets.zero,
+                          margin: EdgeInsets.zero,
+                          width: 200.0,
+                          child: DropdownButton(
+                            isExpanded: true,
+                            dropdownColor: Colors.white,
+                            value: index2,
+                            items: _branches,
+                            onChanged: (int? value) {
+                              if( _branches[value!].child.toString() == "Text(\"\")" ) {
+                                widget.branchID = '';
+                                setState( ( ) => this.index2 = 0 );
+                              }
+                              else {
+                                widget.branchID = this.branchIDs[value];
+                                setState(() => this.index2 = this._branches[value].value );
+                              }
+
+                              // clearing the previous list of employees
+                              employees.clear();
+
+                              // checking the branchID and making changes to the employees list accordingly
+                              if( widget.branchID == '' ) {
+                                for( var i in records ) {
+                                  employees.add( containerBuilder( i[0], i[1], i[2], true, true ) );
+                                }
+                              }
+                              else {
+                                for( var i in records ) {
+                                  if( i[1].toString() == widget.branchID) {
+                                    employees.add( containerBuilder( i[0], i[1], i[2], true, true ) );
+                                  }
+                                }
+                              }
+
+                              // reloading the page
+                              setState1(() { });
+                            },
+                          ),
+                        );
+                      }
+                  ),
+                ) : Container(),
+                Container(
+                  width: 1400.0,
+                  alignment: Alignment.center,
                   child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: employees,
-                    ),
+                      scrollDirection: Axis.horizontal,
+                      child: containerBuilder( "ID", 'BRANCH ID', 'NAME' ,false, false)
                   ),
                 ),
-              )
-          ),
-        ],
+                Container(
+                    height: MediaQuery.of(context).size.height - 200.0 ,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child : Container(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: employees,
+                          ),
+                        ),
+                      ),
+                    )
+                ),
+              ],
+            );
+          }
       ),
     );
   }
@@ -444,6 +581,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                                               labelText: "user email"
                                           ),
                                         ),
+                                        widget.userInfo['authority'] == 'org-admin' ?
                                         StatefulBuilder(
                                             builder: (BuildContext context, StateSetter setState ) {
                                               return Container(
@@ -454,15 +592,19 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                                                   value: index2,
                                                   items: _branches,
                                                   onChanged: (int? value) {
-                                                    if(value != null ) {
-                                                      index2 = value;
+                                                    if( _branches[value!].child.toString() == "Text(\"\")" ) {
+                                                      widget.branchID = '';
+                                                      setState( ( ) => this.index2 = 0 );
                                                     }
-                                                    setState( () {} );
+                                                    else {
+                                                      widget.branchID = this.branchIDs[value];
+                                                      setState(() => this.index2 = this._branches[value].value );
+                                                    }
                                                   },
                                                 ),
                                               );
                                             }
-                                        ),
+                                        ) : Container(),
                                         TextField(
                                           onChanged: (value) {
                                             password = value;
@@ -473,21 +615,8 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                                         ),
                                         MaterialButton(
                                           onPressed: () {
-                                            // confirming that user has selected a branch
-                                            if( _branches[0].child.toString() == 'Text("")' ) {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (BuildContext context ) {
-                                                    return AlertDialog(
-                                                      content: Text("No branch available"),
-                                                    );
-                                                  }
-                                              );
-                                            }
-                                            else {
-                                              // adding the user to the users table
-                                              _insertEmployee();
-                                            }
+                                            // adding the user to the users table
+                                            _insertEmployee();
                                           },
                                           child: Text("Add"),
                                         )
@@ -519,13 +648,37 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     color: Colors.white,
                   ),
                 ),
+                widget.userInfo['authority'] == 'org-admin' ?
+                  ListTile(
+                    title: Text( 'Manage branches', ),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ViewBranch( context: context, setState: setState, userInfo: widget.userInfo ),
+                        ),
+                      );
+                    },
+                  ) : Container(),
+                widget.userInfo['authority'] == 'org-admin'?
+                ListTile(
+                  title: Text( 'Manage Branch Admins', ),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageBranchAdmins( context: context, setState: setState,  userInfo: widget.userInfo ),
+                        ),
+                      );
+                    },
+                ) : Container(),
                 ListTile(
                   title: Text( 'Manage Employees', ),
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ManageEmployee( setState:  setState, context: context , userInfo: widget.userInfo, ),
+                        builder: (context) => ManageEmployee( setState1:  setState, context: context , userInfo: widget.userInfo, ),
                       ),
                     );
                   },

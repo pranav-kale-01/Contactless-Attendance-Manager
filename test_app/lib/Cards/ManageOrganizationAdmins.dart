@@ -9,6 +9,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'ManageEmployee.dart';
+
 class ManageOrganizationsAdmins extends StatefulWidget {
   const ManageOrganizationsAdmins({Key? key}) : super(key: key);
 
@@ -433,7 +435,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                     ),
                   ),
                   ListTile(
-                    title: Text( 'View all Organizations', ),
+                    title: Text( 'Manage Organizations', ),
                     onTap: () {
                       Navigator.push(
                           context,
