@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:test_app/utils/CredentialController.dart';
+
 import 'package:test_app/utils/Location.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/BarCode.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import 'package:vector_math/vector_math.dart' as VMath;
 import 'dart:math';
 
-class Home extends StatefulWidget {
-  late String email;
+class ScanManager extends StatefulWidget {
+  final userInfo;
 
-  Home({Key? key, required this.email }) : super( key: key );
+  ScanManager({Key? key, required this.userInfo }) : super( key: key );
 
   @override
-  _HomeState createState() => _HomeState();
+  _ScanManagerState createState() => _ScanManagerState();
 }
 
-class _HomeState extends State<Home> {
+class _ScanManagerState extends State<ScanManager> {
 
   // coordinates stored in the database which represent the location where the QR code is installed
   String _lat="0.0";
@@ -35,12 +36,6 @@ class _HomeState extends State<Home> {
 
   late String QRString='';
 
-  @override
-  void initState() {
-    super.initState();
-
-    this.email = widget.email;
-  }
 
   double calcDistance( double lat1, double lon1, double lat2, double lon2 ) {
     // creating new VMath object
@@ -109,79 +104,39 @@ class _HomeState extends State<Home> {
           // data fetched successfully, perform further processes
           return MaterialApp(
             home: HomeScreenBuilder(
-              listView: ListView(
-                children: [
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [
-                              Colors.blue,
-                              Colors.blueAccent,
-                              Colors.lightBlueAccent,
-                            ]
-                        )
+              appbar: AppBar(
+                title: Text( "Employee", ),
+                actions: [
+                  Container(
+                    margin: EdgeInsets.symmetric( horizontal: 20.0 ),
+                    child: IconButton(
+                        icon: Icon(
+                          Icons.qr_code_scanner_sharp,
+                          color: Colors.white,
+                        ),
+                        onPressed: () async {
+                          // checking if the application is running in a browser, if so we cannot perform location related work so showing the message for this instance
+                          if( kIsWeb ) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text("Cannot perform location related tasks on webpage, \nPlease download the app to continue.."),
+                              ),
+                            );
+
+                            return;
+                          }
+
+                          this.QRString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
+                          if( this.QRString == "-1" )
+                            this.QRString = "No data!";
+                          setState( () { });
+                        }
                     ),
-                    child: Icon(
-                      Icons.account_circle,
-                      color: Colors.white,
-                    ),
-                  ),
-                  ListTile(
-                    title: Text( 'Set Current Location', ),
-                    onTap: () {
-                      // setting users current location as the destination location
-                      this._lat = coords['lat']!;
-                      this._lon = coords['lon']!;
-
-
-                      print( this._lat );
-                      print( this._lon );
-                    },
-                  ),
-                  ListTile(
-                    title: Text( 'Sign Out', ),
-                    onTap: () {
-                      // Signing the User Out
-
-                      FirebaseAuth auth = FirebaseAuth.instance;
-                      auth.signOut().then((res) {
-                        Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SignUp()
-                            ),
-                                (Route<dynamic> route) => false
-                        );
-                      });
-                    },
-                  ),
-                  ListTile(
-                      title: Text(
-                          'Scan'
-                      ),
-                      onTap: () async {
-                        this.QRString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
-                        if( this.QRString == "-1" )
-                          this.QRString = "No data!";
-                        setState( () { });
-                      }
-                  ),
-                  ListTile(
-                      title: Text(
-                          'Generate new barcode'
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BarCode(generatorString: FirebaseAuth.instance.currentUser!.uid ),
-                            )
-                        );
-                      }
                   ),
                 ],
               ),
-              body: GradientContainer(
+              body: !kIsWeb ? GradientContainer(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -193,8 +148,8 @@ class _HomeState extends State<Home> {
                             Text( 'latitude - ${coords['lat']}', ),
                             Text( 'longitude - ${coords['lon']}', ),
                             Text( 'range status : $rangeStatus', ),
-                            Text( 'User email - ${FirebaseAuth.instance.currentUser!.email}', ),
-                            Text( 'User ID - ${FirebaseAuth.instance.currentUser!.uid}', ),
+                            Text( 'User email - ${ widget.userInfo['username']}', ),
+                            Text( 'User ID - ${ widget.userInfo['UID']}', ),
                             Text( 'Scanned Text - ${this.QRString}', ),
                           ],
                         ),
@@ -222,6 +177,9 @@ class _HomeState extends State<Home> {
                       ),
                     ],
                   )
+              ) : Container(
+                alignment: Alignment.center,
+                child: Text("cannot load this page on web")
               ),
             ),
           );

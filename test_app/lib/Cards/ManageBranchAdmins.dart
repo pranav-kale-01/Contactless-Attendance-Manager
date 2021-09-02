@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:test_app/Cards/ManageScanLocations.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
@@ -562,6 +563,18 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                           )
                       );
                     },
+                  ),
+                  ListTile(
+                      title: Text("Manage Scan Locations"),
+                      onTap: () {
+                        // redirecting the user to ManageScanLocations Page
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ManageScanLocations( userInfo: widget.userInfo ),
+                          ),
+                        );
+                      }
                   ),
                   ListTile(
                     title: Text( 'Sign Out', ),

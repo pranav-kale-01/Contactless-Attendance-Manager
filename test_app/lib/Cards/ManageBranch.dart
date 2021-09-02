@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'ManageEmployee.dart';
+import 'ManageScanLocations.dart';
 
 class ViewBranch extends StatefulWidget {
   final userInfo;
@@ -519,6 +520,18 @@ class ViewBranchState extends State<ViewBranch>{
                         )
                     );
                   },
+                ),
+                ListTile(
+                    title: Text("Manage Scan Locations"),
+                    onTap: () {
+                      // redirecting the user to ManageScanLocations Page
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageScanLocations( userInfo: widget.userInfo ),
+                        ),
+                      );
+                    }
                 ),
                 ListTile(
                   title: Text( 'Sign Out', ),

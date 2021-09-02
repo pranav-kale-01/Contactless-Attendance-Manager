@@ -1,55 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Templates/HomeScreenBuilder.dart';
-import 'package:test_app/Templates/GradientContainer.dart';
+import 'package:test_app/utils/temp.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
+class Employee extends StatefulWidget {
+  final data;
 
-class Employee extends StatelessWidget {
-  const Employee({Key? key}) : super(key: key);
+  Employee({Key? key, required this.data }) : super(key: key);
 
+  _EmployeeState createState() => _EmployeeState();
+}
+
+class _EmployeeState extends State<Employee> {
   @override
-  Widget build(BuildContext context) {
-    return HomeScreenBuilder(
-      listView: ListView(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [
-                      Colors.blue,
-                      Colors.blueAccent,
-                      Colors.lightBlueAccent,
-                    ]
-                )
-            ),
-            child: Icon(
-              Icons.account_circle,
-              color: Colors.white,
-            ),
-          ),
-          ListTile(
-            title: Text( 'Sign Out', ),
-            onTap: () {
-              // Signing the User Out
-
-              FirebaseAuth auth = FirebaseAuth.instance;
-              auth.signOut().then((res) {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SignUp()
-                    ),
-                        (Route<dynamic> route) => false
-                );
-              });
-            },
-          ),
-        ],
-      ),
-      body: GradientContainer(
-        child: Text('user'),
-      ),
-    );
+  Widget build( BuildContext context ) {
+    return ScanManager( userInfo: widget.data );
   }
 }

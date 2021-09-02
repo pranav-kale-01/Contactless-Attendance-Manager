@@ -74,7 +74,7 @@ class _HomeState extends State<Home> {
       else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute( builder: (context) => Employee() ),
+          MaterialPageRoute( builder: (context) => Employee( data: this.data) ),
         );
       }
     }

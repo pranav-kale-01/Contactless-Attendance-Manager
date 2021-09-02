@@ -26,11 +26,11 @@ class CredentialController {
 
       // Read the file
       final contents = await file.readAsString();
-      return contents;
 
+      return contents;
     } catch (e) {
       // If encountering an error, return 0
-      return e.toString();
+      throw e;
     }
   }
 

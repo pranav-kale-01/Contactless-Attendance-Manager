@@ -11,6 +11,7 @@ import 'package:test_app/utils/CredentialController.dart';
 
 import 'ManageBranch.dart';
 import 'ManageBranchAdmins.dart';
+import 'ManageScanLocations.dart';
 
 class ManageEmployee extends StatefulWidget {
   final userInfo;
@@ -31,7 +32,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
   List<Widget> employees = [];
   List<List> records = [];
-  List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("") ) ];
+  List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("All") ) ];
   List<String> branchIDs = [];
 
   late String username;
@@ -57,7 +58,15 @@ class _ManageEmployeeState extends State<ManageEmployee> {
   }
 
   Future<void> getEmployees() async {
+    // checking if the user currently signed in is a branch admin, if it is then changing the branch ID to branchID of the branchAdmin
+    if( widget.userInfo['authority'] == 'br-admin') {
+      widget.branchID = widget.userInfo['branch_id'];
+
+      print("this is the branch id of the current branch admin : " + widget.userInfo['branch_id'] );
+    }
+
     String url;
+
     // checking if the branch ID is empty, if empty then showing all the employees
     if( widget.branchID == '' ) {
      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
@@ -121,7 +130,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
       _branches.add(
           DropdownMenuItem(
             value: 0,
-            child: Text(""),
+            child: Text("All"),
           )
       );
       branchIDs.add( '' );
@@ -631,7 +640,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   )
                 ],
             ),
-            listView:  ListView(
+            listView: ListView(
               children: [
                 DrawerHeader(
                   decoration: BoxDecoration(
@@ -682,6 +691,18 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                       ),
                     );
                   },
+                ),
+                ListTile(
+                  title: Text("Manage Scan Locations"),
+                  onTap: () {
+                    // redirecting the user to ManageScanLocations Page
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ManageScanLocations( userInfo: widget.userInfo ),
+                      ),
+                    );
+                  }
                 ),
                 ListTile(
                   title: Text( 'Sign Out', ),
