@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/Home.dart';
-import 'package:test_app/Screens/RegisterScreen.dart';
 import 'package:test_app/utils/CredentialController.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 

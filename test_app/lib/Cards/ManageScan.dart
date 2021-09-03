@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:test_app/utils/CredentialController.dart';
 
 import 'package:test_app/utils/Location.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
-import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Templates/BarCode.dart';
 
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import 'package:vector_math/vector_math.dart' as VMath;
 import 'dart:math';
 
-class ScanManager extends StatefulWidget {
+class ManageScan extends StatefulWidget {
   final userInfo;
 
-  ScanManager({Key? key, required this.userInfo }) : super( key: key );
+  ManageScan({Key? key, required this.userInfo }) : super( key: key );
 
   @override
-  _ScanManagerState createState() => _ScanManagerState();
+  _ManageScanState createState() => _ManageScanState();
 }
 
-class _ScanManagerState extends State<ScanManager> {
+class _ManageScanState extends State<ManageScan> {
 
   // coordinates stored in the database which represent the location where the QR code is installed
   String _lat="0.0";
@@ -34,7 +31,7 @@ class _ScanManagerState extends State<ScanManager> {
   Location locator = Location();
   bool interrupt = false;
 
-  late String QRString='';
+  late String qrString='';
 
 
   double calcDistance( double lat1, double lon1, double lat2, double lon2 ) {
@@ -95,6 +92,25 @@ class _ScanManagerState extends State<ScanManager> {
     return true;
   }
 
+  Future<void> scanQR() async {
+    // checking if the application is running in a browser, if so we cannot perform location related work so showing the message for this instance
+    if( kIsWeb ) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Cannot perform location related tasks on webpage, \nPlease download the app to continue.."),
+        ),
+      );
+
+      return;
+    }
+
+    this.qrString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
+    if( this.qrString == "-1" )
+      this.qrString = "No data!";
+    setState( () { });
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -115,22 +131,7 @@ class _ScanManagerState extends State<ScanManager> {
                           color: Colors.white,
                         ),
                         onPressed: () async {
-                          // checking if the application is running in a browser, if so we cannot perform location related work so showing the message for this instance
-                          if( kIsWeb ) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text("Cannot perform location related tasks on webpage, \nPlease download the app to continue.."),
-                              ),
-                            );
-
-                            return;
-                          }
-
-                          this.QRString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
-                          if( this.QRString == "-1" )
-                            this.QRString = "No data!";
-                          setState( () { });
+                          await scanQR();
                         }
                     ),
                   ),
@@ -150,7 +151,7 @@ class _ScanManagerState extends State<ScanManager> {
                             Text( 'range status : $rangeStatus', ),
                             Text( 'User email - ${ widget.userInfo['username']}', ),
                             Text( 'User ID - ${ widget.userInfo['UID']}', ),
-                            Text( 'Scanned Text - ${this.QRString}', ),
+                            Text( 'Scanned Text - ${this.qrString}', ),
                           ],
                         ),
                       ),

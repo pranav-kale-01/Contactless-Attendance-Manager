@@ -60,7 +60,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
       branchIDs.add( data['branch_id'] );
     }
 
-    // setting teh default values
+    // setting the default values
     this.index2=0 ;
     widget.branchID = branchIDs[0];
   }
@@ -108,6 +108,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
                       builder : (BuildContext context, StateSetter setState ) {
                         if( this.scanStatus == 'not-scanning' ) {
                           return Container(
+                            width: double.maxFinite,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20.0 ),
                               color: Colors.white,
@@ -115,6 +116,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
                             margin: EdgeInsets.only( top: 300.0 ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 // if the user is a organization admin, then providing a dropdown menu of branches to select from
                                 Container(

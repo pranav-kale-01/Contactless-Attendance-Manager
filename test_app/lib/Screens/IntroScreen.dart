@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http ;
 import 'dart:convert';
 
 class IntroScreen extends StatelessWidget {
-  late bool has_user;
+  late bool hasUser;
   var data;
   var uid;
 
@@ -30,17 +30,17 @@ class IntroScreen extends StatelessWidget {
         print("in catch block");
 
         // if the operation of reading the file throw an exception then redirecting the user to the login page
-        this.has_user = false ;
+        this.hasUser = false ;
         return;
       }
 
       if( user == '' ) {
-        this.has_user = false;
+        this.hasUser = false;
         return;
       }
 
       print("after try block");
-      this.has_user = true;
+      this.hasUser = true;
 
       // decoding the user data
       data = jsonDecode(user);
@@ -53,7 +53,7 @@ class IntroScreen extends StatelessWidget {
       print( response.body ) ;
 
       if( response.body == 'no-user' ) {
-        this.has_user = false;
+        this.hasUser = false;
         return;
       }
 
@@ -61,11 +61,11 @@ class IntroScreen extends StatelessWidget {
       this.uid = jsonDecode( response.body )['UID'];
 
 
-      this.has_user = true;
+      this.hasUser = true;
       return;
     }
 
-    this.has_user = false;
+    this.hasUser = false;
   }
 
   @override
@@ -76,7 +76,7 @@ class IntroScreen extends StatelessWidget {
       future: _init(),
       builder: ( context, snapshot) {
         if( snapshot.connectionState == ConnectionState.done ) {
-          return this.has_user ? Home( email: data['user'], uid: this.uid ) : SignUp();
+          return this.hasUser ? Home( email: data['user'], uid: this.uid ) : SignUp();
         }
         else {
           return Scaffold(

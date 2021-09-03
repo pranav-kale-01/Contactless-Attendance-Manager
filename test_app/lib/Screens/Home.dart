@@ -12,8 +12,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Home extends StatefulWidget {
-  late String email;
-  late String uid;
+  final String email;
+  final String uid;
 
   Home({Key? key, required this.email, required this.uid }) : super( key: key );
 
@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
   Location locator = Location();
   bool interrupt = false;
 
-  late String QRString='';
+  late String qrString='';
 
   @override
   void initState() {

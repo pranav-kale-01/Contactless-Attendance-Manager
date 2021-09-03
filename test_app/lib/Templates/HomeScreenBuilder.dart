@@ -4,9 +4,9 @@ import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
 class HomeScreenBuilder extends StatelessWidget {
-  late Widget body;
-  late ListView? listView;
-  late AppBar? appbar;
+  final Widget body;
+  final ListView? listView;
+  final AppBar? appbar;
 
   HomeScreenBuilder( {Key? key, required this.body, this.listView, this.appbar } ) : super( key: key );
 

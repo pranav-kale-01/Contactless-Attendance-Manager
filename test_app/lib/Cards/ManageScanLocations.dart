@@ -13,9 +13,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'AddScannerLocation.dart';
+import 'GenerateQRCode.dart';
 
 class ManageScanLocations extends StatefulWidget {
   final userInfo ;
+  List< String > branchIDs = [];
+  late String branchID;
 
   ManageScanLocations( {Key? key, required this.userInfo }) : super(key : key ) ;
 
@@ -24,43 +27,121 @@ class ManageScanLocations extends StatefulWidget {
 }
 
 class _ManageScanLocationsState extends State<ManageScanLocations> {
-  List<Container> scanPoints = [];
+  List<Widget> scanPoints = [];
+  List< Map<String,dynamic> > _displayData = [];
+
+  List< DropdownMenuItem<int> > _branches = [] ;
+
+  int? index;
+
+  Future<void> init() async {
+    await _setBranches();
+
+    await _getScanPoints();
+  }
 
   Future<bool> _getScanPoints( ) async {
-    // checking if the user is Organization admin, if so taking the branch Id from the Dropdown menu
-    if( widget.userInfo['authority'] == 'org-admin') {
-
-    }
-
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scan_locations&condition&post&condition2&post2&custom= * FROM `scan_locations` WHERE `org_id`=10%20AND%20`branch_id`=40";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scan_locations&condition&post&condition2&post2&custom= * FROM `scan_locations` WHERE `org_id`=${widget.userInfo['org_id']}";
 
     http.Response response = await http.get(  Uri.parse( url ) );
 
-    print( response.body );
+    List<dynamic> jsonData = jsonDecode( response.body );
+
+    // clearing the scanPoints list
+    scanPoints.clear();
+
+    // adding the scan points to the list of scanPoints
+    for( int i=0 ; i< jsonData.length ; i++ ) {
+      Map<String, dynamic> data = jsonData[i];
+
+    _displayData.add( data );
+      scanPoints.add( containerBuilder( data, true, true ) );
+    }
 
     return true;
   }
 
-  Future<void> init() async {
-    await _getScanPoints();
+  void  _resetScanPointsList( ) {
+    // clearing the scanPoints list
+    scanPoints.clear();
+
+    // iterating over the _displayData list and selecting only the required organization
+    for( var i in _displayData ) {
+      if( i['branch_id'] == widget.branchID || widget.branchID == '') {
+        scanPoints.add( containerBuilder( i , true, true  ) );
+      }
+    }
   }
 
-  Future<void> insertScanLocation() async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_scanpoint.php?org_id=10&branch_id=31&location=12345kajsdflkjsaldfjka&qr=m658n32nl7k68nlk453l745kn73.;";
+  Future<void> _setBranches() async {
+    int i;
+
+    // getting all the branches of the current organization
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget
+        .userInfo['org_id']}&condition2=&post2=&custom";
+
+    http.Response response = await http.get(Uri.parse(url));
+    List<dynamic> jsonData = jsonDecode(response.body);
+
+    // clearing the previous list
+    _branches.clear();
+    widget.branchIDs.clear();
+
+    // checking if there are no branches, then adding an empty branch
+    if (jsonData.length == 0) {
+      // adding a blank entry
+      _branches.add(
+        DropdownMenuItem(
+          value: 0,
+          child: Text(''),
+        ),
+      );
+      return;
+    }
+
+    int index=1;
+
+    _branches.add(
+      DropdownMenuItem(
+        value: 0,
+        child: Text("All"),
+      )
+    );
+
+    // adding the data to _branches
+    for (i = 0; i < jsonData.length; i++) {
+      Map<String, dynamic> data = jsonData[i];
+
+      _branches.add(
+        DropdownMenuItem(
+          value: index,
+          child: Text(data['branch_name']),
+        ),
+      );
+
+      widget.branchIDs.add(data['branch_id']);
+      index+=1;
+    }
+
+    // setting the default values
+    this.index = 0;
+    widget.branchID = widget.branchIDs[0];
+  }
+
+
+  Future<void> removeScanPoint( String qr) async {
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_scanpoint.php?qr=$qr";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
-    if( response.body == 'false') {
-      print("something went wrong");
-    }
-    else {
-      print("Scan Location added successfully");
-    }
+    print( response.body );
+
+    setState(() {
+      _getScanPoints( );
+    });
   }
 
-  Future<void> removeScanPoint( String branchID ) async {}
-
-  Widget containerBuilder( data  ,bool addDelete ) {
+  Widget containerBuilder( data  ,bool addDelete, bool addQRCreate ) {
     return Container(
       alignment: Alignment.centerLeft,
       color: Colors.white60,
@@ -70,27 +151,37 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Container(
-              width: 100.0,
+              width: 200.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
               child: Text( data['branch_id'] )
           ),
           Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['branch_name'] )
-          ),
-          Container(
               width: 300.0,
               height: 50.0,
               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['address'] )
+              child: Text( data['qr'] )
           ),
+          addQRCreate ? MaterialButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  opaque: false,
+                  pageBuilder: (context, _ , __ ) => GenerateQRCode( qrString: data['qr'] ),
+                ),
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.all( 5.0 ),
+              child: Icon(
+                Icons.qr_code_scanner,
+              ),
+            ),
+          ) : Container( ),
           addDelete ? MaterialButton(
               onPressed: () {
                 // delete branch
-                removeScanPoint( data['branch_id'] );
+                removeScanPoint( data['qr'] );
 
                 setState(() { });
               },
@@ -124,40 +215,72 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
   Container scanLocationViewBuilder( ) {
     Map<String, dynamic> header = {
+      'org_id': 'Organization ID',
       'branch_id': 'BRANCH ID',
-      'branch_name': 'BRANCH NAME',
-      'address': 'ADDRESS',
+      'qr': 'ADDRESS',
     };
 
     return Container(
-      color: Colors.blueAccent,
-      alignment: Alignment.center,
-      child: Column(
-        children: [
-          Container(
-            width: 1400.0,
+      child: StatefulBuilder(
+        builder: (context, setListViewState ) {
+          return Container(
+            color: Colors.blueAccent,
             alignment: Alignment.center,
-            child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: containerBuilder( header ,false)
-            ),
-          ),
-          Container(
-              height: MediaQuery.of(context).size.height - 151.0 ,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child : Container(
+            child: Column(
+              children: [
+                widget.userInfo['authority'] == 'org-admin' ? StatefulBuilder(
+                    builder: (context , setDropdownState ) {
+                      return DropdownButton(
+                          value: index,
+                          items: _branches,
+                          onChanged: (int? value ){
+                            if( value != null ) {
+                              setDropdownState( () {
+                                if( value == 0  ) {
+                                  widget.branchID = '';
+                                  this.index = 0;
+                                }
+                                else {
+                                  widget.branchID = widget.branchIDs[value-1];
+                                  this.index = value;
+                                }
+                              });
+
+                              setListViewState( () {
+                                _resetScanPointsList();
+                              });
+                            }
+                          }
+                      );
+                    }
+                ) : Container(),
+                Container(
+                  width: 1400.0,
+                  alignment: Alignment.center,
                   child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: scanPoints,
-                    ),
+                      scrollDirection: Axis.horizontal,
+                      child: containerBuilder( header ,false, false )
                   ),
                 ),
-              )
-          ),
-        ],
+                Container(
+                    height: MediaQuery.of(context).size.height - 226.0 ,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child : Container(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: scanPoints,
+                          ),
+                        ),
+                      ),
+                    )
+                ),
+              ],
+            ),
+          )  ;
+        }
       ),
     );
   }
@@ -276,12 +399,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                 ),
               ],
             ),
-            body: GradientContainer(
-              child: Container(
-                alignment: Alignment.center,
-                child: Text("Manage Scan Locations"),
-              ),
-            ),
+            body: scanLocationViewBuilder(),
           );
         }
         else {

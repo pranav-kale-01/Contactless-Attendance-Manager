@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
 
 class BarCode extends StatelessWidget{
-  String generatorString;
+  final String generatorString;
 
   BarCode({Key? key, required this.generatorString }) : super( key: key );
 

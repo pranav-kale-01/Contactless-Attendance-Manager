@@ -441,7 +441,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
       // insert the data to the branches list
       for (int j = 0; j < jsonData.length ; j++) {
-        // checking if the org_id of current record is equal to the org_id of the user
         users.add( containerBuilder( jsonData[j] , true , true ) );
       }
     }
