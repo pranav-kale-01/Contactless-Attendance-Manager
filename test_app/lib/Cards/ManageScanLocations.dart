@@ -14,6 +14,7 @@ import 'dart:convert';
 
 import 'AddScannerLocation.dart';
 import 'GenerateQRCode.dart';
+import 'ManageShifts.dart';
 
 class ManageScanLocations extends StatefulWidget {
   final userInfo ;
@@ -379,6 +380,17 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                         ),
                       );
                     }
+                ),
+                ListTile(
+                  title: Text("Manage Shifts"),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ManageShifts( userInfo: widget.userInfo ),
+                      ),
+                    );
+                  }
                 ),
                 ListTile(
                   title: Text( 'Sign Out', ),

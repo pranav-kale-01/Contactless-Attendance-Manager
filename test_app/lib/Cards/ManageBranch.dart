@@ -12,6 +12,7 @@ import 'dart:convert';
 
 import 'ManageEmployee.dart';
 import 'ManageScanLocations.dart';
+import 'ManageShifts.dart';
 
 class ViewBranch extends StatefulWidget {
   final userInfo;
@@ -386,7 +387,7 @@ class ViewBranch extends StatefulWidget {
             ),
           ),
           Container(
-              height: MediaQuery.of(context).size.height - 151.0 ,
+              height: MediaQuery.of(context).size.height - 178.0 ,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child : Container(
@@ -532,6 +533,17 @@ class ViewBranchState extends State<ViewBranch>{
                         ),
                       );
                     }
+                ),
+                ListTile(
+                  title: Text( 'Manage Shifts' ),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageShifts( userInfo: widget.userInfo )
+                        ),
+                    );
+                  }
                 ),
                 ListTile(
                   title: Text( 'Sign Out', ),

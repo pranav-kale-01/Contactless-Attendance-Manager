@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'ManageEmployee.dart';
+import 'ManageShifts.dart';
 
 class ManageBranchAdmins extends StatefulWidget {
   final userInfo;
@@ -574,6 +575,18 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                           ),
                         );
                       }
+                  ),
+                  ListTile(
+                    title: Text("Manage Shifts"),
+                    onTap: () {
+                      // redirecting the user to ManageShifts Page
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageShifts( userInfo: widget.userInfo ),
+                        )
+                      );
+                    }
                   ),
                   ListTile(
                     title: Text( 'Sign Out', ),

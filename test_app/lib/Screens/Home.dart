@@ -94,7 +94,7 @@ class _HomeState extends State<Home> {
                     setState(() { });
                   },
                   child: GradientContainer(
-                    child: Text( "couldn't load location, tap to retry", ),
+                    child: Text( snapshot.error.toString(), ),
                   ),
                 ),
               )

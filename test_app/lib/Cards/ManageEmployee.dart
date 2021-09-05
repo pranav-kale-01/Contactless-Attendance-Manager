@@ -12,6 +12,7 @@ import 'package:test_app/utils/CredentialController.dart';
 import 'ManageBranch.dart';
 import 'ManageBranchAdmins.dart';
 import 'ManageScanLocations.dart';
+import 'ManageShifts.dart';
 
 class ManageEmployee extends StatefulWidget {
   final userInfo;
@@ -701,6 +702,18 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                       MaterialPageRoute(
                         builder: (context) => ManageScanLocations( userInfo: widget.userInfo ),
                       ),
+                    );
+                  }
+                ),
+                ListTile(
+                  title: Text("Manage Shifts"),
+                  onTap: () {
+                    // redirecting the user to Manage Shifts page
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageShifts( userInfo : widget.userInfo ),
+                        ),
                     );
                   }
                 ),
