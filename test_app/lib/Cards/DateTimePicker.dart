@@ -6,11 +6,25 @@ import 'package:intl/intl.dart';
 
 class DateTimePicker extends StatefulWidget {
   final String text;
+  late String? initialTime ;
 
-  final TextEditingController dateController;
-  final TextEditingController timeController;
+  TextEditingController dateController = TextEditingController();
+  TextEditingController timeController = TextEditingController();
 
-  DateTimePicker( {Key? key, required this.text, required this.dateController, required this.timeController }) : super( key: key );
+  DateTimePicker( {Key? key, required this.text, dateController , timeController , initialTime }) : super( key: key ) {
+    if( dateController != null ) {
+      this.dateController = dateController;
+    }
+    if( timeController != null ) {
+      this.timeController = timeController;
+    }
+    if( initialTime != null ) {
+      this.initialTime = initialTime;
+    }
+    else {
+      this.initialTime = '';
+    }
+  }
 
   @override
   _DateTimePickerState createState() => _DateTimePickerState();
@@ -21,13 +35,33 @@ class _DateTimePickerState extends State<DateTimePicker> {
   late double _height, _width;
 
   late String _setTime , _setDate;
-
-  late String _hour, _minute, _time;
-
   late String dateTime ;
 
   DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedTime = TimeOfDay( hour: 00, minute: 00 );
+  late TimeOfDay selectedTime;
+
+  @override
+  void initState( ) {
+    // initializing date and time controllers
+    widget.dateController.text = DateFormat.yMd().format( DateTime.now() );
+
+    if( widget.initialTime == '' ) {
+      selectedTime = TimeOfDay( hour: 00, minute: 00 );
+    }
+    else {
+      selectedTime = TimeOfDay( hour: int.parse( widget.initialTime!.split(':')[0] ), minute: int.parse( widget.initialTime!.split(':')[1] ) );
+    }
+
+    super.initState();
+  }
+
+  String getTime( ) {
+    return this._setTime;
+  }
+
+  String getDate() {
+    return this._setDate;
+  }
 
   Future<void> selectDate( BuildContext context ) async {
     DateTime _today = DateTime.now();
@@ -63,39 +97,12 @@ class _DateTimePickerState extends State<DateTimePicker> {
     if( picked != null ) {
       setState( () {
         selectedTime = picked ;
-        _hour = selectedTime.hour.toString();
-        _minute = selectedTime.hour.toString();
-        _time = _hour + ' : ' + _minute;
         widget.timeController.text = formatDate(
           DateTime( selectedDate.year, selectedDate.month, selectedDate.day, selectedTime.hour, selectedTime.minute, 0 ),
-          [ hh,':', nn, ":", ss ] ).toString();
+          [ HH ,':', nn, ":", ss ] ).toString();
       } );
 
     }
-  }
-
-  @override
-  void initState() {
-    DateTime _now = DateTime.now();
-
-    // initializing date and time controllers
-
-    widget.dateController.text = DateFormat.yMd().format( DateTime.now() );
-
-    widget.timeController.text = formatDate(
-      DateTime( _now.year, _now.month, _now.day , _now.hour, _now.minute, 00 ),
-      [hh, ':', nn , ":", ss ]
-    ).toString();
-
-    super.initState();
-  }
-
-  String getTime( ) {
-    return this._setTime;
-  }
-
-  String getDate() {
-    return this._setDate;
   }
 
   @override

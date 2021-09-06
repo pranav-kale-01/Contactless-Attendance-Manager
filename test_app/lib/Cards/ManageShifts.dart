@@ -35,6 +35,10 @@ class _ManageShiftsState extends State<ManageShifts> {
 
   int? index2;
 
+  // creating required controllers
+  TextEditingController _timeController1 =  TextEditingController();
+  TextEditingController _timeController2 =  TextEditingController();
+
   Future<void> setBranches( bool addEmpty ) async {
     int i;
 
@@ -99,8 +103,6 @@ class _ManageShiftsState extends State<ManageShifts> {
     // checking if the user currently signed in is a branch admin, if it is then changing the branch ID to branchID of the branchAdmin
     if( widget.userInfo['authority'] == 'br-admin') {
       widget.branchID = widget.userInfo['branch_id'];
-
-      print("this is the branch id of the current branch admin : " + widget.userInfo['branch_id'] );
     }
 
     String url;
@@ -111,12 +113,9 @@ class _ManageShiftsState extends State<ManageShifts> {
     }
     else {
       url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `shifts` WHERE `shifts`.`org_id` = ${widget.userInfo['org_id']} AND `shifts`.`branch_id`=${widget.branchID}";
-      print( url );
     }
 
     http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body );
 
     List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -144,12 +143,6 @@ class _ManageShiftsState extends State<ManageShifts> {
     else {
       widget.branchID = branchIDs[0];
     }
-
-    // creating required controllers
-    TextEditingController _dateController1 =  TextEditingController();
-    TextEditingController _dateController2 =  TextEditingController();
-    TextEditingController _timeController1 =  TextEditingController();
-    TextEditingController _timeController2 =  TextEditingController();
 
     showDialog(
       context: context,
@@ -201,9 +194,9 @@ class _ManageShiftsState extends State<ManageShifts> {
               ) : Container(),
               Container(
                   margin: EdgeInsets.symmetric( vertical: 10.0 ),
-                  child: DateTimePicker( text: "Start Time" , dateController: _dateController1 , timeController: _timeController1 ),
+                  child: DateTimePicker( text: "Start Time" , timeController: _timeController1 ),
               ),
-              DateTimePicker( text: "End Time" , dateController: _dateController2, timeController: _timeController2, ),
+              DateTimePicker( text: "End Time" , timeController: _timeController2, ),
               Container(
                 margin: EdgeInsets.all( 10.0 ),
                 alignment: Alignment.centerRight,
@@ -285,6 +278,83 @@ class _ManageShiftsState extends State<ManageShifts> {
     );
   }
 
+  Future<void> _editShift( String start_time, String end_time, String id ) async {
+    // setting up the TextEditingControllers with the provided values
+    _timeController1.text = start_time ;
+    _timeController2.text = end_time ;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context ) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric( vertical: 10.0 ),
+                child: DateTimePicker( text: "Start Time" , timeController: _timeController1, initialTime: start_time, ),
+              ),
+              DateTimePicker( text: "End Time" , timeController: _timeController2, initialTime: end_time, ),
+              Container(
+                child: MaterialButton(
+                  color: Colors.blue,
+                  onPressed: () async {
+                    // checking if the startTime == endTime
+                    if( _timeController1.text == _timeController2.text ) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              backgroundColor: Colors.white,
+                              content: Text("Shift Start Time and End Time cannot be same"),
+                            );
+                          }
+                      );
+
+                      // popping the Dialog after 3 seconds
+                      Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
+                    }
+                    else {
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_shift.php?id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'";
+
+                      http.Response response = await http.get( Uri.parse( url ) );
+
+                      if( response.body != '1' ) {
+                        print( "Something Went Wrong ");
+                      }
+                      else {
+                        // removing the popup
+                        Navigator.pop(context);
+
+                        // reloading the page
+                        setState( () {} );
+                      }
+                    }
+                  },
+                  child: Text("Ok"),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  Future<void> _deleteShift( String id ) async {
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_shift.php?id=$id";
+
+    http.Response response = await http.get( Uri.parse( url ) );
+
+    if( response.body != '1' ) {
+      print("Something went wrong");
+    }
+    else{
+      // reloading the screen
+      setState( () {} );
+    }
+  }
+
   Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
@@ -330,7 +400,8 @@ class _ManageShiftsState extends State<ManageShifts> {
               child: Text( data['branch_id'] ),
           ),
           addEdit ? MaterialButton(
-              onPressed: () {
+              onPressed: () async {
+                await _editShift( data['start_time'] , data['end_time'] , data['id'] );
               },
               child: Container(
                 width: 150.0,
@@ -357,7 +428,8 @@ class _ManageShiftsState extends State<ManageShifts> {
             width: 205.0,
           ),
           addDelete ? MaterialButton(
-              onPressed: () {
+              onPressed: () async {
+                  await _deleteShift( data['id'] );
               },
               child: Container(
                 width: 150.0,
@@ -433,8 +505,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                               // clearing the previous list of employees
                               shifts.clear();
 
-                              print( widget.branchID );
-
                               // checking the branchID and making changes to the shifts list accordingly
                               if( widget.branchID == '' ) {
                                 for( var i in records ) {
@@ -445,8 +515,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                                     'org_id' : i[3],
                                     'branch_id' : i[4],
                                   };
-
-                                  print( data.toString() );
 
                                   shifts.add( containerBuilder( data , true, true ) );
                                 }
@@ -461,8 +529,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                                       'org_id' : i[3],
                                       'branch_id' : i[4],
                                     };
-
-                                    print( data.toString() );
 
                                     shifts.add( containerBuilder( data , true, true ) );
                                   }
