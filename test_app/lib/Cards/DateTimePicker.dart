@@ -5,7 +5,12 @@ import 'package:intl/intl.dart';
 
 
 class DateTimePicker extends StatefulWidget {
-  DateTimePicker( {Key? key }) : super( key: key );
+  final String text;
+
+  final TextEditingController dateController;
+  final TextEditingController timeController;
+
+  DateTimePicker( {Key? key, required this.text, required this.dateController, required this.timeController }) : super( key: key );
 
   @override
   _DateTimePickerState createState() => _DateTimePickerState();
@@ -24,9 +29,6 @@ class _DateTimePickerState extends State<DateTimePicker> {
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay( hour: 00, minute: 00 );
 
-  TextEditingController _dateController = TextEditingController();
-  TextEditingController _timeController = TextEditingController();
-
   Future<void> selectDate( BuildContext context ) async {
     DateTime _today = DateTime.now();
 
@@ -41,7 +43,7 @@ class _DateTimePickerState extends State<DateTimePicker> {
     if( picked != null ) {
       setState( () {
         selectedDate = picked;
-        _dateController.text =  DateFormat.yMd().format( selectedDate );
+        widget.dateController.text =  DateFormat.yMd().format( selectedDate );
       });
     }
   }
@@ -51,6 +53,12 @@ class _DateTimePickerState extends State<DateTimePicker> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: selectedTime,
+      builder: (context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
     );
     if( picked != null ) {
       setState( () {
@@ -58,9 +66,9 @@ class _DateTimePickerState extends State<DateTimePicker> {
         _hour = selectedTime.hour.toString();
         _minute = selectedTime.hour.toString();
         _time = _hour + ' : ' + _minute;
-        _timeController.text = formatDate(
-          DateTime( selectedDate.year, selectedDate.month, selectedDate.day, selectedTime.hour, selectedTime.minute),
-          [hh,':', nn, " ", am ] ).toString();
+        widget.timeController.text = formatDate(
+          DateTime( selectedDate.year, selectedDate.month, selectedDate.day, selectedTime.hour, selectedTime.minute, 0 ),
+          [ hh,':', nn, ":", ss ] ).toString();
       } );
 
     }
@@ -72,11 +80,11 @@ class _DateTimePickerState extends State<DateTimePicker> {
 
     // initializing date and time controllers
 
-    _dateController.text = DateFormat.yMd().format( DateTime.now() );
+    widget.dateController.text = DateFormat.yMd().format( DateTime.now() );
 
-    _timeController.text = formatDate(
-      DateTime( _now.year, _now.month, _now.day , _now.hour, _now.minute ),
-      [hh, ':', nn , " ", am ]
+    widget.timeController.text = formatDate(
+      DateTime( _now.year, _now.month, _now.day , _now.hour, _now.minute, 00 ),
+      [hh, ':', nn , ":", ss ]
     ).toString();
 
     super.initState();
@@ -97,115 +105,65 @@ class _DateTimePickerState extends State<DateTimePicker> {
 
     dateTime = DateFormat.yMd().format( DateTime.now() );
 
-    return Scaffold(
-      backgroundColor: Colors.black26,
-      body: GestureDetector(
-        onTap: () {
-          Navigator.of(context).pop( [ _timeController.text ] );
-        },
-        child: Container(
-          color: Colors.black26,
-          alignment: Alignment.center,
-          child: GestureDetector(
-            onTap: () {},
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular( 20.0 ),
-                color: Colors.white,
-              ),
-              width: _width - 200.0 ,
-              height: _height - 200.0 ,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget> [
-                  // Column(
-                  //   children: <Widget> [
-                  //     Text(
-                  //       "Choose Date",
-                  //       style: TextStyle(
-                  //         fontStyle: FontStyle.italic,
-                  //         fontWeight: FontWeight.w600,
-                  //         letterSpacing: 0.5,
-                  //       ),
-                  //     ),
-                  //     InkWell(
-                  //       onTap: () {
-                  //         selectDate( context );
-                  //       },
-                  //       child: Container(
-                  //         width: _width / 1.7,
-                  //         height: _height / 9,
-                  //         margin: EdgeInsets.only( top: 30.0 ),
-                  //         alignment: Alignment.center,
-                  //         decoration: BoxDecoration(
-                  //           color: Colors.grey[200],
-                  //         ),
-                  //         child: TextFormField(
-                  //           style: TextStyle(
-                  //             fontSize: 40.0,
-                  //           ),
-                  //           textAlign: TextAlign.center,
-                  //           enabled: false,
-                  //           keyboardType: TextInputType.text,
-                  //           controller: _dateController,
-                  //           onSaved: (String? val) {
-                  //             _setDate = val!;
-                  //           },
-                  //           decoration: InputDecoration(
-                  //             disabledBorder: UnderlineInputBorder(
-                  //               borderSide: BorderSide.none,
-                  //             ),
-                  //             contentPadding: EdgeInsets.only( top: 0.0 )
-                  //           ),
-                  //         )
-                  //       )
-                  //     ),
-                  //   ],
-                  // ),
-                  Column(
-                    children: <Widget>[
-                      Text(
-                        'Choose Time',
-                        style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          selectTime(context);
-                        },
-                        child: Container(
-                          margin: EdgeInsets.only(top: 30),
-                          width: _width / 1.7,
-                          height: _height / 9,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(color: Colors.grey[200]),
-                          child: TextFormField(
-                            style: TextStyle(fontSize: 40),
-                            textAlign: TextAlign.center,
-                            onSaved: (String? val) {
-                              _setTime = val!;
-                            },
-                            enabled: false,
-                            keyboardType: TextInputType.text,
-                            controller: _timeController,
-                            decoration: InputDecoration(
-                                disabledBorder:
-                                UnderlineInputBorder(borderSide: BorderSide.none),
-                                contentPadding: EdgeInsets.all(5)
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+    return Container(
+      color: Colors.white,
+      width: 350.0 ,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget> [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.symmetric( horizontal: 5.0 ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    widget.text,
+                    style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 0.5,
+                    ),
                   ),
-                ]
+                ),
               ),
-            ),
+              InkWell(
+                onTap: () {
+                  selectTime(context);
+                },
+                child: Container(
+                  margin: EdgeInsets.only(top: 30),
+                  width: _width / 7,
+                  height: _height / 7,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular( 20.0 ),
+                  ),
+                  child: TextFormField(
+                    style: TextStyle(fontSize: 40),
+                    textAlign: TextAlign.center,
+                    onSaved: (String? val) {
+                      _setTime = val!;
+                    },
+                    enabled: false,
+                    keyboardType: TextInputType.text,
+                    controller: widget.timeController,
+                    decoration: InputDecoration(
+                        disabledBorder:
+                        UnderlineInputBorder(borderSide: BorderSide.none),
+                        contentPadding: EdgeInsets.all(5)
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        ]
       ),
     );
   }
