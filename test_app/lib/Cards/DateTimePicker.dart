@@ -7,11 +7,12 @@ import 'package:intl/intl.dart';
 class DateTimePicker extends StatefulWidget {
   final String text;
   late String? initialTime ;
+  var onTapInkWell;
 
   TextEditingController dateController = TextEditingController();
   TextEditingController timeController = TextEditingController();
 
-  DateTimePicker( {Key? key, required this.text, dateController , timeController , initialTime }) : super( key: key ) {
+  DateTimePicker( {Key? key, required this.text, dateController , timeController , initialTime, onTapInkWell }) : super( key: key ) {
     if( dateController != null ) {
       this.dateController = dateController;
     }
@@ -23,6 +24,9 @@ class DateTimePicker extends StatefulWidget {
     }
     else {
       this.initialTime = '';
+    }
+    if( onTapInkWell != null ) {
+      this.onTapInkWell = onTapInkWell ;
     }
   }
 
@@ -40,6 +44,8 @@ class _DateTimePickerState extends State<DateTimePicker> {
   DateTime selectedDate = DateTime.now();
   late TimeOfDay selectedTime;
 
+  late var onTapInkWell;
+
   @override
   void initState( ) {
     // initializing date and time controllers
@@ -51,6 +57,14 @@ class _DateTimePickerState extends State<DateTimePicker> {
     else {
       selectedTime = TimeOfDay( hour: int.parse( widget.initialTime!.split(':')[0] ), minute: int.parse( widget.initialTime!.split(':')[1] ) );
     }
+
+    if(widget.onTapInkWell == null ) {
+      onTapInkWell = () { };
+    }
+    else {
+      onTapInkWell = widget.onTapInkWell;
+    }
+
 
     super.initState();
   }
@@ -140,6 +154,8 @@ class _DateTimePickerState extends State<DateTimePicker> {
               InkWell(
                 onTap: () {
                   selectTime(context);
+
+                  onTapInkWell();
                 },
                 child: Container(
                   margin: EdgeInsets.only(top: 30),

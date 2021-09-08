@@ -34,7 +34,7 @@ class _ManageScanState extends State<ManageScan> {
 
   late String email;
   late String rangeStatus;
-  late Map<String, String> coords;
+  late Map<String, String>? coords;
   Location locator = Location();
   bool interrupt = false;
 
@@ -45,8 +45,6 @@ class _ManageScanState extends State<ManageScan> {
   List<DropdownMenuItem<int>> _shifts = [ DropdownMenuItem(value:0, child: Text("") ) ];
   List<String> shiftIDs = [];
   int? index2;
-
-  bool disableManualTime = true ;
 
   TextEditingController _timeController1 = TextEditingController();
   TextEditingController _timeController2 = TextEditingController();
@@ -104,41 +102,43 @@ class _ManageScanState extends State<ManageScan> {
     }
 
     this.qrString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
-    if( this.qrString == "-1" )
-      this.qrString = "No data!";
-    setState( () { });
   }
 
   Future<void> _insertScan( ) async {
-    // getting the current Datetime
-    String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
-    //checking the user with same UId has scanned in the previous minute
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scans&condition&post&condition2&post2&custom=* FROM `scans` WHERE `scans`.`UID`=${widget.userInfo['UID']} AND `scans`.`time` LIKE '${formattedDateTime.substring(0, formattedDateTime.length - 2) }%'";
+    // checking if the qrString's organization id and the user's organization id matches
+    if( qrString.substring(0 , qrString.length -1 ).split(":")[2] == widget.userInfo['org_id'] ) {
+      // getting the current Datetime
+      String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
-    http.Response response = await http.get( Uri.parse( url ) );
+      //checking the user with same UId has scanned in the previous minute
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scans&condition&post&condition2&post2&custom=* FROM `scans` WHERE `scans`.`UID`=${widget.userInfo['UID']} AND `scans`.`time` LIKE '${formattedDateTime.substring(0, formattedDateTime.length - 2) }%'";
 
-    if( response.body != '[]' ) {
-      // this means that the user has scanned in the previous minute
-      print("user already marked as attendee") ;
-    }
-    else {
-      // inserting the scan data into the scans table
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_scan.php?uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&time=$formattedDateTime&scanner_location=${coords['lat'].toString() + '-' + coords['lon'].toString()}";
+      http.Response response = await http.get( Uri.parse( url ) );
 
-      response = await http.get( Uri.parse( url ) );
-
-      print( response.body );
-
-      if( response.body == 'true' ) {
-        print('user attendance marked');
+      if( response.body != '[]' ) {
+        // this means that the user has scanned in the previous minute
+        print("user already marked as attendee") ;
       }
       else {
-        print('user attendance not marked');
+        // inserting the scan data into the scans table
+        url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_scan.php?uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&time=$formattedDateTime&scanner_location=${coords!['lat'].toString() + '-' + coords!['lon'].toString()}&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
+
+        response = await http.get( Uri.parse( url ) );
+
+        print( response.body );
+
+        if( response.body == 'true' ) {
+          print('user attendance marked');
+        }
+        else {
+          print('user attendance not marked');
+        }
       }
     }
-
-
+    else {
+      print("Invalid QR Code ") ;
+    }
   }
 
   Future<void> setBranches( bool addEmpty ) async {
@@ -222,27 +222,31 @@ class _ManageScanState extends State<ManageScan> {
                           // sets the data into qrString
                           await scanQR();
 
-                          var list =  qrString.split(':');
+                          print( qrString ) ;
 
-                          this._lat = double.parse( list[0] ) ;
-                          this._lon = double.parse( list[1] ) ;
+                          if( qrString != '-1' ) {
+                            var list = qrString.split(':');
 
-                          // getting the current user location
-                          await loadCoordinates( );
+                            this._lat = double.parse( list[0] ) ;
+                            this._lon = double.parse( list[1] ) ;
 
-                          // calculating the distance of the device from the scanning location
-                          double distance = calcDistance( this._lat , this._lon , double.parse( coords['lat']! )  , double.parse( coords['lon']! ) ) / 100;
+                            // getting the current user location
+                            await loadCoordinates( );
 
-                          if( distance < 5.0 ) {
-                            // if the device is in the range then adding the scan to the scans list..
-                            rangeStatus = "In Range" ;
+                            // calculating the distance of the device from the scanning location
+                            double distance = calcDistance( this._lat , this._lon , double.parse( coords!['lat']! )  , double.parse( coords!['lon']! ) ) / 100;
 
-                            // inserting the data into scans table
-                            _insertScan( );
-                          }
-                          else {
-                            print( distance );
-                            rangeStatus = "Out of Range" ;
+                            if( distance < 5.0 ) {
+                              // if the device is in the range then adding the scan to the scans list..
+                              rangeStatus = "In Range" ;
+
+                              // inserting the data into scans table
+                              _insertScan( );
+                            }
+                            else {
+                              print( distance );
+                              rangeStatus = "Out of Range" ;
+                            }
                           }
                         }
                     ),
@@ -305,14 +309,34 @@ class _ManageScanState extends State<ManageScan> {
                                       onChanged: (int? value) {
                                         if( _shifts[value!].child.toString() == "Text(\"\")" ) {
                                           widget.shiftID = '';
-                                          setContentsState( ( ) => this.index2 = 0 );
-                                          this.disableManualTime = true ;
+
+                                          setContentsState( ( ) {
+                                            this.index2 = 0;
+
+                                            // assigning 00:00 to timeControllers
+                                            this._timeController1.text = "00:00:0";
+                                            this._timeController2.text = "00:00:0";
+                                          } );
+
                                         }
                                         else {
                                           widget.shiftID = this.shiftIDs[value];
-                                          setContentsState(() => this.index2 = this._shifts[value].value );
-                                          this.disableManualTime = false ;
+
+                                          setContentsState(() {
+                                            this.index2 = this._shifts[value].value;
+
+                                            // setting the timeControllers according to the shift selected
+                                            String timeString = _shifts[index2!].child.toString();
+
+                                            // the tempArr will hold [start_time, end_time ]
+                                            var tempArr = timeString.substring(6, timeString.length - 2 ).split(" - ");
+
+                                            // assigning the shift timings to timeControllers
+                                            this._timeController1.text = tempArr[0] ;
+                                            this._timeController2.text = tempArr[1] ;
+                                          } );
                                         }
+
                                       },
                                     ),
                                   ),
@@ -370,37 +394,28 @@ class _ManageScanState extends State<ManageScan> {
                                     children: [
                                       Container(
                                         width: 140.0,
-                                        child: this.disableManualTime == true ? DateTimePicker(text: '', timeController: _timeController1 ) : GestureDetector(
-                                          onTap: () {
-                                            print("please de-select the branch");
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(20.0),
-                                              color: Colors.grey[200],
-                                            ),
-                                            margin: EdgeInsets.only( top: 50.0 ),
-                                            width: 100.0,
-                                            height: 110.0,
-                                          ),
+                                        child: DateTimePicker(
+                                            text: '',
+                                            timeController: _timeController1,
+                                            initialTime: _timeController1.text ,
+                                            onTapInkWell: () {
+                                              setContentsState(() {
+                                                  this.index2 = 0;
+                                              });
+                                            }
                                         ),
                                       ),
                                       Container(
                                         width: 140.0,
-                                        child: this.disableManualTime == true ? DateTimePicker( text: '', timeController: _timeController2 ) : GestureDetector(
-                                          onTap: () {
-                                            print("please de-select the branch");
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(20.0),
-                                              color: Colors.grey[200],
-                                            ),
-                                            margin: EdgeInsets.only( top: 50.0 ),
-                                            width: 100.0,
-                                            height: 110.0,
-                                          ),
-                                        ),
+                                        child: DateTimePicker(
+                                          text: '',
+                                          timeController: _timeController2 ,
+                                          initialTime: _timeController2.text,
+                                          onTapInkWell: () {
+                                            setContentsState(() {
+                                              this.index2 = 0;
+                                            });
+                                          }),
                                       ),
                                     ],
                                   ),
@@ -435,17 +450,21 @@ class _ManageScanState extends State<ManageScan> {
                           ),
                         ),
                         MaterialButton(
-                          onPressed: () {
-                            // checking the disableManualTime flag to check if the user has selected a shift or have entered the time manually
-                            if( this.disableManualTime == true ) {
-                              // means the user has selected a shift
-                              print( _timeController1.text );
-                              print( _timeController2.text );
+                          onPressed: () async {
+                            // adding the data to scans table
+
+                            print( _timeController1.text );
+                            print( _timeController2.text );
+                            print( widget.userInfo['org_id'] );
+                            print( widget.userInfo['branch_id'] );
+
+                            // checking if the user has scanned the qr-Code
+                            if( this.coords == null ) {
+                              print("scan the code");
+                              return;
                             }
-                            else {
-                              // means the user has given the time manually
-                              print( _shifts[index2!].child.toString().substring(6,) );
-                            }
+
+                            await _insertScan();
                           },
                           child: Container(
                               decoration: BoxDecoration(
