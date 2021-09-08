@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:test_app/utils/Location.dart';
-import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -13,9 +12,13 @@ import 'package:vector_math/vector_math.dart' as VMath;
 import 'dart:math';
 
 import 'package:http/http.dart' as http ;
+import 'dart:convert';
+
+import 'DateTimePicker.dart';
 
 class ManageScan extends StatefulWidget {
   final userInfo;
+  late String shiftID;
 
   ManageScan({Key? key, required this.userInfo }) : super( key: key );
 
@@ -37,6 +40,16 @@ class _ManageScanState extends State<ManageScan> {
 
   late String qrString= '' ;
 
+  List<Widget> shifts = [];
+  List<List> records = [];
+  List<DropdownMenuItem<int>> _shifts = [ DropdownMenuItem(value:0, child: Text("") ) ];
+  List<String> shiftIDs = [];
+  int? index2;
+
+  bool disableManualTime = true ;
+
+  TextEditingController _timeController1 = TextEditingController();
+  TextEditingController _timeController2 = TextEditingController();
 
   double calcDistance( double lat1, double lon1, double lat2, double lon2 ) {
     // creating new VMath object
@@ -100,11 +113,6 @@ class _ManageScanState extends State<ManageScan> {
     // getting the current Datetime
     String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
-    // print( widget.userInfo['UID'] );
-    // print( this._lat.toString() + '-' + this._lon.toString() );
-    // print( formattedDateTime );
-    // print( coords['lat'].toString() + '-' + coords['lon'].toString() );
-
     //checking the user with same UId has scanned in the previous minute
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scans&condition&post&condition2&post2&custom=* FROM `scans` WHERE `scans`.`UID`=${widget.userInfo['UID']} AND `scans`.`time` LIKE '${formattedDateTime.substring(0, formattedDateTime.length - 2) }%'";
 
@@ -133,262 +141,371 @@ class _ManageScanState extends State<ManageScan> {
 
   }
 
+  Future<void> setBranches( bool addEmpty ) async {
+    int i;
+
+    // getting all the branches of the current organization
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=shifts&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
+
+    http.Response response = await http.get( Uri.parse(url) );
+
+    List<dynamic> jsonData = jsonDecode( response.body );
+
+    // clearing the previous list
+    _shifts.clear();
+    shiftIDs.clear();
+
+    // checking if there are no branches, then adding an empty branch
+    if( jsonData.length == 0 ) {
+      // adding a blank entry
+      _shifts.add(
+        DropdownMenuItem(
+          value: 0,
+          child: Text(''),
+        ),
+      ) ;
+
+      return;
+    }
+
+    int index;
+
+    if( addEmpty ) {
+      index =1 ;
+
+      _shifts.add(
+          DropdownMenuItem(
+            value: 0,
+            child: Text(""),
+          )
+      );
+      shiftIDs.add( '' );
+    }
+    else index =0;
+
+    // adding the data to _branches
+    for( i=0; i< jsonData.length ; i++ ) {
+      Map<String,dynamic> data = jsonData[i];
+      _shifts.add(
+        DropdownMenuItem(
+          value: index,
+          child: Text( data['start_time'] + ' - ' + data['end_time'] ),
+        ),
+      ) ;
+
+      shiftIDs.add( data['id'] );
+      index+=1;
+    }
+
+    // setting the default value for branchID
+    widget.shiftID = shiftIDs[0];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-      body: HomeScreenBuilder(
-        appbar: AppBar(
-          title: Text( "Employee", ),
-          actions: [
-            Container(
-              margin: EdgeInsets.symmetric( horizontal: 20.0 ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.qr_code_scanner_sharp,
-                  color: Colors.white,
-                ),
-                onPressed: () async {
-                  // sets the data into qrString
-                  await scanQR();
-
-                  var list =  qrString.split(':');
-
-                  this._lat = double.parse( list[0] ) ;
-                  this._lon = double.parse( list[1] ) ;
-
-                  // getting the current user location
-                  await loadCoordinates( );
-
-                  // calculating the distance of the device from the scanning location
-                  double distance = calcDistance( this._lat , this._lon , double.parse( coords['lat']! )  , double.parse( coords['lon']! ) ) / 100;
-
-                  if( distance < 5.0 ) {
-                    // if the device is in the range then adding the scan to the scans list..
-                    rangeStatus = "In Range" ;
-
-                    // inserting the data into scans table
-                    _insertScan( );
-                  }
-                  else {
-                    print( distance );
-                    rangeStatus = "Out of Range" ;
-                  }
-                }
-              ),
-            ),
-          ],
-        ),
-        body: !kIsWeb ? Container(
-          height: 700.0,
-          width: 450.0 ,
-          color: Colors.white,
-          child: Column (
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Container(
-                padding: EdgeInsets.all( 20.0 ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular( 20.0 ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      offset: Offset( 0.0, 5.0),
-                      blurRadius: 10.0,
-                    ),
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: Offset( 2.0, 0.0),
-                      blurRadius: 10.0,
-                    ),
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: Offset( -2.0, 0.0),
-                      blurRadius: 10.0,
-                    ),
-                  ]
-                ),
-                child: Container(
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.symmetric( vertical: 20.0 ),
-                        child: Text(
-                            "Select You shift : ",
-                            style: TextStyle(
-                              fontSize: 30.0,
-                              fontWeight: FontWeight.w300,
-                            )
+    return FutureBuilder(
+      future: setBranches( true ),
+      builder: (context, snapshot ) {
+        if( snapshot.connectionState == ConnectionState.done ) {
+          return HomeScreenBuilder(
+              appbar: AppBar(
+                title: Text( "Employee", ),
+                actions: [
+                  Container(
+                    margin: EdgeInsets.symmetric( horizontal: 20.0 ),
+                    child: IconButton(
+                        icon: Icon(
+                          Icons.qr_code_scanner_sharp,
+                          color: Colors.white,
                         ),
-                      ),
-                      Container(
-                        width: 300.0 ,
-                        height: 50.0,
-                        alignment: Alignment.center,
-                        child: DropdownButton(
-                          isExpanded: true,
-                          value: 0 ,
-                          items: [],
-                        ),
-                      ),
-                    ]
+                        onPressed: () async {
+                          // sets the data into qrString
+                          await scanQR();
+
+                          var list =  qrString.split(':');
+
+                          this._lat = double.parse( list[0] ) ;
+                          this._lon = double.parse( list[1] ) ;
+
+                          // getting the current user location
+                          await loadCoordinates( );
+
+                          // calculating the distance of the device from the scanning location
+                          double distance = calcDistance( this._lat , this._lon , double.parse( coords['lat']! )  , double.parse( coords['lon']! ) ) / 100;
+
+                          if( distance < 5.0 ) {
+                            // if the device is in the range then adding the scan to the scans list..
+                            rangeStatus = "In Range" ;
+
+                            // inserting the data into scans table
+                            _insertScan( );
+                          }
+                          else {
+                            print( distance );
+                            rangeStatus = "Out of Range" ;
+                          }
+                        }
+                    ),
                   ),
-                ),
+                ],
               ),
-              Text(
-                  "OR",
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.w400,
-                  ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric( vertical: 20.0 ),
-                margin: EdgeInsets.all( 10.0 ),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular( 20.0 ),
+              body: !kIsWeb ? StatefulBuilder(
+                builder: (context, setContentsState ) {
+                  return Container(
+                    height: 700.0,
+                    width: 450.0 ,
                     color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        offset: Offset( 0.0 , 5.0 ),
-                        blurRadius: 10.0,
-                      ),
-                      BoxShadow(
-                        color: Colors.black26,
-                        offset: Offset( 2.0 , 0.0 ),
-                        blurRadius: 10.0,
-                      ),
-                      BoxShadow(
-                        color: Colors.black26,
-                        offset: Offset( -2.0 , 0.0 ),
-                        blurRadius: 10.0,
-                      ),
-                    ]
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                        "Enter Start & End Time ",
-                        style: TextStyle(
-                          fontSize: 30.0,
-                          fontWeight: FontWeight.w300,
+                    child: Column (
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all( 20.0 ),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular( 20.0 ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  offset: Offset( 0.0, 5.0),
+                                  blurRadius: 10.0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: Offset( 2.0, 0.0),
+                                  blurRadius: 10.0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: Offset( -2.0, 0.0),
+                                  blurRadius: 10.0,
+                                ),
+                              ]
+                          ),
+                          child: Container(
+                            child: Column(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.symmetric( vertical: 20.0 ),
+                                    child: Text(
+                                        "Select You shift : ",
+                                        style: TextStyle(
+                                          fontSize: 30.0,
+                                          fontWeight: FontWeight.w300,
+                                        )
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.zero,
+                                    margin: EdgeInsets.zero,
+                                    child: DropdownButton(
+                                      isExpanded: true,
+                                      value: index2,
+                                      items: _shifts,
+                                      onChanged: (int? value) {
+                                        if( _shifts[value!].child.toString() == "Text(\"\")" ) {
+                                          widget.shiftID = '';
+                                          setContentsState( ( ) => this.index2 = 0 );
+                                          this.disableManualTime = true ;
+                                        }
+                                        else {
+                                          widget.shiftID = this.shiftIDs[value];
+                                          setContentsState(() => this.index2 = this._shifts[value].value );
+                                          this.disableManualTime = false ;
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ]
+                            ),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                    ) ,
-                    Container(
-                      width: 400.0,
-                      margin: EdgeInsets.symmetric( vertical: 20.0 ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Container(
-                            width: 140.0,
-                            child: TextField(
-                              decoration: InputDecoration(
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: Colors.blue,
+                        Text(
+                          "OR",
+                          style: TextStyle(
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric( vertical: 20.0 ),
+                          margin: EdgeInsets.all( 10.0 ),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular( 20.0 ),
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  offset: Offset( 0.0 , 5.0 ),
+                                  blurRadius: 10.0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  offset: Offset( 2.0 , 0.0 ),
+                                  blurRadius: 10.0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  offset: Offset( -2.0 , 0.0 ),
+                                  blurRadius: 10.0,
+                                ),
+                              ]
+                          ),
+                          child: Column(
+                              children: [
+                                Text(
+                                  "Enter Start & End Time ",
+                                  style: TextStyle(
+                                    fontSize: 30.0,
+                                    fontWeight: FontWeight.w300,
                                   ),
-                                  borderRadius: BorderRadius.circular( 20.0 ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 140.0,
-                            child: TextField(
-                              decoration: InputDecoration(
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Colors.blue,
+                                  textAlign: TextAlign.center,
+                                ) ,
+                                Container(
+                                  width: 400.0,
+                                  margin: EdgeInsets.symmetric( vertical: 20.0 ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Container(
+                                        width: 140.0,
+                                        child: this.disableManualTime == true ? DateTimePicker(text: '', timeController: _timeController1 ) : GestureDetector(
+                                          onTap: () {
+                                            print("please de-select the branch");
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(20.0),
+                                              color: Colors.grey[200],
+                                            ),
+                                            margin: EdgeInsets.only( top: 50.0 ),
+                                            width: 100.0,
+                                            height: 110.0,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 140.0,
+                                        child: this.disableManualTime == true ? DateTimePicker( text: '', timeController: _timeController2 ) : GestureDetector(
+                                          onTap: () {
+                                            print("please de-select the branch");
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(20.0),
+                                              color: Colors.grey[200],
+                                            ),
+                                            margin: EdgeInsets.only( top: 50.0 ),
+                                            width: 100.0,
+                                            height: 110.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                ),
+                                SizedBox(
+                                  height: 10.0,
+                                ),
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Container(
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          "Start-Time",
+                                          style: TextStyle(
+                                            fontSize: 18.0,
+                                          ),
+                                        ) ,
+                                      ),
+                                      Container(
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                            "End-Time",
+                                            style: TextStyle(
+                                              fontSize: 18.0,
+                                            )
+                                        ),
+                                      ),
+                                    ]
+                                ),
+                              ]
+                          ),
+                        ),
+                        MaterialButton(
+                          onPressed: () {
+                            // checking the disableManualTime flag to check if the user has selected a shift or have entered the time manually
+                            if( this.disableManualTime == true ) {
+                              // means the user has selected a shift
+                              print( _timeController1.text );
+                              print( _timeController2.text );
+                            }
+                            else {
+                              // means the user has given the time manually
+                              print( _shifts[index2!].child.toString().substring(6,) );
+                            }
+                          },
+                          child: Container(
+                              decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular( 20.0 ),
-                                ),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      offset: Offset( 2.0, 0.0 ),
+                                      blurRadius: 5.0,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      offset: Offset( -2.0, 0.0 ),
+                                      blurRadius: 5.0,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      offset: Offset( 0.0, 2.0 ),
+                                      blurRadius: 5.0,
+                                    ),
+                                  ]
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Container(
-                            alignment: Alignment.center,
-                            child: Text(
-                                "Start-Time",
+                              padding: EdgeInsets.symmetric( vertical: 10.0, horizontal: 35.0 ),
+                              child: Text(
+                                "Done",
                                 style: TextStyle(
-                                  fontSize: 18.0,
+                                  fontSize: 30.0,
+                                  fontWeight: FontWeight.w400,
                                 ),
-                            ) ,
+                              )
                           ),
-                          Container(
-                            alignment: Alignment.center,
-                            child: Text(
-                                "End-Time",
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                )
-                            ),
-                          ),
-                        ]
+                        )
+                      ],
                     ),
-                  ]
-                ),
+                  );
+                }
+              ) : Container(
+                  alignment: Alignment.center,
+                  child: Text("cannot load this page on web")
               ),
-              MaterialButton(
-                onPressed: () {
-                  print("Done button was pressed ");
-                },
-                child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular( 20.0 ),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          offset: Offset( 2.0, 0.0 ),
-                          blurRadius: 5.0,
-                        ),
-                        BoxShadow(
-                          color: Colors.black26,
-                          offset: Offset( -2.0, 0.0 ),
-                          blurRadius: 5.0,
-                        ),
-                        BoxShadow(
-                          color: Colors.black26,
-                          offset: Offset( 0.0, 2.0 ),
-                          blurRadius: 5.0,
-                        ),
-                      ]
-                    ),
-                    padding: EdgeInsets.symmetric( vertical: 10.0, horizontal: 35.0 ),
-                    child: Text(
-                        "Done",
-                        style: TextStyle(
-                          fontSize: 30.0,
-                          fontWeight: FontWeight.w400,
-                        ),
-                    )
-                ),
-              )
-            ],
-          ),
-        ) : Container(
-          alignment: Alignment.center,
-          child: Text("cannot load this page on web")
-        ),
-      ),
-      ),
+          );
+        }
+        else if( snapshot.hasError ) {
+          return HomeScreenBuilder(
+            body: Container(
+              alignment: Alignment.center,
+              child: Text( snapshot.error.toString() ),
+            ),
+          );
+        }
+        else {
+          return HomeScreenBuilder(
+            body: Container(
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(),
+            )
+          );
+        }
+      }
     );
   }
 }

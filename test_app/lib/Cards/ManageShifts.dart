@@ -155,17 +155,49 @@ class _ManageShiftsState extends State<ManageShifts> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // checking if the user if org-admin, if so then adding a new Dropdown to select Branch for which the shift will be applied
-              widget.userInfo['authority'] == 'org-admin' ? Row(
+              widget.userInfo['authority'] == 'org-admin' ? MediaQuery.of(context).size.width < 500 ? Column (
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Text("Select Branch"),
-                    )
+                  Container(
+                    alignment: Alignment.center,
+                    child: Text("Select Branch"),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width / 7,
+                    width: 180 ,
+                    child: StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState ) {
+                          return Container(
+                            padding: EdgeInsets.zero,
+                            margin: EdgeInsets.zero,
+                            child: DropdownButton(
+                              isExpanded: true,
+                              value: index2,
+                              items: _branches,
+                              onChanged: (int? value) {
+                                if( _branches[value!].child.toString() == "Text(\"\")" ) {
+                                  widget.branchID = '';
+                                  setState( ( ) => this.index2 = 0 );
+                                }
+                                else {
+                                  widget.branchID = this.branchIDs[value];
+                                  setState(() => this.index2 = this._branches[value].value );
+                                }
+                              },
+                            ),
+                          );
+                        }
+                    ),
+                  ),
+                ],
+              ) : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    alignment: Alignment.center,
+                    child: Text("Select Branch"),
+                  ),
+                  Container(
+                    width: 180 ,
                     child: StatefulBuilder(
                         builder: (BuildContext context, StateSetter setState ) {
                           return Container(
@@ -475,73 +507,78 @@ class _ManageShiftsState extends State<ManageShifts> {
       child: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState1 ) {
             return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 widget.userInfo['authority'] == 'org-admin' ?
-                Container(
-                  width: 1000,
-                  alignment: Alignment.center,
-                  child: StatefulBuilder(
-                      builder: (BuildContext context, StateSetter setState ) {
-                        return Container(
-                          alignment: Alignment.topRight,
-                          padding: EdgeInsets.zero,
-                          margin: EdgeInsets.zero,
-                          width: 200.0,
-                          child: DropdownButton(
-                            isExpanded: true,
-                            dropdownColor: Colors.white,
-                            value: index2,
-                            items: _branches,
-                            onChanged: (int? value) {
-                              if( _branches[value!].child.toString() == "Text(\"\")" ) {
-                                widget.branchID = '';
-                                setState( ( ) => this.index2 = 0 );
-                              }
-                              else {
-                                widget.branchID = this.branchIDs[value];
-                                setState(() => this.index2 = this._branches[value].value );
-                              }
-
-                              // clearing the previous list of employees
-                              shifts.clear();
-
-                              // checking the branchID and making changes to the shifts list accordingly
-                              if( widget.branchID == '' ) {
-                                for( var i in records ) {
-                                  Map<String, String> data = {
-                                    'id' : i[0],
-                                    'start_time' : i[1],
-                                    'end_time' : i[2],
-                                    'org_id' : i[3],
-                                    'branch_id' : i[4],
-                                  };
-
-                                  shifts.add( containerBuilder( data , true, true ) );
-                                }
-                              }
-                              else {
-                                for( var i in records ) {
-                                  if( i[4].toString() == widget.branchID) {
-                                    Map<String, String> data = {
-                                      'id' : i[0],
-                                      'start_time' : i[1],
-                                      'end_time' : i[2],
-                                      'org_id' : i[3],
-                                      'branch_id' : i[4],
-                                    };
-
-                                    shifts.add( containerBuilder( data , true, true ) );
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      constraints: BoxConstraints(
+                        minWidth: 180.0,
+                      ),
+                      alignment: Alignment.center,
+                      child: StatefulBuilder(
+                          builder: (BuildContext context, StateSetter setState ) {
+                            return Container(
+                              width: 200.0,
+                              child: DropdownButton(
+                                isExpanded: true,
+                                dropdownColor: Colors.white,
+                                value: index2,
+                                items: _branches,
+                                onChanged: (int? value) {
+                                  if( _branches[value!].child.toString() == "Text(\"\")" ) {
+                                    widget.branchID = '';
+                                    setState( ( ) => this.index2 = 0 );
                                   }
-                                }
-                              }
+                                  else {
+                                    widget.branchID = this.branchIDs[value];
+                                    setState(() => this.index2 = this._branches[value].value );
+                                  }
 
-                              // reloading the page
-                              setState1(() { });
-                            },
-                          ),
-                        );
-                      }
-                  ),
+                                  // clearing the previous list of employees
+                                  shifts.clear();
+
+                                  // checking the branchID and making changes to the shifts list accordingly
+                                  if( widget.branchID == '' ) {
+                                    for( var i in records ) {
+                                      Map<String, String> data = {
+                                        'id' : i[0],
+                                        'start_time' : i[1],
+                                        'end_time' : i[2],
+                                        'org_id' : i[3],
+                                        'branch_id' : i[4],
+                                      };
+
+                                      shifts.add( containerBuilder( data , true, true ) );
+                                    }
+                                  }
+                                  else {
+                                    for( var i in records ) {
+                                      if( i[4].toString() == widget.branchID) {
+                                        Map<String, String> data = {
+                                          'id' : i[0],
+                                          'start_time' : i[1],
+                                          'end_time' : i[2],
+                                          'org_id' : i[3],
+                                          'branch_id' : i[4],
+                                        };
+
+                                        shifts.add( containerBuilder( data , true, true ) );
+                                      }
+                                    }
+                                  }
+
+                                  // reloading the page
+                                  setState1(() { });
+                                },
+                              ),
+                            );
+                          }
+                      ),
+                    ),
+                  ],
                 ) : Container(),
                 Container(
                   width: 1400.0,
@@ -552,7 +589,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                   ),
                 ),
                 Container(
-                    height: MediaQuery.of(context).size.height - 200.0 ,
+                    height: MediaQuery.of(context).size.height - 226.0 ,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
@@ -604,10 +641,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                           ),
                           onPressed: () {
                             // adding a new shift to the shift table
-                            _insertShift( );
-
-                            // reloading the page
-                            setState( () {} );
+                            setState( () => _insertShift( ) ) ;
                           }
                       ),
                     )

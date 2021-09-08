@@ -120,7 +120,55 @@ class _DateTimePickerState extends State<DateTimePicker> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: <Widget> [
-          Row(
+          // if the width is less than 500px then using a Column else using a Row
+          MediaQuery.of(context).size.width < 500.0 ? Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.symmetric( horizontal: 5.0 ),
+                alignment: Alignment.center,
+                child: Text(
+                  widget.text,
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  selectTime(context);
+                },
+                child: Container(
+                  margin: EdgeInsets.only(top: 30),
+                  width: 180,
+                  height: _height / 7,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular( 20.0 ),
+                  ),
+                  child: TextFormField(
+                    style: TextStyle(fontSize: 40),
+                    textAlign: TextAlign.center,
+                    onSaved: (String? val) {
+                      _setTime = val!;
+                    },
+                    enabled: false,
+                    keyboardType: TextInputType.text,
+                    controller: widget.timeController,
+                    decoration: InputDecoration(
+                        disabledBorder:
+                        UnderlineInputBorder(borderSide: BorderSide.none),
+                        contentPadding: EdgeInsets.all(5)
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ) : Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -144,7 +192,7 @@ class _DateTimePickerState extends State<DateTimePicker> {
                 },
                 child: Container(
                   margin: EdgeInsets.only(top: 30),
-                  width: _width / 7,
+                  width: 180,
                   height: _height / 7,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(

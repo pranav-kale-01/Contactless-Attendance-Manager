@@ -62,8 +62,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     // checking if the user currently signed in is a branch admin, if it is then changing the branch ID to branchID of the branchAdmin
     if( widget.userInfo['authority'] == 'br-admin') {
       widget.branchID = widget.userInfo['branch_id'];
-
-      print("this is the branch id of the current branch admin : " + widget.userInfo['branch_id'] );
     }
 
     String url;
