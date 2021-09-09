@@ -270,7 +270,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                     }
                     else {
                       // inserting the values to the shifts table
-                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_shift.php?start_time='${_timeController1.text}'&end_time='${_timeController2.text}'&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=0&start_time='${_timeController1.text}'&end_time='${_timeController2.text}'&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}";
 
                       http.Response response = await http.get( Uri.parse( url ) );
 
@@ -283,6 +283,10 @@ class _ManageShiftsState extends State<ManageShifts> {
                             );
                           }
                       );
+
+                      setState(() {
+                        this.index2 =0 ;
+                      });
 
                       // popping the Dialog after 3 seconds
                       Future.delayed(
@@ -347,7 +351,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                       Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
                     }
                     else {
-                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_shift.php?id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=2&id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'";
 
                       http.Response response = await http.get( Uri.parse( url ) );
 
@@ -374,7 +378,7 @@ class _ManageShiftsState extends State<ManageShifts> {
   }
 
   Future<void> _deleteShift( String id ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_shift.php?id=$id";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=1&id=$id";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -639,9 +643,10 @@ class _ManageShiftsState extends State<ManageShifts> {
                             Icons.add,
                             color: Colors.white,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             // adding a new shift to the shift table
-                            setState( () => _insertShift( ) ) ;
+                            await _insertShift();
+
                           }
                       ),
                     )

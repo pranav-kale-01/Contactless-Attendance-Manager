@@ -40,7 +40,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
   Future<void> insertOrgAdmin( ) async {
     // adding the user details to the mysql database
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&br_id=";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&br_id=";
 
     await http.get( Uri.parse( url ) );
   }
@@ -164,7 +164,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                 ),
                 MaterialButton(
                   onPressed: () async {
-                    String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$uid&name='${this.username}'";
+                    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name='${this.username}'";
 
                     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -186,7 +186,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
   Future<void> _deleteOrgAdmin(username) async {
     // delete the User
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$username'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&user='$username'";
 
     http.Response response = await http.get(Uri.parse(url));
 

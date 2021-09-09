@@ -29,19 +29,17 @@ class _GenerateQRCodeState extends State<GenerateQRCode> {
                 color: Colors.white,
               ),
               alignment: Alignment.bottomCenter,
-              margin: EdgeInsets.only( top: 400.0 ),
+              margin: EdgeInsets.only( top: 300.0 ),
               child: Container(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Container(
-                      child: Container(
-                        height: 300.0,
-                        width: 400.0,
-                        padding: EdgeInsets.all( 5.0 ),
-                        child: BarCode( generatorString: widget.qrString, ),
-                      )
+                      height: 300.0,
+                      width: 450.0,
+                      padding: EdgeInsets.all( 5.0 ),
+                      child: BarCode( generatorString: widget.qrString, ),
                     ),
                     Container(
                       alignment: Alignment.center,

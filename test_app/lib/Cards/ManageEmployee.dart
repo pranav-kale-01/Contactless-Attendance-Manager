@@ -180,7 +180,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     }
     else{
       // adding the user details to the mysql database
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}";
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}";
 
       await http.get( Uri.parse( url ) );
 
@@ -219,7 +219,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   MaterialButton(
                     onPressed: () async {
                       // Deleting the user
-                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$name'";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&user='$name'";
 
                       http.Response response = await http.get( Uri.parse( url ) );
 
@@ -350,10 +350,10 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
                     // checking if the user has selected the 'None' option for branches
                     if( widget.branchID == '' ) {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$id&name=${this.username}&branch_id=";
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&branch_id=";
                     }
                     else {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$id&name=${this.username}&branch_id=${widget.branchID}";
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&branch_id=${widget.branchID}";
                     }
 
                     http.Response response = await http.get( Uri.parse( url ) );

@@ -29,7 +29,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   List<Widget> organizations = [ ];
 
   Future<void> insertOrg( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_org.php?name='${this.orgName}'&mail='${this.orgEmail}'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=0&name='${this.orgName}'&mail='${this.orgEmail}'";
 
     await http.get( Uri.parse( url ) );
   }
@@ -68,7 +68,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
       return;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_org.php?id=$id&name='$name'&mail='$email'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=2&id=$id&name='$name'&mail='$email'";
 
     http.Response response = await http.get( Uri.parse( url ) );
 

@@ -16,6 +16,7 @@ class SignUp extends StatelessWidget {
     // getting the uid for current mail ID
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/sign_in.php?mail='${this._email}'";
 
+
     http.Response response = await http.get( Uri.parse( url ) );
 
     if( response.body == 'no-user' ) {

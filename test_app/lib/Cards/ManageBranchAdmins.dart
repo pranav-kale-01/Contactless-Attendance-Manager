@@ -75,11 +75,11 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
       // checking if the user has selected 'None' from Branch options
       if( this.branchID == '' ) {
-        url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=";
+        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=";
       }
       else{
         // adding the user details to the mysql database
-        url = "https://test-pranav-kale.000webhostapp.com/scripts/insert.php?user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
+        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
       }
 
       await http.get( Uri.parse( url ) );
@@ -218,10 +218,10 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     String url;
 
                     if( this.branchID == '' ) {
-                      url ="https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$uid&name=${this.username}&branch_id=";
+                      url ="https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&branch_id=";
                     }
                     else {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_user.php?id=$uid&name=${this.username}&branch_id=${this.branchID}";
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&branch_id=${this.branchID}";
                     }
 
                     await http.get( Uri.parse( url ) );
@@ -243,7 +243,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     print( username );
 
     // delete the User
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_user.php?user='$username';";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&user='$username';";
 
     http.Response response = await http.get( Uri.parse( url ) );
 

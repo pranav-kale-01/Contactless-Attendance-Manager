@@ -74,7 +74,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
     }
 
     // adding the scanLocation to database
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_scanpoint.php?org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}&qr=$qr;";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=0&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}&qr=$qr;";
 
     http.Response response = await http.get( Uri.parse( url ) );
 

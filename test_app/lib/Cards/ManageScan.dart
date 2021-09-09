@@ -46,6 +46,8 @@ class _ManageScanState extends State<ManageScan> {
   List<String> shiftIDs = [];
   int? index2;
 
+  bool qrStringIsValid = true;
+
   TextEditingController _timeController1 = TextEditingController();
   TextEditingController _timeController2 = TextEditingController();
 
@@ -82,8 +84,6 @@ class _ManageScanState extends State<ManageScan> {
     // checking if the co-ordinates are between a certain value
     rangeStatus = "out of range";
 
-    print( rangeStatus );
-
     interrupt = false;
     return true;
   }
@@ -98,10 +98,44 @@ class _ManageScanState extends State<ManageScan> {
         ),
       );
 
+      // closing the dialog after three seconds
+      Future.delayed(
+        Duration( seconds: 3 ),
+        () {
+          Navigator.pop(context);
+        }
+      );
+
       return;
     }
 
     this.qrString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
+
+    if( this.qrString.split(":").length != 3 ) {
+      this.qrStringIsValid = false;
+
+      // this means that the code is invalid or from an unknown source
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Text( "Invalid QR Code!" ),
+          );
+        }
+      );
+
+      // popping the Dialog after 3 seconds
+      Future.delayed(
+          Duration( seconds: 3 ),
+          () {
+            Navigator.pop(context);
+          },
+      );
+
+    }
+    else {
+      this.qrStringIsValid = true;
+    }
   }
 
   Future<void> _insertScan( ) async {
@@ -111,33 +145,68 @@ class _ManageScanState extends State<ManageScan> {
       // getting the current Datetime
       String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
-      //checking the user with same UId has scanned in the previous minute
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scans&condition&post&condition2&post2&custom=* FROM `scans` WHERE `scans`.`UID`=${widget.userInfo['UID']} AND `scans`.`time` LIKE '${formattedDateTime.substring(0, formattedDateTime.length - 2) }%'";
+      // inserting the scan data into the scans table
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_scan.php?uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&time=${coords!['lat'].toString() + ':' + coords!['lon'].toString()}&scanner_location=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
 
       http.Response response = await http.get( Uri.parse( url ) );
 
-      if( response.body != '[]' ) {
-        // this means that the user has scanned in the previous minute
-        print("user already marked as attendee") ;
+      if( response.body == 'true' ) {
+        // everything is valid, marking the attendance of the user
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                content: Text( "Attendance Marked!" ),
+              );
+            }
+        );
+
+        // popping the Dialog after 3 seconds
+        Future.delayed(
+          Duration( seconds: 3 ),
+              () {
+            Navigator.pop(context);
+          },
+        );
       }
       else {
-        // inserting the scan data into the scans table
-        url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_scan.php?uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&time=$formattedDateTime&scanner_location=${coords!['lat'].toString() + '-' + coords!['lon'].toString()}&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
+        // the request was not processed by the user
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                content: Text( "Unable to Connect to Server!" ),
+              );
+            }
+        );
 
-        response = await http.get( Uri.parse( url ) );
-
-        print( response.body );
-
-        if( response.body == 'true' ) {
-          print('user attendance marked');
-        }
-        else {
-          print('user attendance not marked');
-        }
+        // popping the Dialog after 3 seconds
+        Future.delayed(
+          Duration( seconds: 3 ),
+              () {
+            Navigator.pop(context);
+          },
+        );
       }
     }
     else {
-      print("Invalid QR Code ") ;
+      // This Scanned QR Code is created by one of the instance of this application but belongs to some other organization
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text( "This QR Code does not belong to your Organization" ),
+            );
+          }
+      );
+
+      // popping the Dialog after 3 seconds
+      Future.delayed(
+        Duration( seconds: 3 ),
+            () {
+          Navigator.pop(context);
+        },
+      );
     }
   }
 
@@ -222,9 +291,7 @@ class _ManageScanState extends State<ManageScan> {
                           // sets the data into qrString
                           await scanQR();
 
-                          print( qrString ) ;
-
-                          if( qrString != '-1' ) {
+                          if( qrStringIsValid ) {
                             var list = qrString.split(':');
 
                             this._lat = double.parse( list[0] ) ;
@@ -244,9 +311,11 @@ class _ManageScanState extends State<ManageScan> {
                               _insertScan( );
                             }
                             else {
-                              print( distance );
                               rangeStatus = "Out of Range" ;
                             }
+                          }
+                          else {
+                              this.qrStringIsValid = true ;
                           }
                         }
                     ),
@@ -328,13 +397,18 @@ class _ManageScanState extends State<ManageScan> {
                                             // setting the timeControllers according to the shift selected
                                             String timeString = _shifts[index2!].child.toString();
 
-                                            // the tempArr will hold [start_time, end_time ]
-                                            var tempArr = timeString.substring(6, timeString.length - 2 ).split(" - ");
 
-                                            // assigning the shift timings to timeControllers
-                                            this._timeController1.text = tempArr[0] ;
-                                            this._timeController2.text = tempArr[1] ;
-                                          } );
+                                            // checking if the scanned QRString was valid
+
+                                            if( this.qrStringIsValid ) {
+                                              // the tempArr will hold [start_time, end_time ]
+                                              var tempArr = timeString.substring(6, timeString.length - 2 ).split(" - ");
+
+                                              // assigning the shift timings to timeControllers
+                                              this._timeController1.text = tempArr[0] ;
+                                              this._timeController2.text = tempArr[1] ;
+                                            }
+                                          });
                                         }
 
                                       },
@@ -453,17 +527,29 @@ class _ManageScanState extends State<ManageScan> {
                           onPressed: () async {
                             // adding the data to scans table
 
-                            print( _timeController1.text );
-                            print( _timeController2.text );
-                            print( widget.userInfo['org_id'] );
-                            print( widget.userInfo['branch_id'] );
-
                             // checking if the user has scanned the qr-Code
-                            if( this.coords == null ) {
-                              print("scan the code");
+                            if( this.coords == null || this.qrStringIsValid == false ) {
+
+                              // The user has not scanned the code or the Scanned Code was Invalid
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      content: Text( "Please Scan the QR" ),
+                                    );
+                                  }
+                              );
+
+                              // popping the Dialog after 3 seconds
+                              Future.delayed(
+                                Duration( seconds: 3 ),
+                                    () {
+                                  Navigator.pop(context);
+                                },
+                              );
+
                               return;
                             }
-
                             await _insertScan();
                           },
                           child: Container(

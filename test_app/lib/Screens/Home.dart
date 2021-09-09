@@ -40,17 +40,11 @@ class _HomeState extends State<Home> {
 
   Future<void> loadMainScreen( ) async {
     // creating the url to send the data
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get_user.php?UID='${widget.uid}'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table&condition&post&condition2&post2&custom= * FROM `users` WHERE  `users`.`UID`='${widget.uid}'";
 
-    http.Response response = await http.get(
-        Uri.parse(url),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        }
-    );
+    http.Response response = await http.get( Uri.parse(url) );
     if( response.body != 'false' ){
-      this.data = jsonDecode( response.body );
-
+      this.data = jsonDecode( response.body )[0];
 
       // checking the authority of the user
       if( this.data['authority'] == 's-admin' ){

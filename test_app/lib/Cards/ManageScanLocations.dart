@@ -131,7 +131,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
 
   Future<void> removeScanPoint( String qr) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_scanpoint.php?qr=$qr";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=1&qr=$qr";
 
     http.Response response = await http.get( Uri.parse( url ) );
 

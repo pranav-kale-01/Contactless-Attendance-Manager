@@ -99,7 +99,7 @@ class ViewBranch extends StatefulWidget {
       return ;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_branch.php?org_id='${userInfo['org_id']}'&name='$branchName'&address='$address'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=0&org_id='${userInfo['org_id']}'&name='$branchName'&address='$address'";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 
@@ -114,13 +114,13 @@ class ViewBranch extends StatefulWidget {
       );
     }
     else {
-      // closing the previous AlertDialog
-      Navigator.pop(context);
-
       // reloading the screen
       setState( () {
-        // reseting the employee list
+
       } );
+
+      // closing the previous AlertDialog
+      Navigator.pop(context);
 
       showDialog(
           context: context,
@@ -182,7 +182,7 @@ class ViewBranch extends StatefulWidget {
       return ;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/edit_branch.php?id=$id&name='$branchName'&address='$address'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=2&id=$id&name='$branchName'&address='$address'";
 
     http.Response response  = await http.get( Uri.parse( url ) );
 
@@ -213,7 +213,7 @@ class ViewBranch extends StatefulWidget {
   }
 
   Future<void> removeBranch( String branchID ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/delete_branch.php?id=$branchID";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=1&id=$branchID";
 
     http.Response response = await http.get( Uri.parse(url) );
 
