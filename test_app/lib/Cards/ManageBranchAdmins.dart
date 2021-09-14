@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'ManageEmployee.dart';
+import 'ManageScanHistory.dart';
 import 'ManageShifts.dart';
 
 class ManageBranchAdmins extends StatefulWidget {
@@ -592,6 +593,17 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                         )
                       );
                     }
+                  ),
+                  ListTile(
+                    title: Text( 'Manage Scan History' ),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ManageScanHistory( userInfo: widget.userInfo ),
+                          )
+                      );
+                    },
                   ),
                   ListTile(
                     title: Text( 'Sign Out', ),

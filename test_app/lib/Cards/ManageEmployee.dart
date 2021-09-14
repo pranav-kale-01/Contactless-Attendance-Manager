@@ -11,6 +11,7 @@ import 'package:test_app/utils/CredentialController.dart';
 
 import 'ManageBranch.dart';
 import 'ManageBranchAdmins.dart';
+import 'ManageScanHistory.dart';
 import 'ManageScanLocations.dart';
 import 'ManageShifts.dart';
 
@@ -105,7 +106,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
       for( int i=0 ; i < jsonData.length ; i++ ) {
         Map<String,dynamic> data = jsonData[i];
-        employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true ) );
+        employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true , true ) );
         records.add( [data['UID'], data['branch_id'], data['username'], ] );
       }
     }
@@ -433,7 +434,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     );
   }
 
-  Widget containerBuilder( String id , String? branchID, String name, bool addEdit,bool addDelete ) {
+  Widget containerBuilder( String id , String? branchID, String name, bool addEdit,bool addDelete , bool showHistory ) {
     return Container(
       alignment: Alignment.centerLeft,
       color: Colors.white60,
@@ -519,6 +520,18 @@ class _ManageEmployeeState extends State<ManageEmployee> {
           ) : Container(
             width: 205.0,
           ),
+          showHistory ? GestureDetector(
+            onTap: () {
+              Navigator.of( context ).push(
+                MaterialPageRoute(
+                  builder: (context) => ManageScanHistory(userInfo: widget.userInfo, showHamMenu: false,),
+                )
+              );
+            },
+            child: Container(
+              child: Text("Manage Scan History"),
+            ),
+          ) : Container(),
         ],
       ),
     );
@@ -564,13 +577,13 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                               // checking the branchID and making changes to the employees list accordingly
                               if( widget.branchID == '' ) {
                                 for( var i in records ) {
-                                  employees.add( containerBuilder( i[0], i[1], i[2], true, true ) );
+                                  employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
                                 }
                               }
                               else {
                                 for( var i in records ) {
                                   if( i[1].toString() == widget.branchID) {
-                                    employees.add( containerBuilder( i[0], i[1], i[2], true, true ) );
+                                    employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
                                   }
                                 }
                               }
@@ -588,7 +601,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   alignment: Alignment.center,
                   child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: containerBuilder( "ID", 'BRANCH ID', 'NAME' ,false, false)
+                      child: containerBuilder( "ID", 'BRANCH ID', 'NAME' ,false, false, false ),
                   ),
                 ),
                 Container(

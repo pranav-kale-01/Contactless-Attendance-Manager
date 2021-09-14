@@ -17,6 +17,7 @@ import 'package:http/http.dart' as http ;
 import 'dart:convert';
 
 import 'DateTimePicker.dart';
+import 'ManageScanHistory.dart';
 
 class ManageScan extends StatefulWidget {
   final userInfo;
@@ -308,6 +309,17 @@ class _ManageScanState extends State<ManageScan> {
                       Icons.account_circle,
                       color: Colors.white,
                     ),
+                  ),
+                  ListTile(
+                    title: Text( 'Manage Scan History' ),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ManageScanHistory( userInfo: widget.userInfo ),
+                          )
+                      );
+                    },
                   ),
                   ListTile(
                     title: Text( 'Sign Out', ),

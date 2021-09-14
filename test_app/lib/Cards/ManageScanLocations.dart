@@ -15,6 +15,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'AddScannerLocation.dart';
+import 'ManageScanHistory.dart';
 import 'ManageShifts.dart';
 
 class ManageScanLocations extends StatefulWidget {
@@ -392,6 +393,17 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                       ),
                     );
                   }
+                ),
+                ListTile(
+                  title: Text( 'Manage Scan History' ),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageScanHistory( userInfo: widget.userInfo ),
+                        )
+                    );
+                  },
                 ),
                 ListTile(
                   title: Text( 'Sign Out', ),

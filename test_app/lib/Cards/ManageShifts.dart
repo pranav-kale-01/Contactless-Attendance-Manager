@@ -14,6 +14,8 @@ import 'package:test_app/Cards/DateTimePicker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'ManageScanHistory.dart';
+
 class ManageShifts extends StatefulWidget {
   final userInfo;
   late String branchID;
@@ -38,6 +40,19 @@ class _ManageShiftsState extends State<ManageShifts> {
   // creating required controllers
   TextEditingController _timeController1 =  TextEditingController();
   TextEditingController _timeController2 =  TextEditingController();
+
+  Future<void> init( ) async {
+    // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
+    if( widget.userInfo['authority'] == 'br-admin') {
+      widget.branchID = widget.userInfo['branch_id'] ;
+    }
+
+    // initializing the branches
+    await setBranches( true );
+
+    // initializing the shifts list
+    await getShifts();
+  }
 
   Future<void> setBranches( bool addEmpty ) async {
     int i;
@@ -485,7 +500,7 @@ class _ManageShiftsState extends State<ManageShifts> {
     );
   }
 
-  Container _shiftViewBuilder(){
+  Container _shiftViewBuilder() {
     Map<String, String> header = {
       'id' : "ID",
       'start_time' : "Start Time",
@@ -603,19 +618,6 @@ class _ManageShiftsState extends State<ManageShifts> {
     );
   }
 
-  Future<void> init( ) async {
-    // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
-    if( widget.userInfo['authority'] == 'br-admin') {
-      widget.branchID = widget.userInfo['branch_id'] ;
-    }
-
-    // initializing the branches
-    await setBranches( true );
-
-    // initializing the shifts list
-    await getShifts();
-  }
-
   @override
   Widget build( BuildContext context ) {
     return FutureBuilder(
@@ -714,6 +716,17 @@ class _ManageShiftsState extends State<ManageShifts> {
                             ),
                           );
                         }
+                    ),
+                    ListTile(
+                      title: Text( 'Manage Scan History' ),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ManageScanHistory( userInfo: widget.userInfo ),
+                            )
+                        );
+                      },
                     ),
                     ListTile(
                       title: Text( 'Sign Out', ),

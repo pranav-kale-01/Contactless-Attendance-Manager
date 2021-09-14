@@ -9,6 +9,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'ManageScanHistory.dart';
+
 class ManageOrganizationsAdmins extends StatefulWidget {
   bool showHamMenu = false;
   String? orgID;

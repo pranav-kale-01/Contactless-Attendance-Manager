@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Cards/ManageBranchAdmins.dart';
+import 'package:test_app/Cards/ManageScanHistory.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
@@ -561,6 +562,17 @@ class ViewBranchState extends State<ViewBranch>{
                               ),
                             );
                           }
+                      ),
+                      ListTile(
+                        title: Text( 'Manage Scan History' ),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ManageScanHistory( userInfo: widget.userInfo ),
+                            )
+                          );
+                        },
                       ),
                       ListTile(
                         title: Text( 'Sign Out', ),
