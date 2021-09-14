@@ -5,15 +5,16 @@ import 'package:test_app/Cards/ManageBranch.dart';
 import 'package:test_app/Cards/ManageBranchAdmins.dart';
 import 'package:test_app/Cards/ManageEmployee.dart';
 import 'package:test_app/Screens/SignUp.dart';
+import 'package:test_app/Templates/GenerateScreen.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
+import 'package:test_app/Templates/GenerateScreenWeb.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'AddScannerLocation.dart';
-import 'GenerateQRCode.dart';
 import 'ManageShifts.dart';
 
 class ManageScanLocations extends StatefulWidget {
@@ -135,8 +136,6 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
     http.Response response = await http.get( Uri.parse( url ) );
 
-    print( response.body );
-
     setState(() {
       _getScanPoints( );
     });
@@ -168,7 +167,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
               Navigator.of(context).push(
                 PageRouteBuilder(
                   opaque: false,
-                  pageBuilder: (context, _ , __ ) => GenerateQRCode( qrString: data['qr'] ),
+                  pageBuilder: (context, _ , __ ) => kIsWeb? GenerateScreenWeb(qrString: data['qr']) : GenerateScreen( qrString: data['qr'] ),
                 ),
               );
             },
@@ -304,12 +303,14 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                     ),
                     onPressed: () async {
                       // redirecting to the AddScannerLocation Page
-                      Navigator.of(context).push(
+                      await Navigator.of(context).push(
                         PageRouteBuilder(
                           opaque: false,
                           pageBuilder: (context, _ , __ ) => AddScannerLocation( userInfo: widget.userInfo, ),
                         ),
                       );
+
+                      setState( () {} );
                     },
                   ),
                 )

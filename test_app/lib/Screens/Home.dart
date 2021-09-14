@@ -50,7 +50,7 @@ class _HomeState extends State<Home> {
       if( this.data['authority'] == 's-admin' ){
         Navigator.pushReplacement(
             context,
-            MaterialPageRoute( builder: (context) => SuperAdmin() ),
+            MaterialPageRoute( builder: (context) => SuperAdmin( ) ),
         );
       }
       else if( this.data['authority'] == 'org-admin' ){

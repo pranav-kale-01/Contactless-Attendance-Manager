@@ -12,7 +12,13 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ViewOrganizations extends StatefulWidget {
-  const ViewOrganizations({Key? key}) : super(key: key);
+  bool showHamMenu = true;
+
+  ViewOrganizations({Key? key, showHamMenu }) : super(key: key) {
+    if( showHamMenu != null ) {
+      this.showHamMenu = showHamMenu;
+    }
+  }
 
   @override
   _ViewOrganizationsState createState() => _ViewOrganizationsState();
@@ -206,23 +212,44 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 0,
-                  child: Text("Manage Branches"),
+                  child: Text("Manage Organization Admins"),
                 ),
                 PopupMenuItem(
                   value: 2,
-                  child: Text("Manage Branch Admins"),
+                  child: Text("Manage Branches"),
                 ),
+                PopupMenuItem(
+                  value: 3,
+                  child: Text("Manage Branch Admins"),
+                )
               ],
               onSelected: (int value) {
                 if(value == 0) {
-                  print("Manage branches");
+                  print("Manage Organization Admins");
 
-                  _showBranchesDialog( context , data );
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ManageOrganizationsAdmins( orgID: data['org_id'] , showHamMenu: false,),
+                    )
+                  );
                 }
-                else {
+                else if( value == 2 ){
+                  print("Manage Branch");
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ViewBranch( setState: setState, context: context, userInfo: data, showHamMenu: false,  ),
+                    ),
+                  );
+                }
+                else if( value == 3 ) {
                   print("Manage Branch Admins");
 
-                  _showBranchAdminsDialog( context, data );
+                  Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ManageBranchAdmins( userInfo: data, context: context,  setState: setState, showHamMenu: false, ),
+                      )
+                  );
                 }
               },
             ),
@@ -232,38 +259,6 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showBranchesDialog( context, data ) async {
-    // Creating new object of ViewBranch
-    ViewBranch obj = ViewBranch( setState: setState, context: context, userInfo: data );
-
-    // initializing obj
-    await obj.init();
-
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            child: Container(
-              child: obj.branchViewBuilder(),
-            ),
-          );
-        }
-    );
-  }
-
-  void _showBranchAdminsDialog(context, data ) async {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            child: Container(
-              child: ManageBranchAdmins( userInfo: data, context: context,  setState: setState, ),
-            ),
-          );
-        }
     );
   }
 
@@ -348,7 +343,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                   )
                 ],
               ),
-              listView: ListView(
+              listView: widget.showHamMenu ? ListView(
                 children: [
                   DrawerHeader(
                     decoration: BoxDecoration(
@@ -371,7 +366,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context)=> ViewOrganizations(),
+                            builder: (context)=> ViewOrganizations( ),
                           )
                       );
                     },
@@ -405,7 +400,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                     },
                   ),
                 ],
-              ),
+              ) : null ,
               body: Container(
                   color: Colors.blueAccent,
                   alignment: Alignment.center,

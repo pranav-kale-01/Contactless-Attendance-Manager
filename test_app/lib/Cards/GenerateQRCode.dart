@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/Templates/BarCode.dart';
+// import 'package:test_app/Templates/BarCode.dart';
 
 class GenerateQRCode extends StatefulWidget {
   final String qrString;
@@ -39,14 +39,12 @@ class _GenerateQRCodeState extends State<GenerateQRCode> {
                       height: 300.0,
                       width: 450.0,
                       padding: EdgeInsets.all( 5.0 ),
-                      child: BarCode( generatorString: widget.qrString, ),
+                      // child: BarCode( generatorString: widget.qrString, ),
                     ),
                     Container(
                       alignment: Alignment.center,
                       child: MaterialButton(
-                        onPressed: () {
-                          print("printed!!!!") ;
-                        },
+                        onPressed: () { },
                         child: Text("Print"),
                       ),
                     ),

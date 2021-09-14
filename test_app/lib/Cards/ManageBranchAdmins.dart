@@ -18,8 +18,13 @@ class ManageBranchAdmins extends StatefulWidget {
   final userInfo;
   final context;
   final StateSetter setState;
+  bool showHamMenu = true;
 
-  ManageBranchAdmins({Key? key, required this.userInfo, required this.context, required this.setState }) : super( key: key);
+  ManageBranchAdmins({Key? key, required this.userInfo, required this.context, required this.setState, showHamMenu }) : super( key: key) {
+    if( showHamMenu != null ) {
+      this.showHamMenu = showHamMenu ;
+    }
+  }
 
   @override
   _ManageBranchAdminsState createState() => _ManageBranchAdminsState();
@@ -513,7 +518,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                 backgroundColor: Color(0xFF10B5FC),
                 title: Text( "View Branch Admins" ),
               ),
-              listView: ListView(
+              listView: widget.showHamMenu ? ListView(
                 children: [
                   DrawerHeader(
                     decoration: BoxDecoration(
@@ -606,7 +611,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     },
                   ),
                 ],
-              ),
+              ) : null ,
               body: showBranchAdmins(),
             );
           }

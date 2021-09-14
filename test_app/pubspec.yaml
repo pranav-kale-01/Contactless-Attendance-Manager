@@ -29,11 +29,15 @@ dependencies:
   cupertino_icons: ^1.0.2
   geolocator: ^7.4.0
   path_provider: ^2.0.2
-  syncfusion_flutter_barcodes: ^19.2.55
   http: ^0.13.3
   intl: ^0.17.0
   date_format: ^2.0.4
   flutter_barcode_scanner: ^2.0.0
+  qr_flutter: ^4.0.0
+  html: ^0.15.0
+  blobs: ^2.0.0
+  pdf: ^3.5.0
+  universal_html: ^2.0.8
 
 dev_dependencies:
   flutter_test:

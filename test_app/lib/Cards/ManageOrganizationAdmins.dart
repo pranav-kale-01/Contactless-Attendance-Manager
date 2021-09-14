@@ -10,7 +10,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ManageOrganizationsAdmins extends StatefulWidget {
-  const ManageOrganizationsAdmins({Key? key}) : super(key: key);
+  bool showHamMenu = false;
+  String? orgID;
+
+  ManageOrganizationsAdmins({Key? key, showHamMenu , orgID }) : super(key: key) {
+    if( orgID != null ) {
+      this.orgID = orgID ;
+    }
+    if( showHamMenu != null ) {
+      this.showHamMenu = showHamMenu;
+    }
+  }
 
   @override
   _ManageOrganizationsAdminsState createState() => _ManageOrganizationsAdminsState();
@@ -39,21 +49,34 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
 
   Future<void> insertOrgAdmin( ) async {
+    // if widget.user has data then using that data instead
+    if( widget.orgID != null )
+      this.orgID = widget.orgID!;
+
     // adding the user details to the mysql database
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&br_id=";
+
+    print( url );
 
     await http.get( Uri.parse( url ) );
   }
 
   Future<void> viewOrgAdmins( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`FROM `users`INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id`WHERE `users`.`authority`='org-admin'";
+    String url ;
+
+    if( widget.orgID != null ) {
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id`WHERE `users`.`authority`='org-admin' AND `users`.`org_id` = ${widget.orgID }";
+    }
+    else {
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin'";
+    }
 
     http.Response response = await http.get( Uri.parse( url ), );
 
     jsonData = jsonDecode( response.body ) ;
 
     if( jsonData == 'false') {
-      return;
+      print("something went wrong ") ;
     }
 
     // clearing organizations list
@@ -61,8 +84,16 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
     for (int j = 0; j < jsonData.length; j++) {
       Map<String, dynamic> data = jsonData[j] ;
-      // adding the information to the organizations list for displaying
-      orgAdmins.add( containerBuilder( data, true, true ) );
+
+      // checking if widget.user has org_id, if true then adding org_admins that belong to that org only
+      if( widget.orgID != null ) {
+        if(  widget.orgID == data['org_id'] )
+          orgAdmins.add( containerBuilder( data, true, true ) );
+      }
+      else {
+        // adding the information to the organizations list for displaying
+        orgAdmins.add( containerBuilder( data, true, true ) );
+      }
     }
   }
 
@@ -352,7 +383,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                                             Container(
                                               padding: EdgeInsets.zero,
                                               margin: EdgeInsets.zero,
-                                              child: DropdownButton(
+                                              child: widget.orgID == null ? DropdownButton(
                                                 isExpanded: true,
                                                 value: index,
                                                 items: _organizations,
@@ -368,7 +399,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
                                                   setState( () { } );
                                                 },
-                                              ),
+                                              ) : Container() ,
                                             ),
                                           ],
                                         );
@@ -438,7 +469,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context)=> ViewOrganizations(),
+                            builder: (context)=> ViewOrganizations( ),
                           )
                       );
                     },

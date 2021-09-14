@@ -18,34 +18,45 @@ class ViewBranch extends StatefulWidget {
   final userInfo;
   final context;
   final StateSetter setState;
+  bool showHamMenu = true;
   List<Widget> branches = [];
 
-  ViewBranch({Key? key, required this.userInfo, this.context, required this.setState}) : super(key: key);
+  ViewBranch({Key? key, required this.userInfo, this.context, required this.setState, showHamMenu }) : super(key: key) {
+    if( showHamMenu != null ) {
+      this.showHamMenu = showHamMenu;
+    }
+  }
 
   @override
   ViewBranchState createState() => ViewBranchState();
+}
 
-
+class ViewBranchState extends State<ViewBranch>{
   // initialize the branches list
   Future<void> init() async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${userInfo['org_id']}&condition2=&post2=&custom";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 
     if( response.body == 'false' ) {
-      print("something went wrong");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("Unable to Connect to Server"),
+        ),
+      );
     }
     else {
       // decoding the data
       var jsonData = jsonDecode( response.body );
 
       // clearing the previous list
-      branches.clear();
+      widget.branches.clear();
 
       // insert the data to the branches list
       for (int j = 0; j < jsonData.length ; j++) {
         Map<String, dynamic> data =  jsonData[j];
-        branches.add( containerBuilder( data , true , true ) );
+        widget.branches.add( containerBuilder( data , true , true ) );
       }
     }
   }
@@ -99,7 +110,7 @@ class ViewBranch extends StatefulWidget {
       return ;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=0&org_id='${userInfo['org_id']}'&name='$branchName'&address='$address'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=0&org_id='${widget.userInfo['org_id']}'&name='$branchName'&address='$address'";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 
@@ -114,11 +125,6 @@ class ViewBranch extends StatefulWidget {
       );
     }
     else {
-      // reloading the screen
-      setState( () {
-
-      } );
-
       // closing the previous AlertDialog
       Navigator.pop(context);
 
@@ -188,6 +194,8 @@ class ViewBranch extends StatefulWidget {
 
     if( response.body == '1'){
 
+      setState( () {} );
+
       // closing popup window
       Navigator.pop(context);
 
@@ -218,10 +226,21 @@ class ViewBranch extends StatefulWidget {
     http.Response response = await http.get( Uri.parse(url) );
 
     if( response.body == '1') {
-      print("Branch Removed");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("Branch Removed"),
+        ) ,
+      );
+      setState( () {} );
     }
     else {
-      print("Something Went Wrong");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("Something Went Wrong"),
+        ),
+      );
     }
   }
 
@@ -335,8 +354,6 @@ class ViewBranch extends StatefulWidget {
               onPressed: () {
                 // delete branch
                 removeBranch( data['branch_id'] );
-
-                setState(() { });
               },
               child: Container(
                 width: 150.0,
@@ -395,7 +412,7 @@ class ViewBranch extends StatefulWidget {
                     scrollDirection: Axis.vertical,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      children: branches,
+                      children: widget.branches,
                     ),
                   ),
                 ),
@@ -405,171 +422,172 @@ class ViewBranch extends StatefulWidget {
       ),
     );
   }
-}
 
-class ViewBranchState extends State<ViewBranch>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: widget.init(),
+      future: this.init(),
       builder: ( context, snapshot ) {
         if( snapshot.connectionState == ConnectionState.done ) {
-          return HomeScreenBuilder(
-            appbar: AppBar(
-              actions: [
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      // showing the insert popup
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context ) {
-                            String brName = "";
-                            String address = "";
+              return HomeScreenBuilder(
+                  appbar: AppBar(
+                    actions: [
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.add,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            // showing the insert popup
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context ) {
+                                  String brName = "";
+                                  String address = "";
 
-                            return AlertDialog(
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  TextField(
-                                    onChanged: (value) {
-                                      brName = value;
-                                    },
-                                    decoration: InputDecoration(
-                                      labelText: "Branch Name",
+                                  return AlertDialog(
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        TextField(
+                                          onChanged: (value) {
+                                            brName = value;
+                                          },
+                                          decoration: InputDecoration(
+                                            labelText: "Branch Name",
+                                          ),
+                                        ),
+                                        TextField(
+                                          onChanged: (value) {
+                                            address = value;
+                                          },
+                                          decoration: InputDecoration(
+                                            labelText: "Address",
+                                          ),
+                                        ),
+                                        MaterialButton(
+                                          onPressed: () async {
+                                            // adding the new branch
+                                            this.insertBranch(brName, address);
+
+                                            setState( () {} );
+                                          },
+                                          child: Text("Add"),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  TextField(
-                                    onChanged: (value) {
-                                      address = value;
-                                    },
-                                    decoration: InputDecoration(
-                                      labelText: "Address",
-                                    ),
-                                  ),
-                                  MaterialButton(
-                                    onPressed: () async {
-                                      // adding the new branch
-                                      widget.insertBranch(brName, address);
-                                    },
-                                    child: Text("Add"),
-                                  ),
-                                ],
+                                  );
+                                }
+                            );
+                          },
+                        ),
+                      )
+                    ],
+                    backgroundColor: Color(0xFF10B5FC),
+                    title: Text( "View Branches" ),
+                  ),
+                  listView: widget.showHamMenu ? ListView(
+                    children: [
+                      DrawerHeader(
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue,
+                                  Colors.blueAccent,
+                                  Colors.lightBlueAccent,
+                                ]
+                            )
+                        ),
+                        child: Icon(
+                          Icons.account_circle,
+                          color: Colors.white,
+                        ),
+                      ),
+                      ListTile(
+                        title: Text( 'Manage branches', ),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ViewBranch( context: context, setState: setState, userInfo: widget.userInfo ),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: Text( 'Manage Branch Admins', ),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ManageBranchAdmins( context: context, setState: setState, userInfo: widget.userInfo, ),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: Text( 'Manage Employees', ),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context)=> ManageEmployee( context: context, setState1: setState, userInfo: widget.userInfo,),
+                              )
+                          );
+                        },
+                      ),
+                      ListTile(
+                          title: Text("Manage Scan Locations"),
+                          onTap: () {
+                            // redirecting the user to ManageScanLocations Page
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ManageScanLocations( userInfo: widget.userInfo ),
                               ),
                             );
                           }
-                      );
-                    },
-                  ),
-                )
-              ],
-              backgroundColor: Color(0xFF10B5FC),
-              title: Text( "View Branches" ),
-            ),
-            listView: ListView(
-              children: [
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [
-                            Colors.blue,
-                            Colors.blueAccent,
-                            Colors.lightBlueAccent,
-                          ]
-                      )
-                  ),
-                  child: Icon(
-                    Icons.account_circle,
-                    color: Colors.white,
-                  ),
-                ),
-                ListTile(
-                  title: Text( 'Manage branches', ),
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ViewBranch( context: context, setState: setState, userInfo: widget.userInfo ),
                       ),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Text( 'Manage Branch Admins', ),
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ManageBranchAdmins( context: context, setState: setState, userInfo: widget.userInfo, ),
+                      ListTile(
+                          title: Text( 'Manage Shifts' ),
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ManageShifts( userInfo: widget.userInfo )
+                              ),
+                            );
+                          }
                       ),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Text( 'Manage Employees', ),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context)=> ManageEmployee( context: context, setState1: setState, userInfo: widget.userInfo,),
-                        )
-                    );
-                  },
-                ),
-                ListTile(
-                    title: Text("Manage Scan Locations"),
-                    onTap: () {
-                      // redirecting the user to ManageScanLocations Page
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ManageScanLocations( userInfo: widget.userInfo ),
-                        ),
-                      );
-                    }
-                ),
-                ListTile(
-                  title: Text( 'Manage Shifts' ),
-                  onTap: () {
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ManageShifts( userInfo: widget.userInfo )
-                        ),
-                    );
-                  }
-                ),
-                ListTile(
-                  title: Text( 'Sign Out', ),
-                  onTap: () async {
-                    // Signing the User Out
-                    if( !kIsWeb) {
-                      await CredentialController.clearFile();
-                    }
+                      ListTile(
+                        title: Text( 'Sign Out', ),
+                        onTap: () async {
+                          // Signing the User Out
+                          if( !kIsWeb) {
+                            await CredentialController.clearFile();
+                          }
 
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SignUp()
-                        ),
-                            (Route<dynamic> route) => false
-                    );
-                  },
-                ),
-              ],
-            ),
-            body: widget.branchViewBuilder()
-          );
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => SignUp()
+                              ),
+                                  (Route<dynamic> route) => false
+                          );
+                        },
+                      ),
+                    ],
+                  ) : null ,
+                  body: this.branchViewBuilder()
+              );
         }
         else {
           return HomeScreenBuilder(
               appbar: AppBar(
+                automaticallyImplyLeading: false,
                 backgroundColor: Color(0xFF10B5FC),
                 title: Text( "View Branches" ),
               ),

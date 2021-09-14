@@ -12,57 +12,29 @@ class HomeScreenBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: Container(
-        width: 180.0,
-        child: Drawer(
-          child: this.listView == null ? ListView(
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [
-                          Colors.blue,
-                          Colors.blueAccent,
-                          Colors.lightBlueAccent,
-                        ]
-                    )
-                ),
-                child: Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                ),
-              ),
-              ListTile(
-                title: Text(
-                    'Sign Out',
-                ),
-                onTap: () async {
-
-                  // Signing the User Out
-                  if( !kIsWeb) {
-                    await CredentialController.clearFile();
-                  }
-
-                  Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => SignUp()
-                      ),
-                          (Route<dynamic> route) => false
-                  );
-                },
-              ),
-            ],
-          )
-          : this.listView,
-        ),
-      ),
-      appBar: this.appbar == null ? AppBar(
+    if( this.listView == null ) {
+      return Scaffold(
+        appBar: this.appbar == null ? AppBar(
           backgroundColor: Color(0xFF10B5FC),
           title: Text('Home'),
-      ) : this.appbar ,
-      body: this.body,
-    );
+        ) : this.appbar ,
+        body: this.body,
+      );
+    }
+    else {
+      return Scaffold(
+        drawer: Container(
+          width: 180.0,
+          child: Drawer(
+            child: this.listView,
+          ),
+        ),
+        appBar: this.appbar == null ? AppBar(
+          backgroundColor: Color(0xFF10B5FC),
+          title: Text('Home'),
+        ) : this.appbar ,
+        body: this.body,
+      );
+    }
   }
 }

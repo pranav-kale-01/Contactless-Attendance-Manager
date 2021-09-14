@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:test_app/Screens/SignUp.dart';
+import 'package:test_app/utils/CredentialController.dart';
 import 'dart:async';
 
 import 'package:test_app/utils/Location.dart';
@@ -34,7 +36,7 @@ class _ManageScanState extends State<ManageScan> {
 
   late String email;
   late String rangeStatus;
-  late Map<String, String>? coords;
+  late Map<String, String> coords = {};
   Location locator = Location();
   bool interrupt = false;
 
@@ -99,17 +101,13 @@ class _ManageScanState extends State<ManageScan> {
       );
 
       // closing the dialog after three seconds
-      Future.delayed(
-        Duration( seconds: 3 ),
-        () {
-          Navigator.pop(context);
-        }
-      );
 
       return;
     }
 
     this.qrString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
+
+    print( this.qrString );
 
     if( this.qrString.split(":").length != 3 ) {
       this.qrStringIsValid = false;
@@ -123,15 +121,6 @@ class _ManageScanState extends State<ManageScan> {
           );
         }
       );
-
-      // popping the Dialog after 3 seconds
-      Future.delayed(
-          Duration( seconds: 3 ),
-          () {
-            Navigator.pop(context);
-          },
-      );
-
     }
     else {
       this.qrStringIsValid = true;
@@ -146,7 +135,7 @@ class _ManageScanState extends State<ManageScan> {
       String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
       // inserting the scan data into the scans table
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/insert_scan.php?uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&time=${coords!['lat'].toString() + ':' + coords!['lon'].toString()}&scanner_location=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&time=${coords['lat'].toString() + ':' + coords['lon'].toString()}&scanner_location=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
 
       http.Response response = await http.get( Uri.parse( url ) );
 
@@ -160,14 +149,6 @@ class _ManageScanState extends State<ManageScan> {
               );
             }
         );
-
-        // popping the Dialog after 3 seconds
-        Future.delayed(
-          Duration( seconds: 3 ),
-              () {
-            Navigator.pop(context);
-          },
-        );
       }
       else {
         // the request was not processed by the user
@@ -178,14 +159,6 @@ class _ManageScanState extends State<ManageScan> {
                 content: Text( "Unable to Connect to Server!" ),
               );
             }
-        );
-
-        // popping the Dialog after 3 seconds
-        Future.delayed(
-          Duration( seconds: 3 ),
-              () {
-            Navigator.pop(context);
-          },
         );
       }
     }
@@ -198,14 +171,6 @@ class _ManageScanState extends State<ManageScan> {
               content: Text( "This QR Code does not belong to your Organization" ),
             );
           }
-      );
-
-      // popping the Dialog after 3 seconds
-      Future.delayed(
-        Duration( seconds: 3 ),
-            () {
-          Navigator.pop(context);
-        },
       );
     }
   }
@@ -268,6 +233,11 @@ class _ManageScanState extends State<ManageScan> {
 
     // setting the default value for branchID
     widget.shiftID = shiftIDs[0];
+
+
+    for( var temp in _shifts ) {
+      print( temp.child.toString() );
+    }
   }
 
   @override
@@ -301,7 +271,7 @@ class _ManageScanState extends State<ManageScan> {
                             await loadCoordinates( );
 
                             // calculating the distance of the device from the scanning location
-                            double distance = calcDistance( this._lat , this._lon , double.parse( coords!['lat']! )  , double.parse( coords!['lon']! ) ) / 100;
+                            double distance = calcDistance( this._lat , this._lon , double.parse( coords['lat']! )  , double.parse( coords['lon']! ) ) / 100;
 
                             if( distance < 5.0 ) {
                               // if the device is in the range then adding the scan to the scans list..
@@ -319,6 +289,42 @@ class _ManageScanState extends State<ManageScan> {
                           }
                         }
                     ),
+                  ),
+                ],
+              ),
+              listView: ListView(
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            colors: [
+                              Colors.blue,
+                              Colors.blueAccent,
+                              Colors.lightBlueAccent,
+                            ]
+                        )
+                    ),
+                    child: Icon(
+                      Icons.account_circle,
+                      color: Colors.white,
+                    ),
+                  ),
+                  ListTile(
+                    title: Text( 'Sign Out', ),
+                    onTap: () async {
+                      // Signing the User Out
+                      if( !kIsWeb) {
+                        await CredentialController.clearFile();
+                      }
+
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SignUp()
+                          ),
+                              (Route<dynamic> route) => false
+                      );
+                    },
                   ),
                 ],
               ),
@@ -528,7 +534,7 @@ class _ManageScanState extends State<ManageScan> {
                             // adding the data to scans table
 
                             // checking if the user has scanned the qr-Code
-                            if( this.coords == null || this.qrStringIsValid == false ) {
+                            if( this.qrStringIsValid == false || this.coords == {}  ) {
 
                               // The user has not scanned the code or the Scanned Code was Invalid
                               showDialog(
@@ -539,18 +545,13 @@ class _ManageScanState extends State<ManageScan> {
                                     );
                                   }
                               );
-
-                              // popping the Dialog after 3 seconds
-                              Future.delayed(
-                                Duration( seconds: 3 ),
-                                    () {
-                                  Navigator.pop(context);
-                                },
-                              );
-
-                              return;
                             }
-                            await _insertScan();
+                            else{
+                              await _insertScan();
+
+                              print( this.qrStringIsValid );
+                              print( this.coords );
+                            }
                           },
                           child: Container(
                               decoration: BoxDecoration(

@@ -77,8 +77,6 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=0&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}&qr=$qr;";
 
     http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body ) ;
   }
 
   Future<void> init( ) async {
@@ -101,9 +99,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
                 color: Colors.black38,
                 child:
                 GestureDetector(
-                  onTap: () {
-                    print("pressed in operatable area ");
-                  },
+                  onTap: () {},
                   child: StatefulBuilder(
                       builder : (BuildContext context, StateSetter setState ) {
                         if( this.scanStatus == 'not-scanning' ) {
@@ -119,7 +115,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 // if the user is a organization admin, then providing a dropdown menu of branches to select from
-                                Container(
+                                widget.userInfo['authority'] == 'org-admin' ? Container(
                                   padding: EdgeInsets.all(5.0),
                                   child: Text(
                                     "Select the Branch..",
@@ -128,7 +124,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
                                       fontSize: 20.0,
                                     ),
                                   ),
-                                ),
+                                ) : Container(),
                                 widget.userInfo['authority'] == 'org-admin' ? StatefulBuilder(
                                     builder: (BuildContext context, StateSetter setDropdownState ) {
                                       return DropdownButton(

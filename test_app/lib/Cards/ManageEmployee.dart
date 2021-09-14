@@ -23,6 +23,8 @@ class ManageEmployee extends StatefulWidget {
   late bool changedFromDropdown= false;
   late String branchID;
 
+  bool showAllValue = false;
+
   ManageEmployee({required this.context, required this.setState1, required this.userInfo} ) : super();
 
   @override
@@ -33,15 +35,18 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
   List<Widget> employees = [];
   List<List> records = [];
-  List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("All") ) ];
+  List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("") ) ];
   List<String> branchIDs = [];
 
   late String username;
   late String password;
 
   int? index2;
+  bool CheckboxValue = false ;
 
-  Future<void> init() async {
+  Future<void> init( ) async {
+    print( widget.userInfo['authority'] );
+
     // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
     if( widget.userInfo['authority'] == 'br-admin') {
       widget.branchID = widget.userInfo['branch_id'] ;
@@ -52,7 +57,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
     if( widget.changedFromDropdown == false ) {
       // initializing the Employees list,
-      await getEmployees();
+      await getEmployees( );
 
       widget.changedFromDropdown = true;
     }
@@ -65,21 +70,33 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     }
 
     String url;
+    print( 'getEmployees' + widget.branchID );
+    print( "showAllValue - " + widget.showAllValue.toString() );
 
     // checking if the branch ID is empty, if empty then showing all the employees
-    if( widget.branchID == '' ) {
+    if( widget.branchID == '' || widget.showAllValue == true  ) {
      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
     }
     else {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND `users`.`branch_id`=${widget.branchID}";
+      // else showing employees of the current branch and employees with no branch assigned
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) ) ";
     }
 
+    print( url );
+
     http.Response response = await http.get( Uri.parse( url ) );
+
+    print( response.body );
 
     List<dynamic> jsonData = jsonDecode( response.body );
 
     if( response.body == '') {
-      print('failed to load');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("Failed to Load"),
+        ),
+      );
     }
     else {
       // clearing the previous list of Employees
@@ -129,7 +146,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
       _branches.add(
           DropdownMenuItem(
             value: 0,
-            child: Text("All"),
+            child: Text(""),
           )
       );
       branchIDs.add( '' );
@@ -203,8 +220,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
   }
 
   void _deleteEmployee(  String id, String name ) {
-    print(name);
-
     // asking for confirmation
     showDialog(
         context: context,
@@ -307,18 +322,43 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           onChanged: (int? value) {
                             if( _branches[value!].child.toString() == "Text(\"\")" ) {
                               widget.branchID = '';
+                              this.CheckboxValue = true;
+                              widget.showAllValue = false;
                               setState( ( ) => this.index2 = 0 );
                             }
                             else {
-                              print('changed to' + this.branchIDs[value] );
                               widget.branchID = this.branchIDs[value];
+                              this.CheckboxValue = true;
+                              widget.showAllValue = false;
                               setState(() => this.index2 = this._branches[value].value );
+
+                              print( widget.branchID );
                             }
                           },
                         ),
                       );
                     }
-                ) : Container(),
+                ) : Container(
+                  child: Row(
+                   children: [
+                     StatefulBuilder(
+                       builder: (context, setCheckboxState ) {
+                         return Checkbox(
+                             value: CheckboxValue,
+                             onChanged: (bool? value ) {
+                               if( value != null ) {
+                                 setCheckboxState( () {
+                                   this.CheckboxValue = value;
+                                 } );
+                               }
+                             }
+                         );
+                        }
+                     ),
+                     Text("Assign user with this branch? "),
+                   ]
+                  ),
+                ),
                 MaterialButton(
                   onPressed: () async {
                     // checking if username has been left empty
@@ -346,10 +386,22 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
                     String url;
 
+                    // checking if the userName is too long
+                    if( this.username.length >= 12 ) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: Text("UserName too Long!"),
+                          ),
+                        );
+
+                        return;
+                    }
+
                     print( widget.branchID );
 
-                    // checking if the user has selected the 'None' option for branches
-                    if( widget.branchID == '' ) {
+                    // checking if the user has selected the 'None' option for branches OR for an employee has checked the checkbox to keep the branch id null
+                    if( widget.branchID == ''  || this.CheckboxValue == false  ) {
                       url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&branch_id=";
                     }
                     else {
@@ -360,6 +412,11 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
                     // if response.body == 1, editing user details was successful
                     if( response.body == '1') {
+
+                      this.index2 = 0 ;
+                      widget.showAllValue = true;
+
+                      // resetting the employees list
                       getEmployees();
 
                       setState(() { });
@@ -559,7 +616,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
   @override
   Widget build( BuildContext context ) {
     return FutureBuilder(
-      future: init(),
+      future: init( ),
       builder: (context, snapshot ) {
         if( snapshot.connectionState == ConnectionState.done ) {
           return HomeScreenBuilder(

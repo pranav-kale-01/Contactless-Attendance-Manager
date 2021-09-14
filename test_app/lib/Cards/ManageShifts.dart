@@ -250,9 +250,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                           );
                         }
                       );
-
-                      // popping the Dialog after 3 seconds
-                      Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
                     }
                     else if( widget.branchID == '' ) {
                       showDialog(
@@ -264,9 +261,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                             );
                           }
                       );
-
-                      // popping the Dialog after 3 seconds
-                      Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
                     }
                     else {
                       // inserting the values to the shifts table
@@ -274,6 +268,10 @@ class _ManageShiftsState extends State<ManageShifts> {
 
                       http.Response response = await http.get( Uri.parse( url ) );
 
+                      // popping the current Window
+                      Navigator.of( context ).pop();
+
+                      // showing the dialog according to the operation
                       showDialog(
                           context: context,
                           builder: (BuildContext context ) {
@@ -287,15 +285,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                       setState(() {
                         this.index2 =0 ;
                       });
-
-                      // popping the Dialog after 3 seconds
-                      Future.delayed(
-                          Duration( seconds: 3 ),
-                          () {
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                          }
-                      );
                     }
                   },
                   child: Text(
@@ -669,7 +658,8 @@ class _ManageShiftsState extends State<ManageShifts> {
                         color: Colors.white,
                       ),
                     ),
-                    ListTile(
+                    // checking if the user is an Organization Admin
+                    widget.userInfo['authority'] == 'org-admin' ? ListTile(
                       title: Text( 'Manage branches', ),
                       onTap: () {
                         Navigator.pushReplacement(
@@ -679,8 +669,8 @@ class _ManageShiftsState extends State<ManageShifts> {
                           ),
                         );
                       },
-                    ),
-                    ListTile(
+                    ) : Container(),
+                    widget.userInfo['authority'] == 'org-admin' ? ListTile(
                       title: Text( 'Manage Branch Admins', ),
                       onTap: () {
                         Navigator.pushReplacement(
@@ -690,7 +680,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                           ),
                         );
                       },
-                    ),
+                    ) : Container(),
                     ListTile(
                       title: Text( 'Manage Employees', ),
                       onTap: () {
