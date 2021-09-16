@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
-import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
 import 'ManageBranch.dart';
@@ -44,6 +43,12 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
   int? index2;
   bool CheckboxValue = false ;
+
+  Map<String, dynamic> header = {
+    "UID" : "User ID",
+    'branch_id' : "Branch ID",
+    'username' : "UserName",
+  };
 
   Future<void> init( ) async {
     print( widget.userInfo['authority'] );
@@ -106,7 +111,8 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
       for( int i=0 ; i < jsonData.length ; i++ ) {
         Map<String,dynamic> data = jsonData[i];
-        employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true , true ) );
+        // employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true , true ) );
+        employees.add( containerBuilder( data, true , true , true ) );
         records.add( [data['UID'], data['branch_id'], data['username'], ] );
       }
     }
@@ -173,51 +179,110 @@ class _ManageEmployeeState extends State<ManageEmployee> {
   }
 
   Future<void> _insertEmployee() async {
-    // confirming that username is not empty
-    if( this.username == '' ) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context ) {
-            return AlertDialog(
-              title: Text("Field Username cannot be empty"),
-            );
-          }
-      );
-      return;
-    }
-    else if( this.password == '' ) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context ) {
-            return AlertDialog(
-              title: Text("Field Password cannot be empty"),
-            );
-          }
-      );
-      return;
-    }
-    else{
-      // adding the user details to the mysql database
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}";
+    showDialog(
+        context: context,
+        builder: (BuildContext context ) {
+          return AlertDialog(
+              content:Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      onChanged: (value) {
+                        username = value;
+                      },
+                      decoration: InputDecoration(
+                          labelText: "user email"
+                      ),
+                    ),
+                    widget.userInfo['authority'] == 'org-admin' ?
+                    StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState ) {
+                          return Container(
+                            padding: EdgeInsets.zero,
+                            margin: EdgeInsets.zero,
+                            child: DropdownButton(
+                              isExpanded: true,
+                              value: index2,
+                              items: _branches,
+                              onChanged: (int? value) {
+                                if( _branches[value!].child.toString() == "Text(\"\")" ) {
+                                  widget.branchID = '';
+                                  setState( ( ) => this.index2 = 0 );
+                                }
+                                else {
+                                  widget.branchID = this.branchIDs[value];
+                                  setState(() => this.index2 = this._branches[value].value );
+                                }
+                              },
+                            ),
+                          );
+                        }
+                    ) : Container(),
+                    TextField(
+                      onChanged: (value) {
+                        password = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: "password",
+                      ),
+                    ),
+                    MaterialButton(
+                      onPressed: () async {
+                        // adding the user to the users table
+                        // confirming that username is not empty
+                        if( this.username == '' ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Field Username cannot be empty"),
+                                );
+                              }
+                          );
+                          return;
+                        }
+                        else if( this.password == '' ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Field Password cannot be empty"),
+                                );
+                              }
+                          );
+                          return;
+                        }
+                        else{
+                          // adding the user details to the mysql database
+                          String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}";
 
-      await http.get( Uri.parse( url ) );
+                          await http.get( Uri.parse( url ) );
 
-      // closing the Popup
-      Navigator.pop(context);
+                          // closing the Popup
+                          Navigator.pop(context);
 
-      // showing the confirmation message
-      showDialog(
-          context: context,
-          builder: (BuildContext context ) {
-            return AlertDialog(
-              title: Text("User Added Successfully"),
-            );
-          }
-      );
+                          // showing the confirmation message
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("User Added Successfully"),
+                                );
+                              }
+                          );
 
-      getEmployees();
-      setState( ( ) {} );
-    }
+                          getEmployees();
+                          setState( ( ) {} );
+                        }
+                      },
+                      child: Text("Add"),
+                    )
+                  ]
+              )
+
+          );
+        }
+    );
   }
 
   void _deleteEmployee(  String id, String name ) {
@@ -434,112 +499,201 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     );
   }
 
-  Widget containerBuilder( String id , String? branchID, String name, bool addEdit,bool addDelete , bool showHistory ) {
+  Widget containerBuilder( var data, bool addEdit,bool addDelete, bool addManageScanHistory ) {
     return Container(
       alignment: Alignment.centerLeft,
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.symmetric(vertical: 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 50.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( id )
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 100.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( branchID == null ? 'NULL' : branchID )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( name )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          addEdit ? MaterialButton(
-              onPressed: () {
-                _editEmployee(id, name );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                padding: EdgeInsets.all( 10.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: Colors.black,
-                    ),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-          addDelete ? MaterialButton(
-              onPressed: () {
-                _deleteEmployee( id, name );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                padding: EdgeInsets.all( 10.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-          showHistory ? GestureDetector(
-            onTap: () {
-              Navigator.of( context ).push(
-                MaterialPageRoute(
-                  builder: (context) => ManageScanHistory(userInfo: widget.userInfo, showHamMenu: false,),
-                )
-              );
-            },
-            child: Container(
-              child: Text("Manage Scan History"),
-            ),
-          ) : Container(),
         ],
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['UID'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['branch_id'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['user_name'].toString() ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['UID'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                            height: 16.0,
+                            alignment: Alignment.centerLeft,
+                            // color: Colors.red,
+                            margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                            child: Text( data['branch_id'] )
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['username'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  addEdit? MaterialButton(
+                      onPressed: () {
+                        _editEmployee( data['UID'], data['username'] );
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: Colors.black,
+                            ),
+                            // Text(
+                            //   'Edit',
+                            //   style: TextStyle(
+                            //     color: Colors.blue,
+                            //     decoration: TextDecoration.underline,
+                            //   ),
+                            // )
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                  addDelete ?  MaterialButton(
+                      onPressed: () {
+                        _deleteEmployee( data['UID'], data['username'] );
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.indeterminate_check_box_outlined,
+                              color: Colors.red,
+                            ),
+                            // Text(
+                            //   'Delete',
+                            //   style: TextStyle(
+                            //     color: Colors.red,
+                            //     decoration: TextDecoration.underline,
+                            //   ),
+                            // )
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                  addManageScanHistory ? Container(
+                    alignment: Alignment.centerRight,
+                    child: MaterialButton(
+                        onPressed: () {
+                          Navigator.of( context ).push(
+                              MaterialPageRoute(
+                                builder: (context) => ManageScanHistory(userInfo: widget.userInfo, uid: data['UID'], showHamMenu: false,),
+                              )
+                          );
+                        },
+                        child: Container(
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.all( 10.0 ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Manage Scan History",
+                                  style: TextStyle(
+                                    color: Colors.indigo,
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: Colors.indigo,
+                                )
+                              ],
+                            )
+                        )
+                    ),
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Container _employeeViewBuilder(){
     return Container(
-      color: Colors.blueAccent,
       alignment: Alignment.center,
       child: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState1 ) {
@@ -577,13 +731,15 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                               // checking the branchID and making changes to the employees list accordingly
                               if( widget.branchID == '' ) {
                                 for( var i in records ) {
-                                  employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
+                                  // employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
+                                  employees.add( containerBuilder( i, true, true, true ) );
                                 }
                               }
                               else {
                                 for( var i in records ) {
                                   if( i[1].toString() == widget.branchID) {
-                                    employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
+                                    // employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
+                                    employees.add( containerBuilder( i, true, true, true ) );
                                   }
                                 }
                               }
@@ -596,14 +752,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                       }
                   ),
                 ) : Container(),
-                Container(
-                  width: 1400.0,
-                  alignment: Alignment.center,
-                  child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: containerBuilder( "ID", 'BRANCH ID', 'NAME' ,false, false, false ),
-                  ),
-                ),
                 Container(
                     height: MediaQuery.of(context).size.height - 200.0 ,
                     child: SingleChildScrollView(
@@ -634,76 +782,25 @@ class _ManageEmployeeState extends State<ManageEmployee> {
         if( snapshot.connectionState == ConnectionState.done ) {
           return HomeScreenBuilder(
             appbar: AppBar(
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
                 actions: [
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular( 10.0 ),
+                      color: Colors.black12,
+                    ),
+                    margin: EdgeInsets.symmetric( horizontal: 20.0, vertical: 5.0 ),
+                    padding: EdgeInsets.symmetric( vertical: 5.0 ),
                     child: IconButton(
                       icon: Icon(
                         Icons.add,
-                        color: Colors.white,
+                        color: Colors.blueAccent,
                       ),
                       onPressed: () {
                         // showing the popup to insert users
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context ) {
-                              return AlertDialog(
-                                  content:Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        TextField(
-                                          onChanged: (value) {
-                                            username = value;
-                                          },
-                                          decoration: InputDecoration(
-                                              labelText: "user email"
-                                          ),
-                                        ),
-                                        widget.userInfo['authority'] == 'org-admin' ?
-                                        StatefulBuilder(
-                                            builder: (BuildContext context, StateSetter setState ) {
-                                              return Container(
-                                                padding: EdgeInsets.zero,
-                                                margin: EdgeInsets.zero,
-                                                child: DropdownButton(
-                                                  isExpanded: true,
-                                                  value: index2,
-                                                  items: _branches,
-                                                  onChanged: (int? value) {
-                                                    if( _branches[value!].child.toString() == "Text(\"\")" ) {
-                                                      widget.branchID = '';
-                                                      setState( ( ) => this.index2 = 0 );
-                                                    }
-                                                    else {
-                                                      widget.branchID = this.branchIDs[value];
-                                                      setState(() => this.index2 = this._branches[value].value );
-                                                    }
-                                                  },
-                                                ),
-                                              );
-                                            }
-                                        ) : Container(),
-                                        TextField(
-                                          onChanged: (value) {
-                                            password = value;
-                                          },
-                                          decoration: InputDecoration(
-                                            labelText: "password",
-                                          ),
-                                        ),
-                                        MaterialButton(
-                                          onPressed: () {
-                                            // adding the user to the users table
-                                            _insertEmployee();
-                                          },
-                                          child: Text("Add"),
-                                        )
-                                      ]
-                                  )
-
-                              );
-                            }
-                        );
+                        _insertEmployee();
                       },
                     ),
                   )
@@ -810,8 +907,10 @@ class _ManageEmployeeState extends State<ManageEmployee> {
         else if( snapshot.hasError == true ) {
           return HomeScreenBuilder(
               appbar: AppBar(
-                backgroundColor: Color(0xFF10B5FC),
-                title: Text( "Error" ),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                title: Text( "" ),
               ),
               body: Center(
                 child: Text( snapshot.error.toString() ),
@@ -821,13 +920,13 @@ class _ManageEmployeeState extends State<ManageEmployee> {
         else {
             return HomeScreenBuilder(
               appbar: AppBar(
-                backgroundColor: Color(0xFF10B5FC),
-                title: Text( "View Branch Admins" ),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                title: Text( "" ),
               ),
               body: Center(
-                child: GradientContainer(
-                  child: CircularProgressIndicator()
-                  ),
+                child: CircularProgressIndicator(),
               )
             );
         }

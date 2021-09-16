@@ -17,7 +17,6 @@ import 'package:http/http.dart' as http ;
 import 'dart:convert';
 
 import 'DateTimePicker.dart';
-import 'ManageScanHistory.dart';
 
 class ManageScan extends StatefulWidget {
   final userInfo;
@@ -30,7 +29,6 @@ class ManageScan extends StatefulWidget {
 }
 
 class _ManageScanState extends State<ManageScan> {
-
   // coordinates stored in the database which represent the location where the QR code is installed
   double _lat= 0.0;
   double _lon= 0.0;
@@ -47,9 +45,11 @@ class _ManageScanState extends State<ManageScan> {
   List<List> records = [];
   List<DropdownMenuItem<int>> _shifts = [ DropdownMenuItem(value:0, child: Text("") ) ];
   List<String> shiftIDs = [];
+  List<String> tempArr = [];
   int? index2;
 
-  bool qrStringIsValid = true;
+  bool qrStringIsValid = false;
+  bool scanIsValid = false;
 
   TextEditingController _timeController1 = TextEditingController();
   TextEditingController _timeController2 = TextEditingController();
@@ -72,7 +72,6 @@ class _ManageScanState extends State<ManageScan> {
 
     // radius of earth in kilometers
     double r = 6371*1000;
-
 
     // calculate the result
     return ( c * r ) ;
@@ -101,14 +100,10 @@ class _ManageScanState extends State<ManageScan> {
         ),
       );
 
-      // closing the dialog after three seconds
-
       return;
     }
 
     this.qrString = await FlutterBarcodeScanner.scanBarcode( '#fcba03', "cancel" , false , ScanMode.QR );
-
-    print( this.qrString );
 
     if( this.qrString.split(":").length != 3 ) {
       this.qrStringIsValid = false;
@@ -125,10 +120,14 @@ class _ManageScanState extends State<ManageScan> {
     }
     else {
       this.qrStringIsValid = true;
+      this.scanIsValid = true;
     }
   }
 
   Future<void> _insertScan( ) async {
+    if( this.scanIsValid == false ) {
+      return;
+    }
 
     // checking if the qrString's organization id and the user's organization id matches
     if( qrString.substring(0 , qrString.length -1 ).split(":")[2] == widget.userInfo['org_id'] ) {
@@ -136,11 +135,15 @@ class _ManageScanState extends State<ManageScan> {
       String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
       // inserting the scan data into the scans table
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&time=${coords['lat'].toString() + ':' + coords['lon'].toString()}&scanner_location=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&scanner_location=${coords['lat'].toString() + ':' + coords['lon'].toString()}&time=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
 
       http.Response response = await http.get( Uri.parse( url ) );
 
       if( response.body == 'true' ) {
+
+        this.qrStringIsValid = false;
+        this.scanIsValid = false ;
+
         // everything is valid, marking the attendance of the user
         showDialog(
             context: context,
@@ -230,14 +233,15 @@ class _ManageScanState extends State<ManageScan> {
 
       shiftIDs.add( data['id'] );
       index+=1;
+
+      tempArr.add( data['start_time'] + ' - ' + data['end_time'] );
     }
 
     // setting the default value for branchID
     widget.shiftID = shiftIDs[0];
 
-
-    for( var temp in _shifts ) {
-      print( temp.child.toString() );
+    for( String temp in tempArr) {
+      print( temp );
     }
   }
 
@@ -262,6 +266,8 @@ class _ManageScanState extends State<ManageScan> {
                           // sets the data into qrString
                           await scanQR();
 
+                          print("qrStringIsValid? " + this.qrStringIsValid.toString() );
+
                           if( qrStringIsValid ) {
                             var list = qrString.split(':');
 
@@ -278,12 +284,14 @@ class _ManageScanState extends State<ManageScan> {
                               // if the device is in the range then adding the scan to the scans list..
                               rangeStatus = "In Range" ;
 
-                              // inserting the data into scans table
-                              _insertScan( );
+                              print('In Range');
                             }
                             else {
                               rangeStatus = "Out of Range" ;
+                              print( distance.toString() );
                             }
+
+                            scanIsValid = true;
                           }
                           else {
                               this.qrStringIsValid = true ;
@@ -309,17 +317,6 @@ class _ManageScanState extends State<ManageScan> {
                       Icons.account_circle,
                       color: Colors.white,
                     ),
-                  ),
-                  ListTile(
-                    title: Text( 'Manage Scan History' ),
-                    onTap: () {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ManageScanHistory( userInfo: widget.userInfo ),
-                          )
-                      );
-                    },
                   ),
                   ListTile(
                     title: Text( 'Sign Out', ),
@@ -413,19 +410,14 @@ class _ManageScanState extends State<ManageScan> {
                                             this.index2 = this._shifts[value].value;
 
                                             // setting the timeControllers according to the shift selected
-                                            String timeString = _shifts[index2!].child.toString();
+                                            String timeString = tempArr[index2!-1];
 
+                                            // the tempArr will hold [start_time, end_time ]
+                                            var temp = timeString.split(" - ");
 
-                                            // checking if the scanned QRString was valid
-
-                                            if( this.qrStringIsValid ) {
-                                              // the tempArr will hold [start_time, end_time ]
-                                              var tempArr = timeString.substring(6, timeString.length - 2 ).split(" - ");
-
-                                              // assigning the shift timings to timeControllers
-                                              this._timeController1.text = tempArr[0] ;
-                                              this._timeController2.text = tempArr[1] ;
-                                            }
+                                            // assigning the shift timings to timeControllers
+                                            this._timeController1.text = temp[0] ;
+                                            this._timeController2.text = temp[1] ;
                                           });
                                         }
 
@@ -560,9 +552,6 @@ class _ManageScanState extends State<ManageScan> {
                             }
                             else{
                               await _insertScan();
-
-                              print( this.qrStringIsValid );
-                              print( this.coords );
                             }
                           },
                           child: Container(

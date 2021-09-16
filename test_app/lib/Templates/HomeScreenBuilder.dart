@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/utils/CredentialController.dart';
 
 class HomeScreenBuilder extends StatelessWidget {
   final Widget body;
@@ -14,10 +12,7 @@ class HomeScreenBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     if( this.listView == null ) {
       return Scaffold(
-        appBar: this.appbar == null ? AppBar(
-          backgroundColor: Color(0xFF10B5FC),
-          title: Text('Home'),
-        ) : this.appbar ,
+        appBar: this.appbar == null ? null : this.appbar ,
         body: this.body,
       );
     }
@@ -29,10 +24,7 @@ class HomeScreenBuilder extends StatelessWidget {
             child: this.listView,
           ),
         ),
-        appBar: this.appbar == null ? AppBar(
-          backgroundColor: Color(0xFF10B5FC),
-          title: Text('Home'),
-        ) : this.appbar ,
+        appBar: this.appbar ,
         body: this.body,
       );
     }

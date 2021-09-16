@@ -718,17 +718,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                         }
                     ),
                     ListTile(
-                      title: Text( 'Manage Scan History' ),
-                      onTap: () {
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ManageScanHistory( userInfo: widget.userInfo ),
-                            )
-                        );
-                      },
-                    ),
-                    ListTile(
                       title: Text( 'Sign Out', ),
                       onTap: () async {
                         // Signing the User Out

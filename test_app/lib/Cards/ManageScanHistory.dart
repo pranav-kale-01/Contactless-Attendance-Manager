@@ -6,11 +6,14 @@ import 'package:test_app/Cards/ManageBranchAdmins.dart';
 import 'package:test_app/Cards/ManageEmployee.dart';
 import 'package:test_app/Cards/ManageScanLocations.dart';
 import 'package:test_app/Cards/ManageShifts.dart';
+import 'package:test_app/Cards/DateTimePicker.dart';
 import 'package:test_app/Screens/SignUp.dart';
 
 import 'package:test_app/utils/CredentialController.dart';
 
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
+
+import 'package:test_app/utils/Location.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -19,11 +22,12 @@ class  ManageScanHistory extends StatefulWidget {
   final userInfo;
   bool showHamMenu = true;
   late String branchID;
+  final uid;
 
   bool changedFromDropdown = false;
   bool showAllValue = true;
 
-  ManageScanHistory( {Key? key, required this.userInfo, showHamMenu } ) : super( key: key ) {
+  ManageScanHistory( {Key? key, required this.userInfo, required this.uid, showHamMenu } ) : super( key: key ) {
     if( showHamMenu != null ){
       this.showHamMenu = showHamMenu ;
     }
@@ -38,17 +42,195 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
   List<List> records = [];
   int? index2;
 
+  TextEditingController _timeController1 = TextEditingController();
+  TextEditingController _timeController2 = TextEditingController();
+
+  Map<String, String> header = {
+    'UID' : "User ID",
+    'coordinates' : "Coordinates",
+    'time' : "Scan Time",
+    'scanner_location' : "Scanner Location",
+    'start_time' : "Start Time",
+    'end_time' : "End Time"
+  };
+
   Future<void> init( ) async {
-    await getEmployeesScanHistory();
+    await getEmployeesScanHistory( widget.uid );
   }
 
-  Future<void> getEmployeesScanHistory() async {
-    String url;
-    url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `scans` WHERE `UID` = ${widget.userInfo['UID']}";
+  Future<void> _insertTimeDetails( String id, String start_time, String end_time ) async {
+    // setting up the TextEditingControllers with the provided values
+    _timeController1.text = start_time ;
+    _timeController2.text = end_time ;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context ) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.symmetric( vertical: 10.0 ),
+                  child: DateTimePicker( text: "Start Time" , timeController: _timeController1, initialTime: start_time, ),
+                ),
+                DateTimePicker( text: "End Time" , timeController: _timeController2, initialTime: end_time, ),
+                Container(
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    onPressed: () async {
+                      // checking if the startTime == endTime
+                      // checking if the startTime == endTime
+                      if( _timeController1.text == _timeController2.text ) {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context ) {
+                              return AlertDialog(
+                                backgroundColor: Colors.white,
+                                content: Text("Shift Start Time and End Time cannot be same"),
+                              );
+                            }
+                        );
+
+                        // popping the Dialog after 3 seconds
+                        Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
+                      }
+                      else {
+                        // getting current time
+                        DateTime currentTime = DateTime.now();
+
+
+                        // getting current location
+                        Location locator = Location();
+                        Map<String, dynamic> coords = await locator.getLocation();
+                        String currentLocation = coords['lat'].toString() + '-' + coords['lon'].toString() ;
+
+                        // validation succeeded, inserting the values
+                        String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=$id&coordinates=$currentLocation&time=$currentTime&scanner_location=-&start_time=${_timeController1.text}&end_time=${_timeController2.text}";
+
+                        http.Response response = await http.get( Uri.parse( url ) );
+
+                        // popping the current Window
+                        Navigator.of( context ).pop();
+
+                        // showing the dialog according to the operation
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context ) {
+                              return AlertDialog(
+                                backgroundColor: Colors.white,
+                                content: Text( response.body == 'true' ? "Entry Added" : "Something Went Wrong" ),
+                              );
+                            }
+                        );
+
+                        setState(() {
+                          this.index2 =0 ;
+                        });
+                      }
+                    },
+                    child: Text("Ok"),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
+  Future<void> _deleteTimeDetails( String id , String time ) async {
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=1&id=$id&time=$time";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
-    print( response.body );
+    if( response.body != '1' ) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("Something Went Wrong"),
+        ),
+      );
+    }
+    else{
+      // reloading the screen
+      setState( () {} );
+    }
+  }
+
+  Future<void> _editTimeDetails ( String start_time, String end_time, String id ) async {
+    // setting up the TextEditingControllers with the provided values
+    _timeController1.text = start_time ;
+    _timeController2.text = end_time ;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context ) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.symmetric( vertical: 10.0 ),
+                  child: DateTimePicker( text: "Start Time" , timeController: _timeController1, initialTime: start_time, ),
+                ),
+                DateTimePicker( text: "End Time" , timeController: _timeController2, initialTime: end_time, ),
+                Container(
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    onPressed: () async {
+                      // checking if the startTime == endTime
+                      if( _timeController1.text == _timeController2.text ) {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context ) {
+                              return AlertDialog(
+                                backgroundColor: Colors.white,
+                                content: Text("Shift Start Time and End Time cannot be same"),
+                              );
+                            }
+                        );
+
+                        // popping the Dialog after 3 seconds
+                        Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
+                      }
+                      else {
+                        String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=2&id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'";
+
+                        http.Response response = await http.get( Uri.parse( url ) );
+
+                        if( response.body != '1' ) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              content: Text("Something Went Wrong"),
+                            ),
+                          );
+                        }
+                        else {
+                          // removing the popup
+                          Navigator.pop(context);
+
+                          // reloading the page
+                          setState( () {} );
+                        }
+                      }
+                    },
+                    child: Text("Ok"),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
+  Future<void> getEmployeesScanHistory( String uid ) async {
+    String url;
+    url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `scans` WHERE `UID` = $uid ";
+
+    http.Response response = await http.get( Uri.parse( url ) );
 
     List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -76,147 +258,265 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
   Widget containerBuilder( var data, bool addEdit,bool addDelete) {
     return Container(
       alignment: Alignment.centerLeft,
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.symmetric(vertical: 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 100.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['coordinates'] )
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['time'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['scanner_location'] )
-          ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['start_time'] )
-          ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['end_time'] )
-          ),
-          addEdit ? MaterialButton(
-              onPressed: () { },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                padding: EdgeInsets.all( 10.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: Colors.black,
-                    ),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-          addDelete ? MaterialButton(
-              onPressed: () { },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                padding: EdgeInsets.all( 10.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
         ],
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['UID'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['coordinates'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['time'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['scanner_location'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['start_time'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 2.0 ),
+                          child: Text( this.header['end_time'].toString() ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['UID'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          height: 16.0,
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['coordinates'] )
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['time'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['scanner_location'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['start_time'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['end_time'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  addEdit? MaterialButton(
+                      onPressed: () async {
+                        await _editTimeDetails( data['start_time'] , data['end_time'] , data['UID'] );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: Colors.blueAccent,
+                            ),
+                            // Text(
+                            //   'Edit',
+                            //   style: TextStyle(
+                            //     color: Colors.blue,
+                            //     decoration: TextDecoration.underline,
+                            //   ),
+                            // )
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                  addDelete ?  MaterialButton(
+                      onPressed: ()  async {
+                        await _deleteTimeDetails( data['UID'], data['time'] );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                            // Text(
+                            //   'Delete',
+                            //   style: TextStyle(
+                            //     color: Colors.red,
+                            //     decoration: TextDecoration.underline,
+                            //   ),
+                            // )
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Container _employeeViewBuilder(){
-    Map<String, String> header = {
-      'UID' : "User ID",
-      'coordinates' : "Coordinates",
-      'time' : "Scan Time",
-      'scanner_location' : "Scanner Location",
-      'start_time' : "Start Time",
-      'end_time' : "End Time"
-    };
-
     return Container(
-      color: Colors.blueAccent,
-      alignment: Alignment.center,
-      child: StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState1 ) {
-            return Column(
-              children: [
-                Container(
-                  width: 1400.0,
-                  alignment: Alignment.center,
-                  child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: containerBuilder( header ,false, false, ),
+      child: Stack(
+        children: [
+          Container(
+            color: Colors.white,
+            alignment: Alignment.center,
+            child: StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState1 ) {
+                  return Column(
+                    children: [
+                      Container(
+                          height: MediaQuery.of(context).size.height - 30,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child : Container(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.vertical,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: employees,
+                                ),
+                              ),
+                            ),
+                          )
+                      ),
+                    ],
+                  );
+                }
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                margin: EdgeInsets.all( 5.0 ),
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular( 10.0 ),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: Colors.blue,
                   ),
                 ),
-                Container(
-                    height: MediaQuery.of(context).size.height - 200.0 ,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child : Container(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: employees,
-                          ),
-                        ),
-                      ),
-                    )
+              ),
+              Container(
+                margin: EdgeInsets.all( 5.0 ),
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular( 10.0 ),
                 ),
-              ],
-            );
-          }
+                child: IconButton(
+                  onPressed: () async {
+                    await _insertTimeDetails( widget.uid , "00:00:00" , "00:00:00" );
+                  },
+                  icon: Icon(
+                    Icons.add,
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -321,22 +621,12 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                 ),
               ],
             ) : null ,
-            appbar: AppBar(
-              actions: [
-                IconButton(
-                  onPressed: () {
-
-                  },
-                  icon: Icon(
-                    Icons.add,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-            body: Container(
-              alignment: Alignment.center,
-              child: _employeeViewBuilder(),
+            appbar: null,
+            body: SafeArea(
+              child: Container(
+                alignment: Alignment.center,
+                child: _employeeViewBuilder( ),
+              ),
             ),
           );
         }
@@ -369,6 +659,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
                     Navigator.pushAndRemoveUntil(
                         context,
+
                         MaterialPageRoute(
                             builder: (context) => SignUp()
                         ),
