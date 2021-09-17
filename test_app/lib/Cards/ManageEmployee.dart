@@ -113,7 +113,9 @@ class _ManageEmployeeState extends State<ManageEmployee> {
         Map<String,dynamic> data = jsonData[i];
         // employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true , true ) );
         employees.add( containerBuilder( data, true , true , true ) );
-        records.add( [data['UID'], data['branch_id'], data['username'], ] );
+
+        print("Error here" + data['branch_id'] == null ? '-' : data['branch_id'] ) ;
+        records.add( [data['UID'], data['branch_id'] == null ? '-' : data['branch_id'], data['username'], ] );
       }
     }
   }
@@ -546,12 +548,12 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['branch_id'].toString() ),
+                          child: Text( this.header['branch_id'] ),
                         ),
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['user_name'].toString() ),
+                          child: Text( this.header['username'].toString() ),
                         ),
                       ],
                     ),
@@ -576,7 +578,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                             alignment: Alignment.centerLeft,
                             // color: Colors.red,
                             margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                            child: Text( data['branch_id'] )
+                            child: Text( data['branch_id'] == null ? '-' : data['branch_id'] ),
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
@@ -753,7 +755,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   ),
                 ) : Container(),
                 Container(
-                    height: MediaQuery.of(context).size.height - 200.0 ,
+                    height: MediaQuery.of(context).size.height - 104 ,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
