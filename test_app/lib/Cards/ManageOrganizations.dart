@@ -34,6 +34,12 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   late dynamic jsonData;
   List<Widget> organizations = [ ];
 
+  Map<String,dynamic> header = {
+    'org_name': "Name",
+    'org_id': "ID",
+    'org_mail': "Mail",
+  };
+
   Future<void> insertOrg( ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=0&name='${this.orgName}'&mail='${this.orgEmail}'";
 
@@ -146,119 +152,209 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     );
   }
 
-  Widget containerBuilder( var data , bool addEdit, bool addDelete ) {
+  Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.symmetric(vertical: 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['org_name'] )
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['org_mail'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          addEdit? MaterialButton(
-              onPressed: () {
-                nameController.text= data['org_name'] ;
-                emailController.text= data['org_mail'] ;
-
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) => _buildPopupDialog( data['org_name'], data['org_mail'] , data['org_id'] ),
-                );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric( horizontal: 20.0 ),
-                padding: EdgeInsets.all(20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                          Icons.edit,
-                          color: Colors.black,
-                    ),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 210.0,
-            height: 50.0,
-          ),
-          addDelete? Container(
-            width: 150.0,
-            margin: EdgeInsets.symmetric( horizontal: 20.0 ),
-            child: PopupMenuButton(
-              padding: EdgeInsets.all(20.0),
-              offset: Offset(10.0,0.0),
-              icon: Icon( Icons.more_horiz ),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 0,
-                  child: Text("Manage Organization Admins"),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: Text("Manage Branches"),
-                ),
-                PopupMenuItem(
-                  value: 3,
-                  child: Text("Manage Branch Admins"),
-                )
-              ],
-              onSelected: (int value) {
-                if(value == 0) {
-                  print("Manage Organization Admins");
-
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => ManageOrganizationsAdmins( orgID: data['org_id'] , showHamMenu: false,),
-                    )
-                  );
-                }
-                else if( value == 2 ){
-                  print("Manage Branch");
-
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => ViewBranch( setState: setState, context: context, userInfo: data, showHamMenu: false,  ),
-                    ),
-                  );
-                }
-                else if( value == 3 ) {
-                  print("Manage Branch Admins");
-
-                  Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => ManageBranchAdmins( userInfo: data, context: context,  setState: setState, showHamMenu: false, ),
-                      )
-                  );
-                }
-              },
-            ),
-          ) : Container(
-            width: 210.0,
-            height: 50.0,
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
         ],
       ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only( top: 20.0, ),
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_name'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_id'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_mail'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['org_name'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['org_id'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['org_mail'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  addEdit? MaterialButton(
+                      onPressed: () {
+                        nameController.text= data['org_name'] ;
+                        emailController.text= data['org_mail'] ;
+
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) => _buildPopupDialog( data['org_name'], data['org_mail'] , data['org_id'] ),
+                        );
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: Colors.black,
+                            ),
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                  addDelete ?  Container(
+                    width: 150.0,
+                    margin: EdgeInsets.symmetric( horizontal: 20.0 ),
+                    child: PopupMenuButton(
+                      padding: EdgeInsets.all(20.0),
+                      offset: Offset(10.0,0.0),
+                      icon: Icon( Icons.more_horiz ),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 0,
+                          child: Text("Manage Organization Admins"),
+                        ),
+                        PopupMenuItem(
+                          value: 2,
+                          child: Text("Manage Branches"),
+                        ),
+                        PopupMenuItem(
+                          value: 3,
+                          child: Text("Manage Branch Admins"),
+                        )
+                      ],
+                      onSelected: (int value) {
+                        if(value == 0) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ManageOrganizationsAdmins( orgID: data['org_id'] , showHamMenu: false,),
+                            )
+                          );
+                        }
+                        else if( value == 2 ){
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ViewBranch( setState: setState, context: context, userInfo: data, showHamMenu: false,  ),
+                            ),
+                          );
+                        }
+                        else if( value == 3 ) {
+                          Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ManageBranchAdmins( userInfo: data, context: context,  setState: setState, showHamMenu: false, ),
+                              )
+                          );
+                        }
+                      },
+                    ),
+                  ) : Container(
+                    width: 210.0,
+                    height: 50.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _organizationViewBuilder() {
+    return Container(
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height - 80.0 ,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child : Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: organizations,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
     );
   }
 
@@ -268,75 +364,71 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
         future: viewOrg(),
         builder: (context,snapshot) {
           if( snapshot.connectionState == ConnectionState.done ) {
-            Map<String,dynamic> header = {
-              'org_name': "Name",
-              'org_id': "ID",
-              'org_mail': "Mail",
-            };
-
             return HomeScreenBuilder(
               appbar: AppBar(
-                backgroundColor: Color(0xFF10B5FC),
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
                 actions: [
                   Container(
                     margin: EdgeInsets.symmetric( horizontal: 20.0 ),
                     child: IconButton(
                       icon: Icon(
                         Icons.add,
-                        color: Colors.white,
+                        color: Colors.blueAccent,
                       ),
                       onPressed: () {
                         // showing the dialog box to add the new user
                         showDialog(
-                          context: context,
-                          builder: (BuildContext context ) {
-                            return AlertDialog(
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextField(
-                                    decoration: InputDecoration(
-                                      labelText: "Organization Name"
+                            context: context,
+                            builder: (BuildContext context ) {
+                              return AlertDialog(
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextField(
+                                      decoration: InputDecoration(
+                                          labelText: "Organization Name"
+                                      ),
+                                      onChanged: (value) {
+                                        this.orgName = value;
+                                      },
                                     ),
-                                    onChanged: (value) {
-                                      this.orgName = value;
-                                    },
-                                  ),
-                                  TextField(
-                                    decoration: InputDecoration(
-                                      labelText: "Organization Email"
+                                    TextField(
+                                      decoration: InputDecoration(
+                                          labelText: "Organization Email"
+                                      ),
+                                      onChanged: (value) {
+                                        this.orgEmail = value;
+                                      },
                                     ),
-                                    onChanged: (value) {
-                                      this.orgEmail = value;
-                                    },
-                                  ),
-                                  MaterialButton(
-                                    onPressed: () async {
-                                      await insertOrg( );
+                                    MaterialButton(
+                                      onPressed: () async {
+                                        await insertOrg( );
 
-                                      // popping the current Screen
-                                      Navigator.pop(context);
+                                        // popping the current Screen
+                                        Navigator.pop(context);
 
-                                      // reloading current screen
-                                      setState( () {} );
+                                        // reloading current screen
+                                        setState( () {} );
 
-                                      // showing a AlertDialog
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: Text("Organization Added"),
-                                              content: Text("Organization added to the List"),
-                                            );
-                                          }
-                                      );
-                                    },
-                                    child: Text("Add"),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
+                                        // showing a AlertDialog
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text("Organization Added"),
+                                                content: Text("Organization added to the List"),
+                                              );
+                                            }
+                                        );
+                                      },
+                                      child: Text("Add"),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
                         );
                       },
                     ),
@@ -401,50 +493,27 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                   ),
                 ],
               ) : null ,
-              body: Container(
-                  color: Colors.blueAccent,
-                  alignment: Alignment.center,
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 1400.0,
-                        alignment: Alignment.center,
-                        child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: containerBuilder( header , false, false ),
-                        ),
-                      ),
-                      Container(
-                        height: MediaQuery.of(context).size.height - 165.0 ,
-                        child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child : Container(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: organizations,
-                              ),
-                            ),
-                        ),
-                ),
-                      ),
-                    ],
-                  )
+              body: _organizationViewBuilder()
+            );
+          }
+          else if( snapshot.hasError ) {
+            return HomeScreenBuilder(
+              appbar: AppBar(
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
               ),
-          );
-        }
-        else if( snapshot.hasError ) {
-          return Container(
-            child: Text( snapshot.error.toString() ),
-          );
-        }
-        else {
-          return Container(
-            alignment: Alignment.center,
-            child: CircularProgressIndicator(),
-          );
-        }
+              body: Text( snapshot.error.toString() ),
+            );
+          }
+          else {
+            return HomeScreenBuilder(
+                body:  Container(
+                  alignment: Alignment.center,
+                  child: CircularProgressIndicator(),
+                ),
+            );
+          }
       }
     );
   }

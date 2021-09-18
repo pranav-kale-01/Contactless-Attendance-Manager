@@ -41,7 +41,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   int? index2 = 0 ;
 
   late dynamic jsonData;
-  List<Container> orgAdmins = [ ];
+  List<Widget> orgAdmins = [ ];
 
   List<DropdownMenuItem<int>> _organizations = [];
   List<DropdownMenuItem<int>> _branches = [ DropdownMenuItem(value:0, child: Text("") ) ];
@@ -49,6 +49,13 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   List<String> orgIDs = [];
   List<String> branchIDs = [];
 
+  Map<String,dynamic> header = {
+    'UID': "ID",
+    'org_id': "ID",
+    'username': "UserName",
+    'org_name': "Organization Name",
+    'org_mail': "Organization Mail",
+  };
 
   Future<void> insertOrgAdmin( ) async {
     // if widget.user has data then using that data instead
@@ -235,100 +242,160 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     }
   }
 
-  Container containerBuilder( data , bool addEdit, bool addDelete ) {
+  Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.all( 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['UID'] )
+      alignment: Alignment.centerLeft,
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['username'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['org_name'] )
-          ),
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['org_mail'] )
-          ),
-          addEdit ? MaterialButton(
-              onPressed: () {
-                _editOrgAdmin( data['username'], data['UID'] );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: Colors.black,
-                    ),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              ),
-          ) : Container(
-            width: 210.0,
-            height: 50.0,
-          ),
-          addDelete? MaterialButton(
-              onPressed: () async {
-                  await _deleteOrgAdmin( data['username'] );
-                  setState( () {} );
-               },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 210.0,
-            height: 50.0,
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
         ],
       ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only( top: 20.0, ),
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_name'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_id'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_mail'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['org_name'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['org_id'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['org_mail'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  addEdit? MaterialButton(
+                      onPressed: () {
+                        _editOrgAdmin( data['username'], data['UID'] );
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: Colors.black,
+                            ),
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                  addDelete ?  MaterialButton(
+                      onPressed: () async {
+                        await _deleteOrgAdmin( data['username'] );
+                        setState( () {} );
+                      },
+                      child: Container(
+                        width: 150.0,
+                        margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                            Text(
+                              'Delete',
+                              style: TextStyle(
+                                color: Colors.red,
+                                decoration: TextDecoration.underline,
+                              ),
+                            )
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 210.0,
+                    height: 50.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
-
   @override
   void initState( ) {
     super.initState();
@@ -337,29 +404,47 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     viewOrg();
   }
 
+  Widget _organizationAdminsViewBuilder( ) {
+    return Container(
+        child: Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height - 151.0 ,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child : Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: orgAdmins,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: viewOrgAdmins(),
         builder: (context,snapshot) {
           if( snapshot.connectionState == ConnectionState.done ) {
-            Map<String,dynamic> header = {
-              'UID': "ID",
-              'org_id': "ID",
-              'username': "UserName",
-              'org_name': "Organization Name",
-              'org_mail': "Organization Mail",
-            };
             return HomeScreenBuilder(
               appbar: AppBar(
-                backgroundColor: Color(0xFF10B5FC),
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
                 actions: [
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 20.0),
                     child: IconButton(
                       icon: Icon(
                           Icons.add,
-                          color: Colors.white,
+                          color: Colors.blueAccent,
                       ),
                       onPressed: () {
                         // showing the popup to insert users
@@ -448,7 +533,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                   ),
                 ]
               ),
-              listView: ListView(
+              listView: widget.showHamMenu ?  ListView(
                 children: [
                   DrawerHeader(
                     decoration: BoxDecoration(
@@ -505,48 +590,33 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                     },
                   ),
                 ],
-              ),
-              body: Container(
-                  alignment: Alignment.center,
-                  color: Colors.blueAccent,
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 1400.0,
-                        alignment: Alignment.center,
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: containerBuilder(  header , false , false ),
-                        ),
-                      ),
-                      Container(
-                        height: MediaQuery.of(context).size.height - 151.0 ,
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child : Container(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              child: Column(
-                                children: orgAdmins,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-              ),
+              ) : null ,
+              body: _organizationAdminsViewBuilder(),
             );
           }
           else if( snapshot.hasError ) {
-            return Container(
-              child: Text( snapshot.error.toString() ),
+            return HomeScreenBuilder(
+              appbar: AppBar(
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+              ),
+              body: Container(
+                child: Text( snapshot.error.toString() ),
+              ),
             );
           }
           else {
-            return Container(
-              alignment: Alignment.center,
-              child: CircularProgressIndicator(),
+            return HomeScreenBuilder(
+              appbar: AppBar(
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+              ),
+              body: Container(
+                alignment: Alignment.center,
+                child: CircularProgressIndicator(),
+              ),
             );
           }
         }

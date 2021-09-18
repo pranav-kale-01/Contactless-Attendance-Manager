@@ -41,6 +41,15 @@ class _ManageShiftsState extends State<ManageShifts> {
   TextEditingController _timeController1 =  TextEditingController();
   TextEditingController _timeController2 =  TextEditingController();
 
+  Map<String,dynamic> header = {
+    'id' : "ID",
+    'start_time' : "Start Time",
+    'end_time' : "End Time",
+    'org_id' : "Organization ID",
+    'branch_id' : "Branch ID",
+  };
+
+
   Future<void> init( ) async {
     // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
     if( widget.userInfo['authority'] == 'br-admin') {
@@ -395,127 +404,282 @@ class _ManageShiftsState extends State<ManageShifts> {
     }
   }
 
-  Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
+  Widget containerBuilder( var data, bool addQRCreate,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.symmetric(vertical: 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 50.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['id'] )
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 100.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['start_time'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['end_time'] )
-          ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['org_id'] )
-          ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              padding: EdgeInsets.all( 10.0 ),
-              child: Text( data['branch_id'] ),
-          ),
-          addEdit ? MaterialButton(
-              onPressed: () async {
-                await _editShift( data['start_time'] , data['end_time'] , data['id'] );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                padding: EdgeInsets.all( 10.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: Colors.black,
-                    ),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-          addDelete ? MaterialButton(
-              onPressed: () async {
-                  await _deleteShift( data['id'] );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                padding: EdgeInsets.all( 10.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
         ],
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only( top: 20.0, ),
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['id'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['start_time'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['end_time'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_id'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['branch_id'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['id'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['start_time'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['end_time'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['org_id'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          height: 16.0,
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['branch_id'] == null ? '-' : data['branch_id'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  addQRCreate? MaterialButton(
+                    onPressed: () async {
+                      await _editShift( data['start_time'] , data['end_time'] , data['id'] );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all( 5.0 ),
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ) : Container( ),
+                  addDelete ? MaterialButton(
+                      onPressed: () async {
+                        // delete branch
+                        await _deleteShift( data['id'] );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all( 5.0, ),
+                        width: 150.0,
+                        child: Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Container _shiftViewBuilder() {
-    Map<String, String> header = {
-      'id' : "ID",
-      'start_time' : "Start Time",
-      'end_time' : "End Time",
-      'org_id' : "Organization ID",
-      'branch_id' : "Branch ID",
-    };
+  // Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
+  //   return Container(
+  //     alignment: Alignment.centerLeft,
+  //     color: Colors.white60,
+  //     padding: EdgeInsets.all( 20.0 ),
+  //     margin: EdgeInsets.symmetric(vertical: 2.5 ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //       children: [
+  //         Container(
+  //             width: 50.0,
+  //             height: 50.0,
+  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+  //             padding: EdgeInsets.all( 10.0 ),
+  //             child: Text( data['id'] )
+  //         ),
+  //         Container(
+  //             width: 100.0,
+  //             height: 50.0,
+  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+  //             padding: EdgeInsets.all( 10.0 ),
+  //             child: Text( data['start_time'] )
+  //         ),
+  //         Container(
+  //             width: 200.0,
+  //             height: 50.0,
+  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+  //             padding: EdgeInsets.all( 10.0 ),
+  //             child: Text( data['end_time'] )
+  //         ),
+  //         Container(
+  //             width: 200.0,
+  //             height: 50.0,
+  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+  //             padding: EdgeInsets.all( 10.0 ),
+  //             child: Text( data['org_id'] )
+  //         ),
+  //         Container(
+  //             width: 200.0,
+  //             height: 50.0,
+  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+  //             padding: EdgeInsets.all( 10.0 ),
+  //             child: Text( data['branch_id'] ),
+  //         ),
+  //         addEdit ? MaterialButton(
+  //             onPressed: () async {
+  //               await _editShift( data['start_time'] , data['end_time'] , data['id'] );
+  //             },
+  //             child: Container(
+  //               width: 150.0,
+  //               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+  //               padding: EdgeInsets.all( 10.0 ),
+  //               child: Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                 children: [
+  //                   Icon(
+  //                     Icons.edit,
+  //                     color: Colors.black,
+  //                   ),
+  //                   Text(
+  //                     'Edit',
+  //                     style: TextStyle(
+  //                       color: Colors.blue,
+  //                       decoration: TextDecoration.underline,
+  //                     ),
+  //                   )
+  //                 ],
+  //               ),
+  //             )
+  //         ) : Container(
+  //           width: 205.0,
+  //         ),
+  //         addDelete ? MaterialButton(
+  //             onPressed: () async {
+  //
+  //             },
+  //             child: Container(
+  //               width: 150.0,
+  //               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+  //               padding: EdgeInsets.all( 10.0 ),
+  //               child: Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                 children: [
+  //                   Icon(
+  //                     Icons.indeterminate_check_box_outlined,
+  //                     color: Colors.red,
+  //                   ),
+  //                   Text(
+  //                     'Delete',
+  //                     style: TextStyle(
+  //                       color: Colors.red,
+  //                       decoration: TextDecoration.underline,
+  //                     ),
+  //                   )
+  //                 ],
+  //               ),
+  //             )
+  //         ) : Container(
+  //           width: 205.0,
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
+  Container _shiftViewBuilder() {
     return Container(
-      color: Colors.blueAccent,
-      alignment: Alignment.center,
       child: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState1 ) {
             return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 widget.userInfo['authority'] == 'org-admin' ?
                 Row(
@@ -525,10 +689,12 @@ class _ManageShiftsState extends State<ManageShifts> {
                       constraints: BoxConstraints(
                         minWidth: 180.0,
                       ),
+                      width: MediaQuery.of(context).size.width,
                       alignment: Alignment.center,
                       child: StatefulBuilder(
                           builder: (BuildContext context, StateSetter setState ) {
                             return Container(
+                              alignment: Alignment.center,
                               width: 200.0,
                               child: DropdownButton(
                                 isExpanded: true,
@@ -589,15 +755,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                   ],
                 ) : Container(),
                 Container(
-                  width: 1400.0,
-                  alignment: Alignment.center,
-                  child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: containerBuilder( header ,false, false)
-                  ),
-                ),
-                Container(
-                    height: MediaQuery.of(context).size.height - 226.0 ,
+                    height: MediaQuery.of(context).size.height - 128.0 ,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
@@ -626,18 +784,20 @@ class _ManageShiftsState extends State<ManageShifts> {
         if( snapshot.connectionState == ConnectionState.done ) {
           return HomeScreenBuilder(
               appbar: AppBar(
+                  iconTheme: IconThemeData(color: Colors.blueAccent),
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
                   actions: [
                     Container(
                       margin: EdgeInsets.symmetric( horizontal: 20.0 ),
                       child: IconButton(
                           icon: Icon(
                             Icons.add,
-                            color: Colors.white,
+                            color: Colors.blueAccent,
                           ),
                           onPressed: () async {
                             // adding a new shift to the shift table
                             await _insertShift();
-
                           }
                       ),
                     )
@@ -744,6 +904,11 @@ class _ManageShiftsState extends State<ManageShifts> {
         }
         else if( snapshot.hasError ) {
           return HomeScreenBuilder(
+            appbar: AppBar(
+              iconTheme: IconThemeData(color: Colors.blueAccent),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
             body: Container(
               alignment: Alignment.center,
               child: Text( snapshot.error.toString() ),
@@ -752,6 +917,11 @@ class _ManageShiftsState extends State<ManageShifts> {
         }
         else{
           return HomeScreenBuilder(
+            appbar: AppBar(
+              iconTheme: IconThemeData(color: Colors.blueAccent),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
             body: Container(
               alignment: Alignment.center,
               child: CircularProgressIndicator(),

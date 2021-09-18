@@ -149,14 +149,10 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
   }
 
   Widget containerBuilder( var data, bool addQRCreate,bool addDelete ) {
-    print( data['org_id'] );
-    print( data['branch_id'] );
-    print( data['qr'] );
-
     return Container(
       alignment: Alignment.centerLeft,
       margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
-      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      padding: EdgeInsets.symmetric( vertical: 15.0 ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular( 20.0 ),
         color: Colors.white,
