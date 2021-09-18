@@ -33,6 +33,12 @@ class ViewBranch extends StatefulWidget {
 }
 
 class ViewBranchState extends State<ViewBranch>{
+  Map<String, dynamic> header = {
+    'branch_id': 'BRANCH ID',
+    'branch_name': 'BRANCH NAME',
+    'address': 'ADDRESS',
+  };
+
   // initialize the branches list
   Future<void> init() async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
@@ -245,165 +251,212 @@ class ViewBranchState extends State<ViewBranch>{
     }
   }
 
-  Widget containerBuilder( data  , bool addEdit,bool addDelete ) {
+  Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.symmetric(vertical: 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 100.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['branch_id'] )
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['branch_name'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 300.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['address'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          addEdit ? MaterialButton(
-              onPressed: () {
-                // edit branch
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context ) {
-                      String _branchName = data['branch_name'] ;
-                      String _address = data['address'] ;
+        ],
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only( top: 20.0, ),
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['branch_id'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['branch_name'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['address'].toString() ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['branch_id'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          height: 16.0,
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['branch_name'] == null ? '-' : data['branch_id'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['address'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  addEdit? MaterialButton(
+                      onPressed: () {
+                        // edit branch
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                String _branchName = data['branch_name'] ;
+                                String _address = data['address'] ;
 
-                      var branchNameController = TextEditingController();
-                      var addressController = TextEditingController();
+                                var branchNameController = TextEditingController();
+                                var addressController = TextEditingController();
 
-                      branchNameController.text = data['branch_name'] ;
-                      addressController.text = data['address'] ;
+                                branchNameController.text = data['branch_name'] ;
+                                addressController.text = data['address'] ;
 
-                      return AlertDialog(
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
+                                return AlertDialog(
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextField(
+                                        textDirection: TextDirection.ltr,
+                                        controller: branchNameController,
+                                        onChanged: (String value) {
+                                          // reversing the output value before giving it to the controller
+                                          _branchName = value  ;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: 'branch Name',
+                                        ),
+                                      ),
+
+                                      TextField(
+                                        textDirection: TextDirection.ltr,
+                                        controller: addressController,
+                                        onChanged: (value) {
+                                          _address = value;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: "Address",
+                                        ),
+                                      ),
+                                      MaterialButton(
+                                        onPressed: () {
+                                          // save user changes
+                                          editBranch( data['branch_id'] , _branchName, _address );
+
+                                          setState( () {} );
+                                        },
+                                        child: Text("Save"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                          );
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            TextField(
-                              textDirection: TextDirection.ltr,
-                              controller: branchNameController,
-                              onChanged: (String value) {
-                                // reversing the output value before giving it to the controller
-                                _branchName = value  ;
-                              },
-                              decoration: InputDecoration(
-                                labelText: 'branch Name',
-                              ),
-                            ),
-
-                            TextField(
-                              textDirection: TextDirection.ltr,
-                              controller: addressController,
-                              onChanged: (value) {
-                                _address = value;
-                              },
-                              decoration: InputDecoration(
-                                labelText: "Address",
-                              ),
-                            ),
-                            MaterialButton(
-                              onPressed: () {
-                                // save user changes
-                                editBranch( data['branch_id'] , _branchName, _address );
-
-                                setState( () {} );
-                              },
-                              child: Text("Save"),
+                            Icon(
+                              Icons.edit,
+                              color: Colors.black,
                             ),
                           ],
                         ),
-                      );
-                    }
-                );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: Colors.black,
-                    ),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-          addDelete ? MaterialButton(
-              onPressed: () {
-                // delete branch
-                removeBranch( data['branch_id'] );
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
-          ),
-        ],
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                  addDelete ?  MaterialButton(
+                      onPressed: () {
+                          // remove branch
+                          removeBranch( data['branch_id'] );
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Container branchViewBuilder( ) {
-    Map<String, dynamic> header = {
-      'branch_id': 'BRANCH ID',
-      'branch_name': 'BRANCH NAME',
-      'address': 'ADDRESS',
-    };
-
     return Container(
-      color: Colors.blueAccent,
+      // color: Colors.blueAccent,
       alignment: Alignment.center,
       child: Column(
         children: [
-          Container(
-            width: 1400.0,
-            alignment: Alignment.center,
-            child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: containerBuilder( header ,false, false)
-            ),
-          ),
           Container(
               height: MediaQuery.of(context).size.height - 178.0 ,
               child: SingleChildScrollView(
@@ -432,13 +485,16 @@ class ViewBranchState extends State<ViewBranch>{
         if( snapshot.connectionState == ConnectionState.done ) {
               return HomeScreenBuilder(
                   appbar: AppBar(
+                    iconTheme: IconThemeData(color: Colors.blueAccent),
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
                     actions: [
                       Container(
                         padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
                         child: IconButton(
                           icon: Icon(
                             Icons.add,
-                            color: Colors.white,
+                            color: Colors.blueAccent,
                           ),
                           onPressed: () {
                             // showing the insert popup
@@ -487,8 +543,12 @@ class ViewBranchState extends State<ViewBranch>{
                         ),
                       )
                     ],
-                    backgroundColor: Color(0xFF10B5FC),
-                    title: Text( "View Branches" ),
+                    title: Text(
+                        "View Branches",
+                        style: TextStyle(
+                          color: Colors.blueAccent,
+                        ),
+                    ),
                   ),
                   listView: widget.showHamMenu ? ListView(
                     children: [
@@ -589,7 +649,9 @@ class ViewBranchState extends State<ViewBranch>{
           return HomeScreenBuilder(
               appbar: AppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: Color(0xFF10B5FC),
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
                 title: Text( "View Branches" ),
               ),
               body: Center(

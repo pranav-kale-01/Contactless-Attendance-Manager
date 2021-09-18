@@ -13,10 +13,15 @@ class SignUp extends StatelessWidget {
   late String statusString;
 
   Future<void> registerToFb(BuildContext context) async {
+    print( 'test' );
+
     // getting the uid for current mail ID
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/sign_in.php?mail='${this._email}'";
 
     http.Response response = await http.get( Uri.parse( url ) );
+
+    print( response.body ) ;
+    print("test");
 
     if( response.body == 'no-user' ) {
       // this means that there is no user with provided credentials
@@ -43,7 +48,12 @@ class SignUp extends StatelessWidget {
 
       // checking if the password matches
       if( data['password'] == this._pass ) {
-
+        // directing the user to home Screen
+        Navigator.pushReplacement(
+          context, MaterialPageRoute(
+          builder: (context) => Home( email: this._email, uid: data['UID'] ),
+        ),
+        );
       }
       else {
         showDialog(

@@ -114,7 +114,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
         // employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true , true ) );
         employees.add( containerBuilder( data, true , true , true ) );
 
-        print("Error here" + data['branch_id'] == null ? '-' : data['branch_id'] ) ;
         records.add( [data['UID'], data['branch_id'] == null ? '-' : data['branch_id'], data['username'], ] );
       }
     }
@@ -596,7 +595,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
               margin: EdgeInsets.symmetric( vertical: 2.0 ),
               width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   addEdit? MaterialButton(
                       onPressed: () {
@@ -612,13 +611,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                               Icons.edit,
                               color: Colors.black,
                             ),
-                            // Text(
-                            //   'Edit',
-                            //   style: TextStyle(
-                            //     color: Colors.blue,
-                            //     decoration: TextDecoration.underline,
-                            //   ),
-                            // )
                           ],
                         ),
                       )
@@ -636,16 +628,9 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Icon(
-                              Icons.indeterminate_check_box_outlined,
+                              Icons.delete,
                               color: Colors.red,
                             ),
-                            // Text(
-                            //   'Delete',
-                            //   style: TextStyle(
-                            //     color: Colors.red,
-                            //     decoration: TextDecoration.underline,
-                            //   ),
-                            // )
                           ],
                         ),
                       )
@@ -669,7 +654,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Text(
-                                  "Manage Scan History",
+                                  "Manage Scans",
                                   style: TextStyle(
                                     color: Colors.indigo,
                                   ),
@@ -733,15 +718,27 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                               // checking the branchID and making changes to the employees list accordingly
                               if( widget.branchID == '' ) {
                                 for( var i in records ) {
+                                  Map<String, dynamic> record = {
+                                    "UID" : i[0],
+                                    "branch_id" : i[1],
+                                    "username" : i[2],
+                                  };
+
                                   // employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
-                                  employees.add( containerBuilder( i, true, true, true ) );
+                                  employees.add( containerBuilder( record, true, true, true ) );
                                 }
                               }
                               else {
                                 for( var i in records ) {
+                                  Map<String, dynamic> record = {
+                                    "UID" : i[0],
+                                    "branch_id" : i[1],
+                                    "username" : i[2],
+                                  };
+
                                   if( i[1].toString() == widget.branchID) {
                                     // employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
-                                    employees.add( containerBuilder( i, true, true, true ) );
+                                    employees.add( containerBuilder( record, true, true, true ) );
                                   }
                                 }
                               }
@@ -755,7 +752,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   ),
                 ) : Container(),
                 Container(
-                    height: MediaQuery.of(context).size.height - 104 ,
+                    height: MediaQuery.of(context).size.height - 128 ,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
@@ -791,10 +788,9 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular( 10.0 ),
-                      color: Colors.black12,
+                      // color: Colors.black12,
                     ),
                     margin: EdgeInsets.symmetric( horizontal: 20.0, vertical: 5.0 ),
-                    padding: EdgeInsets.symmetric( vertical: 5.0 ),
                     child: IconButton(
                       icon: Icon(
                         Icons.add,

@@ -52,60 +52,13 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
   List<String> orgIDs = [];
   List<String> branchIDs = [];
 
-  Future<void> _insertBranchAdmin( ) async {
-    // confirming that username is not empty
-    if( this.username == '' ) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context ) {
-            return AlertDialog(
-              title: Text("Field Username cannot be empty"),
-            );
-          }
-      );
-      return;
-    }
-    else if( this.password == '' ) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context ) {
-            return AlertDialog(
-              title: Text("Field Password cannot be empty"),
-            );
-          }
-      );
-      return;
-    }
-    else{
-      String url;
-
-      // checking if the user has selected 'None' from Branch options
-      if( this.branchID == '' ) {
-        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=";
-      }
-      else{
-        // adding the user details to the mysql database
-        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
-      }
-
-      await http.get( Uri.parse( url ) );
-
-      // closing the Popup
-      Navigator.pop(context);
-
-      // showing the confirmation message
-      showDialog(
-          context: context,
-          builder: (BuildContext context ) {
-            return AlertDialog(
-              title: Text("User Added Successfully"),
-            );
-          }
-      );
-
-      setState(() { });
-    }
-  }
+  Map<String, dynamic> header = {
+    'UID':"ID",
+    'username':'Username',
+    'org_id':'Organization ID',
+    'branch_id':'Branch ID',
+    'branch_name':'Branch Name',
+  };
 
   Future<void> setBranches( id, bool addEmpty ) async {
     int i;
@@ -129,11 +82,9 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
           child: Text(''),
         ),
       ) ;
-
       return;
     }
 
-    
     int index;
     
     if( addEmpty ) {
@@ -177,8 +128,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
     // resetting the old index
     this.index2= 0;
-
-    // setBranches( widget.userInfo['org_id'] , true );
 
     showDialog(
         context: context,
@@ -268,7 +217,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     }
   }
 
-  Future<void> insertBranchAdmin( ) async {
+  Future<void> _insertBranchAdmin( ) async {
     this.index2=0;
 
     // showing the popup to insert users
@@ -319,9 +268,61 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                       ),
                     ),
                     MaterialButton(
-                      onPressed: () {
+                      onPressed: () async {
                         // adding the user to the users table
-                        _insertBranchAdmin();
+
+                        // confirming that username is not empty
+                        if( this.username == '' ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Field Username cannot be empty"),
+                                );
+                              }
+                          );
+                          return;
+                        }
+                        else if( this.password == '' ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Field Password cannot be empty"),
+                                );
+                              }
+                          );
+                          return;
+                        }
+                        else{
+                          String url;
+
+                          // checking if the user has selected 'None' from Branch options
+                          if( this.branchID == '' ) {
+                            url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=";
+                          }
+                          else{
+                            // adding the user details to the mysql database
+                            url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
+                          }
+
+                          await http.get( Uri.parse( url ) );
+
+                          // closing the Popup
+                          Navigator.pop(context);
+
+                          // showing the confirmation message
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("User Added Successfully"),
+                                );
+                              }
+                          );
+
+                          setState(() { });
+                        }
                       },
                       child: Text("Add"),
                     )
@@ -333,97 +334,201 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     );
   }
 
-  Container containerBuilder( data , bool addEdit, bool addDelete ) {
+  Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.all( 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['UID'] )
+      alignment: Alignment.centerLeft,
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 150.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['username'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          Container(
-            width: 150.0,
-            height: 50.0,
-            margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-            child: Text( data['branch_id'] == null ? 'Null' : data['branch_id'] ),
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          Container(
-            width: 150.0,
-            height: 50.0,
-            margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-            child: Text( data['branch_name'] == null ? 'Null' : data['branch_name'] ),
-          ),
-          addEdit ? MaterialButton(
-            onPressed: () async {
-              await _editBranchAdmin( data['UID'] , data['username'] );
-
-            },
-            child: Container(
-              width: 150.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+        ],
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only( top: 20.0, ),
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Icon(
-                    Icons.edit,
-                    color: Colors.black,
-                  ),
-                  Text(
-                    'Edit',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['UID'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['username'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header[ data['branch_id'] == null ? 'Null' : data['branch_id'] ].toString() ),
+                        ),
+                      ],
                     ),
-                  )
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['branch_id'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['username'] ),
+                        ),
+                        Container(
+                          height: 16.0,
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['branch_name'] == null ? '-' : data['branch_id'] ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ) : Container(
-            width: 210.0,
-            height: 50.0,
-          ),
-          addDelete? MaterialButton(
-              onPressed: () async {
-                await _deleteBranchAdmin( data['username'] );
-                setState(() { });
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 210.0,
-            height: 50.0,
-          ),
-        ],
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  addEdit? MaterialButton(
+                      onPressed: () {
+                        // edit branch
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context ) {
+                              String _branchName = data['branch_name'] ;
+                              String _address = data['address'] ;
+
+                              var branchNameController = TextEditingController();
+                              var addressController = TextEditingController();
+
+                              branchNameController.text = data['branch_name'] ;
+                              addressController.text = data['address'] ;
+
+                              return AlertDialog(
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextField(
+                                      textDirection: TextDirection.ltr,
+                                      controller: branchNameController,
+                                      onChanged: (String value) {
+                                        // reversing the output value before giving it to the controller
+                                        _branchName = value  ;
+                                      },
+                                      decoration: InputDecoration(
+                                        labelText: 'branch Name',
+                                      ),
+                                    ),
+
+                                    TextField(
+                                      textDirection: TextDirection.ltr,
+                                      controller: addressController,
+                                      onChanged: (value) {
+                                        _address = value;
+                                      },
+                                      decoration: InputDecoration(
+                                        labelText: "Address",
+                                      ),
+                                    ),
+                                    MaterialButton(
+                                      onPressed: () async {
+                                        // save user changes
+                                        await _editBranchAdmin( data['UID'] , data['username'] );
+                                      },
+                                      child: Text("Save"),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                        );
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: Colors.black,
+                            ),
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                  addDelete ?  MaterialButton(
+                      onPressed: () async {
+                        // remove branch
+                        await _deleteBranchAdmin( data['username'] );
+                        setState(() { });
+                      },
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        padding: EdgeInsets.all( 10.0 ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                          ],
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -454,26 +559,10 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
   }
 
   Container showBranchAdmins() {
-    Map<String, dynamic> header = {
-      'UID':"ID",
-      'username':'Username',
-      'org_id':'Organization ID',
-      'branch_id':'Branch ID',
-      'branch_name':'Branch Name',
-    };
     return Container(
-      color: Colors.blueAccent,
       alignment: Alignment.center,
       child: Column(
         children: [
-          Container(
-            width: 1400.0,
-            alignment: Alignment.center,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: containerBuilder( header , false, false),
-            ),
-          ),
           Container(
             height: MediaQuery.of(context).size.height - 151.0 ,
             child: SingleChildScrollView(
@@ -502,6 +591,9 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
           if( snapshot.connectionState == ConnectionState.done ) {
             return HomeScreenBuilder(
               appbar: AppBar(
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
                 actions: [
                   Container(
                     padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
@@ -511,13 +603,17 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                         color: Colors.white,
                       ),
                       onPressed: () async {
-                        await insertBranchAdmin();
+                        await _insertBranchAdmin();
                       },
                     ),
                   )
                 ],
-                backgroundColor: Color(0xFF10B5FC),
-                title: Text( "View Branch Admins" ),
+                title: Text(
+                    "View Branch Admins",
+                    style: TextStyle(
+                      color: Colors.blueAccent,
+                    )
+                ),
               ),
               listView: widget.showHamMenu ? ListView(
                 children: [
@@ -619,7 +715,9 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
           else {
             return HomeScreenBuilder(
                 appbar: AppBar(
-                  backgroundColor: Color(0xFF10B5FC),
+                  iconTheme: IconThemeData(color: Colors.blueAccent),
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
                   title: Text( "View Branch Admins" ),
                 ),
                 body: Center(

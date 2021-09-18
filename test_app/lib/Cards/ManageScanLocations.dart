@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:test_app/Cards/ManageBranch.dart';
 import 'package:test_app/Cards/ManageBranchAdmins.dart';
 import 'package:test_app/Cards/ManageEmployee.dart';
+import 'package:test_app/Cards/AddScannerLocation.dart';
+import 'package:test_app/Cards/ManageShifts.dart';
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/GenerateScreen.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
@@ -13,10 +15,6 @@ import 'package:test_app/utils/CredentialController.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'AddScannerLocation.dart';
-import 'ManageScanHistory.dart';
-import 'ManageShifts.dart';
 
 class ManageScanLocations extends StatefulWidget {
   final userInfo ;
@@ -37,6 +35,12 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
   int? index;
 
+  Map<String, dynamic> header = {
+    'org_id': 'Organization ID',
+    'branch_id': 'BRANCH ID',
+    'qr': 'ADDRESS',
+  };
+
   Future<void> init() async {
     await _setBranches();
 
@@ -48,6 +52,8 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
     http.Response response = await http.get(  Uri.parse( url ) );
 
+    print( response.body );
+
     List<dynamic> jsonData = jsonDecode( response.body );
 
     // clearing the scanPoints list
@@ -57,7 +63,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
     for( int i=0 ; i< jsonData.length ; i++ ) {
       Map<String, dynamic> data = jsonData[i];
 
-    _displayData.add( data );
+      _displayData.add( data );
       scanPoints.add( containerBuilder( data, true, true ) );
     }
 
@@ -70,6 +76,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
     // iterating over the _displayData list and selecting only the required organization
     for( var i in _displayData ) {
+      print( i );
       if( i['branch_id'] == widget.branchID || widget.branchID == '') {
         scanPoints.add( containerBuilder( i , true, true  ) );
       }
@@ -80,8 +87,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
     int i;
 
     // getting all the branches of the current organization
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget
-        .userInfo['org_id']}&condition2=&post2=&custom";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
 
     http.Response response = await http.get(Uri.parse(url));
     List<dynamic> jsonData = jsonDecode(response.body);
@@ -142,90 +148,145 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
     });
   }
 
-  Widget containerBuilder( data  ,bool addDelete, bool addQRCreate ) {
+  Widget containerBuilder( var data, bool addQRCreate,bool addDelete ) {
+    print( data['org_id'] );
+    print( data['branch_id'] );
+    print( data['qr'] );
+
     return Container(
       alignment: Alignment.centerLeft,
-      color: Colors.white60,
-      padding: EdgeInsets.all( 20.0 ),
-      margin: EdgeInsets.symmetric(vertical: 2.5 ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-              width: 200.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['branch_id'] )
+      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      padding: EdgeInsets.symmetric( vertical: 5.0 ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular( 20.0 ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset( 0.0, 5.0),
+            blurRadius: 10.0,
           ),
-          Container(
-              width: 300.0,
-              height: 50.0,
-              margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-              child: Text( data['qr'] )
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( 2.0, 0.0),
+            blurRadius: 10.0,
           ),
-          addQRCreate ? MaterialButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                PageRouteBuilder(
-                  opaque: false,
-                  pageBuilder: (context, _ , __ ) => kIsWeb? GenerateScreenWeb(qrString: data['qr']) : GenerateScreen( qrString: data['qr'] ),
-                ),
-              );
-            },
-            child: Container(
-              padding: EdgeInsets.all( 5.0 ),
-              child: Icon(
-                Icons.qr_code_scanner,
-              ),
-            ),
-          ) : Container( ),
-          addDelete ? MaterialButton(
-              onPressed: () {
-                // delete branch
-                removeScanPoint( data['qr'] );
-
-                setState(() { });
-              },
-              child: Container(
-                width: 150.0,
-                margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.indeterminate_check_box_outlined,
-                      color: Colors.red,
-                    ),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.underline,
-                      ),
-                    )
-                  ],
-                ),
-              )
-          ) : Container(
-            width: 205.0,
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset( -2.0, 0.0),
+            blurRadius: 10.0,
           ),
         ],
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only( top: 20.0, ),
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['org_id'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['branch_id'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['org_id'],
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                        Container(
+                          height: 16.0,
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['branch_id'] == null ? '-' : data['branch_id'] ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric( vertical: 2.0 ),
+              width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  addQRCreate? MaterialButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          opaque: false,
+                          pageBuilder: (context, _ , __ ) => kIsWeb? GenerateScreenWeb(qrString: data['qr']) : GenerateScreen( qrString: data['qr'] ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all( 5.0 ),
+                      child: Icon(
+                        Icons.qr_code_scanner,
+                      ),
+                    ),
+                  ) : Container( ),
+                  addDelete ? MaterialButton(
+                      onPressed: () {
+                        // delete branch
+                        removeScanPoint( data['qr'] );
+
+                        setState(() { });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all( 5.0, ),
+                        width: 150.0,
+                        child: Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ),
+                      )
+                  ) : Container(
+                    width: 205.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Container scanLocationViewBuilder( ) {
-    Map<String, dynamic> header = {
-      'org_id': 'Organization ID',
-      'branch_id': 'BRANCH ID',
-      'qr': 'ADDRESS',
-    };
-
     return Container(
       child: StatefulBuilder(
         builder: (context, setListViewState ) {
           return Container(
-            color: Colors.blueAccent,
             alignment: Alignment.center,
             child: Column(
               children: [
@@ -256,15 +317,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                     }
                 ) : Container(),
                 Container(
-                  width: 1400.0,
-                  alignment: Alignment.center,
-                  child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: containerBuilder( header ,false, false )
-                  ),
-                ),
-                Container(
-                    height: MediaQuery.of(context).size.height - 226.0 ,
+                    height: MediaQuery.of(context).size.height - 128.0 ,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
@@ -280,7 +333,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                 ),
               ],
             ),
-          )  ;
+          );
         }
       ),
     );
@@ -294,13 +347,16 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
         if(snapshot.connectionState == ConnectionState.done ) {
           return HomeScreenBuilder(
             appbar: AppBar(
+              iconTheme: IconThemeData(color: Colors.blueAccent),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
               actions: [
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
                   child: IconButton(
                     icon: Icon(
                       Icons.add,
-                      color: Colors.white,
+                      color: Colors.blueAccent,
                     ),
                     onPressed: () async {
                       // redirecting to the AddScannerLocation Page
@@ -316,7 +372,6 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                   ),
                 )
               ],
-              backgroundColor: Color(0xFF10B5FC),
               title: Text( "View Branch Admins" ),
             ),
             listView: ListView(
@@ -418,10 +473,13 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
         }
         else {
           return HomeScreenBuilder(
+            appbar: AppBar(
+              iconTheme: IconThemeData(color: Colors.blueAccent),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
               body: Center(
-                child: GradientContainer(
-                  child: CircularProgressIndicator(),
-                ),
+                child: CircularProgressIndicator(),
               )
           );
         }

@@ -397,7 +397,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                           children: [
                             Icon(
                               Icons.edit,
-                              color: Colors.blueAccent,
+                              color: Colors.black,
                             ),
                             // Text(
                             //   'Edit',
