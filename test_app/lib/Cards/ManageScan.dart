@@ -135,9 +135,12 @@ class _ManageScanState extends State<ManageScan> {
       String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
       // inserting the scan data into the scans table
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${this._lat.toString() + '-' + this._lon.toString() }&scanner_location=${coords['lat'].toString() + ':' + coords['lon'].toString()}&time=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${coords['lat'].toString() + ':' + coords['lon'].toString()}&scanner_location=${this._lat.toString() + ':' + this._lon.toString() }&time=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
 
       http.Response response = await http.get( Uri.parse( url ) );
+
+      print("Printing the body of the response");
+      print( response.body );
 
       if( response.body == 'true' ) {
 
@@ -253,6 +256,9 @@ class _ManageScanState extends State<ManageScan> {
         if( snapshot.connectionState == ConnectionState.done ) {
           return HomeScreenBuilder(
               appbar: AppBar(
+                iconTheme: IconThemeData(color: Colors.blueAccent),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
                 title: Text( "Employee", ),
                 actions: [
                   Container(
@@ -260,7 +266,7 @@ class _ManageScanState extends State<ManageScan> {
                     child: IconButton(
                         icon: Icon(
                           Icons.qr_code_scanner_sharp,
-                          color: Colors.white,
+                          color: Colors.blueAccent,
                         ),
                         onPressed: () async {
                           // sets the data into qrString
@@ -275,23 +281,47 @@ class _ManageScanState extends State<ManageScan> {
                             this._lon = double.parse( list[1] ) ;
 
                             // getting the current user location
-                            await loadCoordinates( );
+                            try {
+                              await loadCoordinates();
+                            }
+                            catch( e ) {
+                              scanIsValid = false;
+
+                              showDialog(
+                                context: context,
+                                builder: (context)=>AlertDialog(
+                                  content: Text( e.toString() ),
+                                ),
+                              );
+
+                              return;
+                            }
+
+                            // print( "coordinates" + coords['lat'].toString() + ' - ' + coords['lon'].toString() );
+
+                            // if( coords['lat'] == null || coords['lon'] == null ) {
+                            //   print('test');
+                            //
+                            // }
 
                             // calculating the distance of the device from the scanning location
                             double distance = calcDistance( this._lat , this._lon , double.parse( coords['lat']! )  , double.parse( coords['lon']! ) ) / 100;
 
-                            if( distance < 5.0 ) {
+                            if( distance < 50.0 ) {
                               // if the device is in the range then adding the scan to the scans list..
                               rangeStatus = "In Range" ;
-
-                              print('In Range');
+                              scanIsValid = true;
                             }
                             else {
                               rangeStatus = "Out of Range" ;
-                              print( distance.toString() );
-                            }
 
-                            scanIsValid = true;
+                              showDialog(
+                                context: context,
+                                builder: (context)=> AlertDialog(
+                                  content: Text("Out of Range by :" + distance.toString() + "cm " ),
+                                ),
+                              );
+                            }
                           }
                           else {
                               this.qrStringIsValid = true ;
@@ -348,6 +378,7 @@ class _ManageScanState extends State<ManageScan> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Container(
+                          margin: EdgeInsets.symmetric( horizontal: 10.0, ),
                           padding: EdgeInsets.all( 20.0 ),
                           decoration: BoxDecoration(
                               color: Colors.white,
@@ -537,9 +568,21 @@ class _ManageScanState extends State<ManageScan> {
                           onPressed: () async {
                             // adding the data to scans table
 
+                            if( this.scanIsValid == false ) {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      content: Text( "Unable to get current Location, try disabling and enabling the GPS again" ),
+                                    );
+                                  }
+                              );
+                              return;
+                            }
                             // checking if the user has scanned the qr-Code
                             if( this.qrStringIsValid == false || this.coords == {}  ) {
 
+                              print("This doesn't work!");
                               // The user has not scanned the code or the Scanned Code was Invalid
                               showDialog(
                                   context: context,
@@ -551,6 +594,7 @@ class _ManageScanState extends State<ManageScan> {
                               );
                             }
                             else{
+                              print("this does work!");
                               await _insertScan();
                             }
                           },
@@ -598,6 +642,11 @@ class _ManageScanState extends State<ManageScan> {
         }
         else if( snapshot.hasError ) {
           return HomeScreenBuilder(
+            appbar: AppBar(
+              iconTheme: IconThemeData(color: Colors.blueAccent),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
             body: Container(
               alignment: Alignment.center,
               child: Text( snapshot.error.toString() ),
@@ -606,6 +655,11 @@ class _ManageScanState extends State<ManageScan> {
         }
         else {
           return HomeScreenBuilder(
+            appbar: AppBar(
+              iconTheme: IconThemeData(color: Colors.blueAccent),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
             body: Container(
               alignment: Alignment.center,
               child: CircularProgressIndicator(),

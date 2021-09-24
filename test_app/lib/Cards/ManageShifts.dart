@@ -47,6 +47,7 @@ class _ManageShiftsState extends State<ManageShifts> {
     'end_time' : "End Time",
     'org_id' : "Organization ID",
     'branch_id' : "Branch ID",
+    'branch_name' : "Branch Name",
   };
 
 
@@ -133,13 +134,15 @@ class _ManageShiftsState extends State<ManageShifts> {
 
     // checking if the branch ID is empty, if empty then showing all the employees
     if( widget.branchID == '' ) {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `shifts` WHERE `shifts`.`org_id` = ${widget.userInfo['org_id']}";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `shifts`.`id`, `shifts`.`start_time`, `shifts`.`end_time`, `shifts`.`org_id`, `shifts`.`branch_id`, `branches`.`branch_name` FROM `shifts` LEFT JOIN `branches` ON `branches`.`branch_id` = `shifts`.`branch_id` WHERE `shifts`.`org_id` = ${widget.userInfo['org_id']}";
     }
     else {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `shifts` WHERE `shifts`.`org_id` = ${widget.userInfo['org_id']} AND `shifts`.`branch_id`=${widget.branchID}";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `shifts`.`id`, `shifts`.`start_time`, `shifts`.`end_time`, `shifts`.`org_id`, `shifts`.`branch_id`, `branches`.`branch_name` FROM `shifts` LEFT JOIN `branches` ON `branches`.`branch_id` = `shifts`.`branch_id` WHERE `shifts`.`org_id` = ${widget.userInfo['org_id']} AND `shifts`.`branch_id`=${widget.branchID}";
     }
 
     http.Response response = await http.get( Uri.parse( url ) );
+
+    print( response.body );
 
     List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -154,7 +157,7 @@ class _ManageShiftsState extends State<ManageShifts> {
       for( int i=0 ; i < jsonData.length ; i++ ) {
         Map<String,dynamic> data = jsonData[i];
         shifts.add( containerBuilder( data, true , true ) );
-        records.add( [data['id'], data['start_time'], data['end_time'], data['org_id'], data['branch_id'] ] );
+        records.add( [data['id'], data['start_time'], data['end_time'], data['org_id'], data['branch_id'], data['branch_name']] );
       }
     }
   }
@@ -447,7 +450,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['id'].toString() ),
+                          child: Text( this.header['branch_name'] ),
                         ),
                         Container(
                           // color: Colors.red,
@@ -459,16 +462,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['end_time'] ),
                         ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['org_id'] ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['branch_id'] ),
-                        ),
                       ],
                     ),
                   ),
@@ -479,13 +472,11 @@ class _ManageShiftsState extends State<ManageShifts> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Container(
+                          height: 16.0,
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text(
-                            data['id'],
-                            textAlign: TextAlign.start,
-                          ),
+                          child: Text( data['branch_name'] == null ? '-' : data['branch_name'] ),
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
@@ -504,22 +495,6 @@ class _ManageShiftsState extends State<ManageShifts> {
                             data['end_time'],
                             textAlign: TextAlign.start,
                           ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text(
-                            data['org_id'],
-                            textAlign: TextAlign.start,
-                          ),
-                        ),
-                        Container(
-                          height: 16.0,
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['branch_id'] == null ? '-' : data['branch_id'] ),
                         ),
                       ],
                     ),
@@ -570,111 +545,6 @@ class _ManageShiftsState extends State<ManageShifts> {
     );
   }
 
-  // Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
-  //   return Container(
-  //     alignment: Alignment.centerLeft,
-  //     color: Colors.white60,
-  //     padding: EdgeInsets.all( 20.0 ),
-  //     margin: EdgeInsets.symmetric(vertical: 2.5 ),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //       children: [
-  //         Container(
-  //             width: 50.0,
-  //             height: 50.0,
-  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-  //             padding: EdgeInsets.all( 10.0 ),
-  //             child: Text( data['id'] )
-  //         ),
-  //         Container(
-  //             width: 100.0,
-  //             height: 50.0,
-  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-  //             padding: EdgeInsets.all( 10.0 ),
-  //             child: Text( data['start_time'] )
-  //         ),
-  //         Container(
-  //             width: 200.0,
-  //             height: 50.0,
-  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-  //             padding: EdgeInsets.all( 10.0 ),
-  //             child: Text( data['end_time'] )
-  //         ),
-  //         Container(
-  //             width: 200.0,
-  //             height: 50.0,
-  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-  //             padding: EdgeInsets.all( 10.0 ),
-  //             child: Text( data['org_id'] )
-  //         ),
-  //         Container(
-  //             width: 200.0,
-  //             height: 50.0,
-  //             margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-  //             padding: EdgeInsets.all( 10.0 ),
-  //             child: Text( data['branch_id'] ),
-  //         ),
-  //         addEdit ? MaterialButton(
-  //             onPressed: () async {
-  //               await _editShift( data['start_time'] , data['end_time'] , data['id'] );
-  //             },
-  //             child: Container(
-  //               width: 150.0,
-  //               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-  //               padding: EdgeInsets.all( 10.0 ),
-  //               child: Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                 children: [
-  //                   Icon(
-  //                     Icons.edit,
-  //                     color: Colors.black,
-  //                   ),
-  //                   Text(
-  //                     'Edit',
-  //                     style: TextStyle(
-  //                       color: Colors.blue,
-  //                       decoration: TextDecoration.underline,
-  //                     ),
-  //                   )
-  //                 ],
-  //               ),
-  //             )
-  //         ) : Container(
-  //           width: 205.0,
-  //         ),
-  //         addDelete ? MaterialButton(
-  //             onPressed: () async {
-  //
-  //             },
-  //             child: Container(
-  //               width: 150.0,
-  //               margin: EdgeInsets.symmetric(horizontal: 20.0 ),
-  //               padding: EdgeInsets.all( 10.0 ),
-  //               child: Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                 children: [
-  //                   Icon(
-  //                     Icons.indeterminate_check_box_outlined,
-  //                     color: Colors.red,
-  //                   ),
-  //                   Text(
-  //                     'Delete',
-  //                     style: TextStyle(
-  //                       color: Colors.red,
-  //                       decoration: TextDecoration.underline,
-  //                     ),
-  //                   )
-  //                 ],
-  //               ),
-  //             )
-  //         ) : Container(
-  //           width: 205.0,
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Container _shiftViewBuilder() {
     return Container(
       child: StatefulBuilder(
@@ -723,6 +593,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                                         'end_time' : i[2],
                                         'org_id' : i[3],
                                         'branch_id' : i[4],
+                                        'branch_name' : i[5],
                                       };
 
                                       shifts.add( containerBuilder( data , true, true ) );
@@ -737,6 +608,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                                           'end_time' : i[2],
                                           'org_id' : i[3],
                                           'branch_id' : i[4],
+                                          'branch_name' : i[5],
                                         };
 
                                         shifts.add( containerBuilder( data , true, true ) );

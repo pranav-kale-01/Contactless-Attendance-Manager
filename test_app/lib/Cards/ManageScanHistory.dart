@@ -49,9 +49,10 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
     'UID' : "User ID",
     'coordinates' : "Coordinates",
     'time' : "Scan Time",
-    'scanner_location' : "Scanner Location",
-    'start_time' : "Start Time",
-    'end_time' : "End Time"
+    'start_time' : "Shift Start Time",
+    'end_time' : "Shift End Time",
+    'description' : "Description",
+    'branch_name' : "Branch Name",
   };
 
   Future<void> init( ) async {
@@ -228,9 +229,13 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
   Future<void> getEmployeesScanHistory( String uid ) async {
     String url;
-    url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `scans` WHERE `UID` = $uid ";
+    url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-4 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = $uid";
+
+    print( url );
 
     http.Response response = await http.get( Uri.parse( url ) );
+
+    print( response.body ) ;
 
     List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -249,13 +254,17 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
       for( int i=0 ; i < jsonData.length ; i++ ) {
         Map<String,dynamic> data = jsonData[i];
-        employees.add( containerBuilder( data, true , true , ) );
-        records.add( [ data['UID'], data['coordinates'], data['time'], data['scanner_location'], data['start_time'], data['end_time'] ] );
+        print( data ) ;
+        employees.add( containerBuilder( data, true , true  ) );
+        records.add( [ data['UID'], data['coordinates'], data['time'], data['scanner_location'], data['start_time'], data['end_time'], data['description'], data['branch_name'] ] );
       }
     }
   }
 
   Widget containerBuilder( var data, bool addEdit,bool addDelete) {
+
+    print( data ) ;
+
     return Container(
       alignment: Alignment.centerLeft,
       margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
@@ -286,6 +295,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
         child: Column(
           children: [
             Container(
+              padding: EdgeInsets.only( top: 25.0, ),
               width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
               child: Row(
                 children: [
@@ -295,35 +305,29 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['UID'].toString() ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['coordinates'].toString() ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['time'].toString() ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['scanner_location'].toString() ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['start_time'].toString() ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 2.0 ),
-                          child: Text( this.header['end_time'].toString() ),
-                        ),
+                            margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                            child: Text( this.header['branch_name'].toString() ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                            child: Text( this.header['description'].toString() ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                            child: Text( this.header['coordinates'].toString() ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                            child: Text( this.header['time'].toString() ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                            child: Text( this.header['start_time'].toString() ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                            child: Text( this.header['end_time'].toString() ),
+                          ),
                       ],
                     ),
                   ),
@@ -336,41 +340,38 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                         Container(
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text(
-                            data['UID'],
-                            textAlign: TextAlign.start,
-                          ),
+                          margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                          child: Text( data['branch_name'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 6.0 ),
+                          child: Text( data['description'] ),
                         ),
                         Container(
                           height: 16.0,
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          margin: EdgeInsets.symmetric( vertical: 6.0 ),
                           child: Text( data['coordinates'] )
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          margin: EdgeInsets.symmetric( vertical: 6.0 ),
                           child: Text( data['time'] ),
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['scanner_location'] ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          margin: EdgeInsets.symmetric( vertical: 6.0 ),
                           child: Text( data['start_time'] ),
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          margin: EdgeInsets.symmetric( vertical: 6.0 ),
                           child: Text( data['end_time'] ),
                         ),
                       ],
@@ -399,13 +400,6 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                               Icons.edit,
                               color: Colors.black,
                             ),
-                            // Text(
-                            //   'Edit',
-                            //   style: TextStyle(
-                            //     color: Colors.blue,
-                            //     decoration: TextDecoration.underline,
-                            //   ),
-                            // )
                           ],
                         ),
                       )
@@ -426,13 +420,6 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                               Icons.delete,
                               color: Colors.red,
                             ),
-                            // Text(
-                            //   'Delete',
-                            //   style: TextStyle(
-                            //     color: Colors.red,
-                            //     decoration: TextDecoration.underline,
-                            //   ),
-                            // )
                           ],
                         ),
                       )

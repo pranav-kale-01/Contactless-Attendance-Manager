@@ -294,11 +294,6 @@ class ViewBranchState extends State<ViewBranch>{
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['branch_id'].toString() ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['branch_name'] ),
                         ),
                         Container(
@@ -320,18 +315,14 @@ class ViewBranchState extends State<ViewBranch>{
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text(
-                            data['branch_id'],
-                            textAlign: TextAlign.start,
+                              data['branch_name'],
+                              style: TextStyle(
+                                fontSize: 22.0,
+                              )
                           ),
                         ),
                         Container(
-                          height: 16.0,
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['branch_name'] == null ? '-' : data['branch_id'] ),
-                        ),
-                        Container(
+                          height: 15.0,
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),

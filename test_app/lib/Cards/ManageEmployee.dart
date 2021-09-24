@@ -48,11 +48,10 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     "UID" : "User ID",
     'branch_id' : "Branch ID",
     'username' : "UserName",
+    "branch_name" : "Branch Name",
   };
 
   Future<void> init( ) async {
-    print( widget.userInfo['authority'] );
-
     // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
     if( widget.userInfo['authority'] == 'br-admin') {
       widget.branchID = widget.userInfo['branch_id'] ;
@@ -76,23 +75,19 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     }
 
     String url;
-    print( 'getEmployees' + widget.branchID );
-    print( "showAllValue - " + widget.showAllValue.toString() );
 
     // checking if the branch ID is empty, if empty then showing all the employees
     if( widget.branchID == '' || widget.showAllValue == true  ) {
-     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
+     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
     }
     else {
       // else showing employees of the current branch and employees with no branch assigned
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) ) ";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) )";
     }
 
-    print( url );
 
     http.Response response = await http.get( Uri.parse( url ) );
 
-    print( response.body );
 
     List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -114,7 +109,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
         // employees.add( containerBuilder( data['UID'], data['branch_id'], data['username'], true , true , true ) );
         employees.add( containerBuilder( data, true , true , true ) );
 
-        records.add( [data['UID'], data['branch_id'] == null ? '-' : data['branch_id'], data['username'], ] );
+        records.add( [ data['UID'], data['branch_id'] == null ? '-' : data['branch_id'], data['username'], data['branch_name'] == null ? '-' : data['branch_name'] ] );
       }
     }
   }
@@ -399,7 +394,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                               widget.showAllValue = false;
                               setState(() => this.index2 = this._branches[value].value );
 
-                              print( widget.branchID );
                             }
                           },
                         ),
@@ -465,7 +459,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         return;
                     }
 
-                    print( widget.branchID );
 
                     // checking if the user has selected the 'None' option for branches OR for an employee has checked the checkbox to keep the branch id null
                     if( widget.branchID == ''  || this.CheckboxValue == false  ) {
@@ -542,17 +535,12 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['UID'].toString() ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['branch_id'] ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['username'].toString() ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['branch_name'] ),
                         ),
                       ],
                     ),
@@ -568,8 +556,10 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text(
-                            data['UID'],
-                            textAlign: TextAlign.start,
+                              data['username'],
+                              style: TextStyle(
+                                fontSize: 22.0,
+                              ),
                           ),
                         ),
                         Container(
@@ -577,13 +567,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                             alignment: Alignment.centerLeft,
                             // color: Colors.red,
                             margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                            child: Text( data['branch_id'] == null ? '-' : data['branch_id'] ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['username'] ),
+                            child: Text( data['branch_name'] == null ? '-' : data['branch_name'] ),
                         ),
                       ],
                     ),
@@ -722,6 +706,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                                     "UID" : i[0],
                                     "branch_id" : i[1],
                                     "username" : i[2],
+                                    "branch_name": i[3]
                                   };
 
                                   // employees.add( containerBuilder( i[0], i[1], i[2], true, true, true ) );
@@ -734,6 +719,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                                     "UID" : i[0],
                                     "branch_id" : i[1],
                                     "username" : i[2],
+                                    "branch_name" : i[3]
                                   };
 
                                   if( i[1].toString() == widget.branchID) {

@@ -74,7 +74,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     String url ;
 
     if( widget.orgID != null ) {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id`WHERE `users`.`authority`='org-admin' AND `users`.`org_id` = ${widget.orgID }";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id`WHERE `users`.`authority`='org-admin' AND `users`.`org_id` = ${widget.orgID }";
     }
     else {
       url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin'";
@@ -285,12 +285,12 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['org_name'].toString() ),
+                          child: Text( this.header['username'].toString() ),
                         ),
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['org_id'] ),
+                          child: Text( this.header['org_name'] ),
                         ),
                         Container(
                           // color: Colors.red,
@@ -311,15 +311,18 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text(
-                            data['org_name'],
+                            data['username'],
                             textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: 22.0,
+                            )
                           ),
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['org_id'] ),
+                          child: Text( data['org_name'] ),
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
@@ -365,8 +368,8 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                         setState( () {} );
                       },
                       child: Container(
-                        width: 150.0,
-                        margin: EdgeInsets.symmetric(horizontal: 20.0 ),
+                        // width: 150.0,
+                        padding: EdgeInsets.all( 10.0 ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -374,13 +377,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                               Icons.delete,
                               color: Colors.red,
                             ),
-                            Text(
-                              'Delete',
-                              style: TextStyle(
-                                color: Colors.red,
-                                decoration: TextDecoration.underline,
-                              ),
-                            )
                           ],
                         ),
                       )
@@ -406,10 +402,11 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
   Widget _organizationAdminsViewBuilder( ) {
     return Container(
+      alignment: Alignment.center,
         child: Column(
           children: [
             Container(
-              height: MediaQuery.of(context).size.height - 151.0 ,
+              height: MediaQuery.of(context).size.height - 80.0 ,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child : Container(

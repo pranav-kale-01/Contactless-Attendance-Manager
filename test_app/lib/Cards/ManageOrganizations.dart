@@ -186,8 +186,11 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
             Container(
               width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 2 : MediaQuery.of(context).size.width,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
+                    // alignment: Alignment.centerRight,
+                    padding: EdgeInsets.symmetric( horizontal: 30.0, ),
                     width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 4 : MediaQuery.of(context).size.width/2,
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
@@ -197,11 +200,11 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['org_name'].toString() ),
                         ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['org_id'] ),
-                        ),
+                        // Container(
+                        //   // color: Colors.red,
+                        //   margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                        //   child: Text( this.header['org_id'] ),
+                        // ),
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
@@ -223,14 +226,17 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                           child: Text(
                             data['org_name'],
                             textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: 24.0,
+                            ),
                           ),
                         ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['org_id'] ),
-                        ),
+                        // Container(
+                        //   alignment: Alignment.centerLeft,
+                        //   // color: Colors.red,
+                        //   margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                        //   child: Text( data['org_id'] ),
+                        // ),
                         Container(
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
@@ -276,10 +282,9 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                     width: 205.0,
                   ),
                   addDelete ?  Container(
-                    width: 150.0,
-                    margin: EdgeInsets.symmetric( horizontal: 20.0 ),
+                    margin: EdgeInsets.symmetric( horizontal: 4.0 ),
                     child: PopupMenuButton(
-                      padding: EdgeInsets.all(20.0),
+                      padding: EdgeInsets.symmetric( vertical: 10.0, horizontal: 10.0, ),
                       offset: Offset(10.0,0.0),
                       icon: Icon( Icons.more_horiz ),
                       itemBuilder: (context) => [
@@ -469,7 +474,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context)=> ManageOrganizationsAdmins(),
+                            builder: (context)=> ManageOrganizationsAdmins( showHamMenu: true,),
                           )
                       );
                     },

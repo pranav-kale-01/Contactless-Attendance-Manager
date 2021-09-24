@@ -39,6 +39,9 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
     'org_id': 'Organization ID',
     'branch_id': 'BRANCH ID',
     'qr': 'ADDRESS',
+    'branch_name': 'Branch Name',
+    'description': 'Description',
+    'address' : 'address'
   };
 
   Future<void> init() async {
@@ -48,16 +51,14 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
   }
 
   Future<bool> _getScanPoints( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scan_locations&condition&post&condition2&post2&custom= * FROM `scan_locations` WHERE `org_id`=${widget.userInfo['org_id']}";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scan_locations&condition&post&condition2&post2&custom= `scan_locations`.`org_id`, `scan_locations`.`branch_id`, `scan_locations`.`description`, `scan_locations`.`qr`, `branches`.`branch_name`, `branches`.`address` FROM `scan_locations` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scan_locations`.`org_id`=${widget.userInfo['org_id']}";
 
     http.Response response = await http.get(  Uri.parse( url ) );
-
-    print( response.body );
-
     List<dynamic> jsonData = jsonDecode( response.body );
 
     // clearing the scanPoints list
     scanPoints.clear();
+    _displayData.clear();
 
     // adding the scan points to the list of scanPoints
     for( int i=0 ; i< jsonData.length ; i++ ) {
@@ -76,7 +77,6 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
     // iterating over the _displayData list and selecting only the required organization
     for( var i in _displayData ) {
-      print( i );
       if( i['branch_id'] == widget.branchID || widget.branchID == '') {
         scanPoints.add( containerBuilder( i , true, true  ) );
       }
@@ -137,6 +137,45 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
     widget.branchID = widget.branchIDs[0];
   }
 
+  Future<void> _editScanPoints( String qr) async {
+    TextEditingController descriptionController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              child: TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  labelText: "Description",
+                ),
+              ),
+            ),
+            Container(
+              child: MaterialButton(
+                onPressed: () async {
+                  // saving changes
+                  String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=2&qr=$qr&desc=${descriptionController.text}";
+
+                  print( url );
+
+                  http.Response response = await http.get( Uri.parse( url ) );
+
+                  setState( () {
+                    Navigator.of(context).pop();
+                  } );
+                },
+                child: Text("Save"),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> removeScanPoint( String qr) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=1&qr=$qr";
@@ -191,13 +230,17 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['org_id'].toString() ),
+                          child: Text( this.header['branch_name'].toString() ),
                         ),
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['branch_id'] ),
+                          child: Text( this.header['description'] ),
                         ),
+                        Container(
+                          margin: EdgeInsets.symmetric( vertical: 4.0, ),
+                          child: Text( this.header['address'] ),
+                        )
                       ],
                     ),
                   ),
@@ -209,20 +252,31 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                       children: [
                         Container(
                           alignment: Alignment.centerLeft,
-                          // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text(
-                            data['org_id'],
+                              data['branch_name'],
+                              style: TextStyle(
+                                fontSize: 22.0,
+                              ),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text(
+                            data['description'] == null ? '-' : data['description'],
                             textAlign: TextAlign.start,
                           ),
                         ),
                         Container(
-                          height: 16.0,
+                          height: 15.0,
                           alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['branch_id'] == null ? '-' : data['branch_id'] ),
-                        ),
+                          margin: EdgeInsets.symmetric( vertical: 4.0, ),
+                          child: Text(
+                            data['address'],
+                            textAlign: TextAlign.start,
+                          )
+                        )
                       ],
                     ),
                   ),
@@ -235,6 +289,18 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  MaterialButton(
+                    onPressed: () async {
+                      await _editScanPoints( data['qr']  );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all( 5.0 ),
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
                   addQRCreate? MaterialButton(
                     onPressed: () {
                       Navigator.of(context).push(
@@ -260,7 +326,6 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                       },
                       child: Container(
                         padding: EdgeInsets.all( 5.0, ),
-                        width: 150.0,
                         child: Icon(
                           Icons.delete,
                           color: Colors.red,
@@ -368,7 +433,12 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                   ),
                 )
               ],
-              title: Text( "View Branch Admins" ),
+              title: Text(
+                  "Scan Locations",
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                  )
+              ),
             ),
             listView: ListView(
               children: [

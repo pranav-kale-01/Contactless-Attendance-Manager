@@ -4,9 +4,14 @@ import 'package:test_app/utils/Location.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
 class AddScannerLocation extends StatefulWidget {
   final userInfo;
   late String branchID;
+  int? index2;
+  late int temp;
+
+  TextEditingController descriptionController = TextEditingController();
 
   AddScannerLocation( {Key? key, required this.userInfo}) : super(key: key );
 
@@ -18,7 +23,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
   String scanStatus = 'not-scanning';
   late List<String> branchIDs = [];
   late List<DropdownMenuItem<int>> _branches = [];
-  int? index2;
+  int pageNumber = 0;
 
   Future<void> setBranches( ) async {
     int i;
@@ -61,7 +66,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
     }
 
     // setting the default values
-    this.index2=0 ;
+    widget.index2=0 ;
     widget.branchID = branchIDs[0];
   }
 
@@ -70,17 +75,140 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
 
     // checking the if the current user is a branch admin, if so taking the branch admin's branchID.
     if( widget.userInfo['authority'] == 'br-admin' ) {
-      widget.branchID = widget.userInfo['branch_id'] ;
+      widget.temp= widget.userInfo['branch_id'] ;
     }
 
     // adding the scanLocation to database
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=0&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}&qr=$qr;";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=0&org_id=${widget.userInfo['org_id']}&branch_id=${widget.temp}&description=${widget.descriptionController.text}&qr=$qr;";
 
     http.Response response = await http.get( Uri.parse( url ) );
   }
 
   Future<void> init( ) async {
     await setBranches( );
+  }
+
+  Column _Page1() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // if the user is a organization admin, then providing a dropdown menu of branches to select from
+        widget.userInfo['authority'] == 'org-admin' ? Container(
+          padding: EdgeInsets.all(5.0),
+          child: Text(
+            "Select the Branch..",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20.0,
+            ),
+          ),
+        ) : Container(),
+        widget.userInfo['authority'] == 'org-admin' ? StatefulBuilder(
+            builder: (BuildContext context, StateSetter setDropdownState ) {
+              return DropdownButton(
+                value:  widget.index2,
+                items: _branches,
+                onChanged: (int? value) {
+                  if( value != null ) {
+                    setDropdownState( () {
+                      widget.branchID =  branchIDs[value];
+                      widget.index2 = value;
+                    });
+                  }
+                },
+              );
+            }
+        ) : Container() ,
+        SizedBox(
+          height: 50.0,
+        ),
+        Container(
+          padding: EdgeInsets.all( 5.0, ),
+          child: Text(
+            "Please Enter a Description for the scan location",
+          ),
+        ),
+        Container(
+            width: MediaQuery.of(context).size.width > 700 ? MediaQuery.of(context).size.width / 3 : MediaQuery.of(context).size.width,
+            margin: EdgeInsets.only( bottom: 20.0, ),
+            child: TextField(
+              textDirection: TextDirection.ltr,
+              controller: widget.descriptionController,
+              onChanged: (String value) { },
+            )
+        ),
+        Container(
+          child: MaterialButton(
+            color: Colors.blueAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular( 10.0, ),
+            ),
+            onPressed: () {
+              this.pageNumber = 1;
+              widget.temp = int.parse( widget.branchID );
+              setState( () {} );
+            },
+            child: Text("Next"),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Column _Page2() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: EdgeInsets.all(5.0),
+          child: Text(
+            "Please take the device to the scan point..",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20.0,
+            ),
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 30.0 ),
+          child: MaterialButton(
+            color: Colors.tealAccent,
+            onPressed: () async {
+              setState( () {
+                this.scanStatus = 'scanning';
+              });
+
+              // getting the current location
+              Location locator = Location();
+
+              try {
+                dynamic coordinates =  await locator.getLocation();
+
+                // adding new Scanner Location point
+                await _addScannerLocation( coordinates['lat'] , coordinates['lon'] );
+
+                setState( () {
+                  this.scanStatus = 'done';
+                });
+              }
+              catch( e ) {
+                print( e.toString() );
+              }
+            },
+            padding: EdgeInsets.symmetric(vertical: 5.0 , horizontal:20.0 ),
+            child: Text(
+              "Confirm",
+              style: TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ),
+        )
+      ],
+    );
   }
 
   @override
@@ -110,88 +238,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
                               color: Colors.white,
                             ),
                             margin: EdgeInsets.only( top: 300.0 ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // if the user is a organization admin, then providing a dropdown menu of branches to select from
-                                widget.userInfo['authority'] == 'org-admin' ? Container(
-                                  padding: EdgeInsets.all(5.0),
-                                  child: Text(
-                                    "Select the Branch..",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 20.0,
-                                    ),
-                                  ),
-                                ) : Container(),
-                                widget.userInfo['authority'] == 'org-admin' ? StatefulBuilder(
-                                    builder: (BuildContext context, StateSetter setDropdownState ) {
-                                      return DropdownButton(
-                                        value:  index2,
-                                        items: _branches,
-                                        onChanged: (int? value) {
-                                          if( value != null ) {
-                                            setDropdownState( () {
-                                              widget.branchID =  branchIDs[value];
-                                              this.index2 = value;
-                                            });
-                                          }
-                                        },
-                                      );
-                                    }
-                                ) : Container() ,
-                                SizedBox(
-                                  height: 50.0,
-                                ),
-                                Container(
-                                  padding: EdgeInsets.all(5.0),
-                                  child: Text(
-                                    "Please take the device to the scan point..",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 20.0,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(top: 30.0 ),
-                                  child: MaterialButton(
-                                    color: Colors.tealAccent,
-                                    onPressed: () async {
-                                      setState( () {
-                                        this.scanStatus = 'scanning';
-                                      });
-
-                                      // getting the current location
-                                      Location locator = Location();
-
-                                      try {
-                                        dynamic coordinates =  await locator.getLocation();
-
-                                        // adding new Scanner Location point
-                                        await _addScannerLocation( coordinates['lat'] , coordinates['lon'] );
-
-                                        setState( () {
-                                          this.scanStatus = 'done';
-                                        });
-                                      }
-                                      catch( e ) {
-                                        print( e.toString() );
-                                      }
-                                    },
-                                    padding: EdgeInsets.symmetric(vertical: 5.0 , horizontal:20.0 ),
-                                    child: Text(
-                                      "Confirm",
-                                      style: TextStyle(
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.w300,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
+                            child: pageNumber == 0 ? _Page1() : _Page2(),
                           );
                         }
                         else if( this.scanStatus == 'scanning' ) {

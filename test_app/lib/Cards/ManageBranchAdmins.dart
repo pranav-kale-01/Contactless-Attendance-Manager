@@ -55,7 +55,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
   Map<String, dynamic> header = {
     'UID':"ID",
     'username':'Username',
-    'org_id':'Organization ID',
     'branch_id':'Branch ID',
     'branch_name':'Branch Name',
   };
@@ -374,11 +373,11 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['UID'].toString() ),
-                        ),
+                        // Container(
+                        //   // color: Colors.red,
+                        //   margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                        //   child: Text( this.header[''].toString() ),
+                        // ),
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
@@ -387,7 +386,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header[ data['branch_id'] == null ? 'Null' : data['branch_id'] ].toString() ),
+                          child: Text( this.header['branch_name'] ),
                         ),
                       ],
                     ),
@@ -403,22 +402,18 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text(
-                            data['branch_id'],
-                            textAlign: TextAlign.start,
+                            data['username'],
+                            style: TextStyle(
+                              fontSize: 22.0,
+                            ),
                           ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['username'] ),
                         ),
                         Container(
                           height: 16.0,
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['branch_name'] == null ? '-' : data['branch_id'] ),
+                          child: Text( data['branch_name'] == null ? '-' : data['branch_name'] ),
                         ),
                       ],
                     ),
@@ -434,60 +429,10 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                 children: [
                   addEdit? MaterialButton(
                       onPressed: () {
-                        // edit branch
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context ) {
-                              String _branchName = data['branch_name'] ;
-                              String _address = data['address'] ;
-
-                              var branchNameController = TextEditingController();
-                              var addressController = TextEditingController();
-
-                              branchNameController.text = data['branch_name'] ;
-                              addressController.text = data['address'] ;
-
-                              return AlertDialog(
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextField(
-                                      textDirection: TextDirection.ltr,
-                                      controller: branchNameController,
-                                      onChanged: (String value) {
-                                        // reversing the output value before giving it to the controller
-                                        _branchName = value  ;
-                                      },
-                                      decoration: InputDecoration(
-                                        labelText: 'branch Name',
-                                      ),
-                                    ),
-
-                                    TextField(
-                                      textDirection: TextDirection.ltr,
-                                      controller: addressController,
-                                      onChanged: (value) {
-                                        _address = value;
-                                      },
-                                      decoration: InputDecoration(
-                                        labelText: "Address",
-                                      ),
-                                    ),
-                                    MaterialButton(
-                                      onPressed: () async {
-                                        // save user changes
-                                        await _editBranchAdmin( data['UID'] , data['username'] );
-                                      },
-                                      child: Text("Save"),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                        );
+                        // edit branch admin
+                        _editBranchAdmin( data['UID'], data['username'] );
                       },
                       child: Container(
-                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
                         padding: EdgeInsets.all( 10.0 ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -564,7 +509,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
       child: Column(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height - 151.0 ,
+            height: MediaQuery.of(context).size.height - 56.0,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child : Container(
@@ -600,7 +545,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     child: IconButton(
                       icon: Icon(
                         Icons.add,
-                        color: Colors.white,
+                        color: Colors.blueAccent,
                       ),
                       onPressed: () async {
                         await _insertBranchAdmin();
