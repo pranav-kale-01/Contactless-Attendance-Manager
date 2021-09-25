@@ -336,7 +336,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
   Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
-      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      margin: EdgeInsets.symmetric( horizontal: MediaQuery.of(context).size.width > 725 ? 7.0 : 0.0, vertical: 6.0 ),
       padding: EdgeInsets.symmetric( vertical: 5.0 ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular( 20.0 ),

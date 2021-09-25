@@ -190,7 +190,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
   Widget containerBuilder( var data, bool addQRCreate,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
-      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      margin: EdgeInsets.symmetric( horizontal: MediaQuery.of(context).size.width > 725 ? 7.0 : 0.0, vertical: 6.0 ),
       padding: EdgeInsets.symmetric( vertical: 15.0 ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular( 20.0 ),
