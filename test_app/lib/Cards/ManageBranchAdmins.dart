@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:test_app/Cards/ManageScanLocations.dart';
 
+import 'package:test_app/Cards/ManageBranch.dart';
+import 'package:test_app/Cards/ManageEmployee.dart';
+import 'package:test_app/Cards/ManageScanLocations.dart';
+import 'package:test_app/Cards/ManageShifts.dart';
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
-import 'package:test_app/Cards/ManageBranch.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'ManageEmployee.dart';
-import 'ManageScanHistory.dart';
-import 'ManageShifts.dart';
 
 class ManageBranchAdmins extends StatefulWidget {
   final userInfo;
@@ -39,6 +37,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
   late String username;
   late String password;
+  late String rec_email;
   late String orgID;
   late String branchID;
 
@@ -57,6 +56,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     'username':'Username',
     'branch_id':'Branch ID',
     'branch_name':'Branch Name',
+    'recovery_email' : "Recovery Email"
   };
 
   Future<void> setBranches( id, bool addEmpty ) async {
@@ -120,9 +120,10 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
       branchID = '';
   }
 
-  Future<void> _editBranchAdmin( String uid, String username )  async {
+  Future<void> _editBranchAdmin( String uid, String username, String rec_email )  async {
     // creating a new TextEditingController for username Field
     TextEditingController usernameController = TextEditingController( text: username );
+    TextEditingController recEmailController = TextEditingController( text: rec_email );
     this.username = username;
 
     // resetting the old index
@@ -167,15 +168,24 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                       );
                     }
                 ),
+                TextField(
+                  controller: recEmailController,
+                  onChanged: (value) {
+                    this.rec_email = value;
+                  },
+                  decoration: InputDecoration(
+                    labelText: "Recover Email",
+                  ),
+                ),
                 MaterialButton(
                   onPressed: () async {
                     String url;
 
                     if( this.branchID == '' ) {
-                      url ="https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&branch_id=";
+                      url ="https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_email='${this.rec_email}'&branch_id=";
                     }
                     else {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&branch_id=${this.branchID}";
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_email='${this.rec_email}'&branch_id=${this.branchID}";
                     }
 
                     await http.get( Uri.parse( url ) );
@@ -193,11 +203,9 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     );
   }
 
-  Future<void> _deleteBranchAdmin( String username ) async {
-    print( username );
-
+  Future<void> _deleteBranchAdmin( String uid ) async {
     // delete the User
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&user='$username';";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid';";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -260,6 +268,14 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     ),
                     TextField(
                       onChanged: (value) {
+                        this.rec_email = value;
+                      },
+                      decoration: InputDecoration(
+                          labelText: "Recovery Email",
+                      ),
+                    ),
+                    TextField(
+                      onChanged: (value) {
                         this.password = value;
                       },
                       decoration: InputDecoration(
@@ -293,34 +309,60 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                           );
                           return;
                         }
-                        else{
-                          String url;
-
-                          // checking if the user has selected 'None' from Branch options
-                          if( this.branchID == '' ) {
-                            url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=";
-                          }
-                          else{
-                            // adding the user details to the mysql database
-                            url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&br_id=${this.branchID}";
-                          }
-
-                          await http.get( Uri.parse( url ) );
-
-                          // closing the Popup
-                          Navigator.pop(context);
-
-                          // showing the confirmation message
+                        else if( this.rec_email == '' ) {
                           showDialog(
                               context: context,
                               builder: (BuildContext context ) {
                                 return AlertDialog(
-                                  title: Text("User Added Successfully"),
+                                  title: Text("Field Recover Email cannot be empty"),
                                 );
                               }
                           );
+                          return;
+                        }
+                        else{
+                          String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
 
-                          setState(() { });
+                          http.Response response = await http.get( Uri.parse( url ) );
+
+                          print( response.body );
+
+                          if( response.body != '[]' ){
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                content: Text("Username Already taken please try another one"),
+                              ),
+                            );
+                          }
+                          else {
+                            // checking if the user has selected 'None' from Branch options
+                            if( this.branchID == '' ) {
+                              url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&rec_email='${this.rec_email}'&br_id=";
+                            }
+                            else{
+                              // adding the user details to the mysql database
+                              url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&rec_email='${this.rec_email}'&br_id=${this.branchID}";
+                            }
+
+                            await http.get( Uri.parse( url ) );
+
+                            // closing the Popup
+                            Navigator.pop(context);
+
+                            // showing the confirmation message
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context ) {
+                                  return AlertDialog(
+                                    title: Text("User Added Successfully"),
+                                  );
+                                }
+                            );
+
+                            setState(() { });
+
+                          }
                         }
                       },
                       child: Text("Add"),
@@ -373,11 +415,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        // Container(
-                        //   // color: Colors.red,
-                        //   margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                        //   child: Text( this.header[''].toString() ),
-                        // ),
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
@@ -387,6 +424,11 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['branch_name'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['recovery_email'] ),
                         ),
                       ],
                     ),
@@ -415,6 +457,13 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( data['branch_name'] == null ? '-' : data['branch_name'] ),
                         ),
+                        Container(
+                          height: 16.0,
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['recovery_email'] == null ? '-' : data['recovery_email'] ),
+                        ),
                       ],
                     ),
                   ),
@@ -430,7 +479,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                   addEdit? MaterialButton(
                       onPressed: () {
                         // edit branch admin
-                        _editBranchAdmin( data['UID'], data['username'] );
+                        _editBranchAdmin( data['UID'], data['username'], data['recovery_email'] == null ? '' : data['recovery_email'] );
                       },
                       child: Container(
                         padding: EdgeInsets.all( 10.0 ),
@@ -450,7 +499,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                   addDelete ?  MaterialButton(
                       onPressed: () async {
                         // remove branch
-                        await _deleteBranchAdmin( data['username'] );
+                        await _deleteBranchAdmin( data['UID'] );
                         setState(() { });
                       },
                       child: Container(
@@ -482,7 +531,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     // getting the list of organizations for later use
     setBranches( widget.userInfo['org_id'] , true );
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`branch_id`,`branches`.`branch_id`, `branches`.`branch_name` FROM `users` LEFT JOIN `branches` ON `users`.`branch_id`=`branches`.`branch_id` WHERE `users`.`authority`='br-admin' AND `users`.`org_id`= ${widget.userInfo['org_id']}";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`branch_id`,`branches`.`branch_id`, `branches`.`branch_name`, `users`.`recovery_email` FROM `users` LEFT JOIN `branches` ON `users`.`branch_id`=`branches`.`branch_id` WHERE `users`.`authority`='br-admin' AND `users`.`org_id`= ${widget.userInfo['org_id']}";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 

@@ -1,18 +1,19 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
+import 'package:test_app/Cards/ManageBranch.dart';
+import 'package:test_app/Cards/ManageBranchAdmins.dart';
+import 'package:test_app/Cards/ManageScanHistory.dart';
+import 'package:test_app/Cards/ManageScanLocations.dart';
+import 'package:test_app/Cards/ManageShifts.dart';
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
-import 'ManageBranch.dart';
-import 'ManageBranchAdmins.dart';
-import 'ManageScanHistory.dart';
-import 'ManageScanLocations.dart';
-import 'ManageShifts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class ManageEmployee extends StatefulWidget {
   final userInfo;
@@ -40,6 +41,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
   late String username;
   late String password;
+  late String rec_email;
 
   int? index2;
   bool CheckboxValue = false ;
@@ -49,6 +51,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     'branch_id' : "Branch ID",
     'username' : "UserName",
     "branch_name" : "Branch Name",
+    "recovery_email" : "Recovery Email",
   };
 
   Future<void> init( ) async {
@@ -78,16 +81,17 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
     // checking if the branch ID is empty, if empty then showing all the employees
     if( widget.branchID == '' || widget.showAllValue == true  ) {
-     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
+     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name`, `users`.`recovery_email` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
     }
     else {
       // else showing employees of the current branch and employees with no branch assigned
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) )";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name`,`users`.`recovery_email` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) )";
     }
 
 
     http.Response response = await http.get( Uri.parse( url ) );
 
+    print( response.body );
 
     List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -216,6 +220,14 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     ) : Container(),
                     TextField(
                       onChanged: (value) {
+                        rec_email = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: "recovery email",
+                      ),
+                    ),
+                    TextField(
+                      onChanged: (value) {
                         password = value;
                       },
                       decoration: InputDecoration(
@@ -249,26 +261,42 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           return;
                         }
                         else{
-                          // adding the user details to the mysql database
-                          String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}";
+                          String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
 
-                          await http.get( Uri.parse( url ) );
+                          http.Response response = await http.get( Uri.parse( url ) );
 
-                          // closing the Popup
-                          Navigator.pop(context);
+                          print( response.body );
 
-                          // showing the confirmation message
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context ) {
-                                return AlertDialog(
-                                  title: Text("User Added Successfully"),
-                                );
-                              }
-                          );
+                          if( response.body != '[]' ){
+                            showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                content: Text("Username Already taken please try another one"),
+                              ),
+                            );
+                          }
+                          else {
+                            // adding the user details to the mysql database
+                            url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}&rec_email='${this.rec_email}'";
 
-                          getEmployees();
-                          setState( ( ) {} );
+                            await http.get( Uri.parse( url ) );
+
+                            // closing the Popup
+                            Navigator.pop(context);
+
+                            // showing the confirmation message
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context ) {
+                                  return AlertDialog(
+                                    title: Text("User Added Successfully"),
+                                  );
+                                }
+                            );
+
+                            getEmployees();
+                            setState( ( ) {} );
+                          }
                         }
                       },
                       child: Text("Add"),
@@ -281,7 +309,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     );
   }
 
-  void _deleteEmployee(  String id, String name ) {
+  void _deleteEmployee(  String id, String name , String uid) {
     // asking for confirmation
     showDialog(
         context: context,
@@ -296,7 +324,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   MaterialButton(
                     onPressed: () async {
                       // Deleting the user
-                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&user='$name'";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid'";
 
                       http.Response response = await http.get( Uri.parse( url ) );
 
@@ -347,13 +375,14 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     );
   }
 
-  void _editEmployee( String id , String name ) {
+  void _editEmployee( String id , String name , String rec_email ) {
     // edit user
     showDialog(
         context: context,
         builder: (BuildContext context ) {
           // creating a controller for Username TextField
           TextEditingController usernameController = TextEditingController( text: name );
+          TextEditingController recEmailController = TextEditingController( text: rec_email );
 
           this.username = name ;
           this.index2 = 0;
@@ -369,6 +398,15 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   },
                   decoration: InputDecoration(
                     labelText: "username",
+                  ),
+                ),
+                TextField(
+                  controller: recEmailController,
+                  onChanged: (value) {
+                    this.rec_email = value;
+                  },
+                  decoration: InputDecoration(
+                    labelText: "recovery Email",
                   ),
                 ),
                 widget.userInfo['authority'] == 'org-admin' ?
@@ -422,6 +460,8 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 ),
                 MaterialButton(
                   onPressed: () async {
+                    print("clicking on button Edit");
+
                     // checking if username has been left empty
                     if( this.username == '' ) {
                       showDialog(
@@ -448,7 +488,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     String url;
 
                     // checking if the userName is too long
-                    if( this.username.length >= 12 ) {
+                    if( this.username.length >= 26 ) {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
@@ -462,13 +502,17 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
                     // checking if the user has selected the 'None' option for branches OR for an employee has checked the checkbox to keep the branch id null
                     if( widget.branchID == ''  || this.CheckboxValue == false  ) {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&branch_id=";
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&rec_email='${this.rec_email}'&branch_id=";
                     }
                     else {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&branch_id=${widget.branchID}";
+                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&rec_email='${this.rec_email}'&branch_id=${widget.branchID}";
                     }
 
+                    print( url );
+
                     http.Response response = await http.get( Uri.parse( url ) );
+
+                    print( response.body );
 
                     // if response.body == 1, editing user details was successful
                     if( response.body == '1') {
@@ -542,6 +586,11 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['branch_name'] ),
                         ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['recovery_email'] ),
+                        ),
                       ],
                     ),
                   ),
@@ -569,6 +618,13 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                             margin: EdgeInsets.symmetric( vertical: 4.0 ),
                             child: Text( data['branch_name'] == null ? '-' : data['branch_name'] ),
                         ),
+                        Container(
+                          height: 16.0,
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['recovery_email'] == null ? '-' : data['recovery_email'] ),
+                        ),
                       ],
                     ),
                   ),
@@ -583,7 +639,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 children: [
                   addEdit? MaterialButton(
                       onPressed: () {
-                        _editEmployee( data['UID'], data['username'] );
+                        _editEmployee( data['UID'], data['username'], data['recovery_email'] == null ? '' : data['recovery_email'] );
                       },
                       child: Container(
                         // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
@@ -603,7 +659,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   ),
                   addDelete ?  MaterialButton(
                       onPressed: () {
-                        _deleteEmployee( data['UID'], data['username'] );
+                        _deleteEmployee( data['UID'], data['username'], data['UID'] );
                       },
                       child: Container(
                         // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
@@ -663,14 +719,14 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     );
   }
 
-  Container _employeeViewBuilder(){
+  Widget _employeeViewBuilder(){
     return Container(
       alignment: Alignment.center,
       child: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState1 ) {
             return Column(
               children: [
-                widget.userInfo['authority'] == 'org-admin' ?
+                widget.userInfo['authority'] == 'org-admin'?
                 Container(
                   width: 1000,
                   alignment: Alignment.center,
@@ -738,7 +794,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                   ),
                 ) : Container(),
                 Container(
-                    height: MediaQuery.of(context).size.height - 128 ,
+                    height: MediaQuery.of(context).size.height - 104 ,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
@@ -885,7 +941,8 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 ),
               ],
             ),
-            body: _employeeViewBuilder(),
+            body: _employeeViewBuilder()
+
           );
         }
         else if( snapshot.hasError == true ) {

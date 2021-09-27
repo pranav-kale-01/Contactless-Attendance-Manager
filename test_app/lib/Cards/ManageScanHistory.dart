@@ -1,3 +1,4 @@
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
@@ -18,6 +19,8 @@ import 'package:test_app/utils/Location.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:intl/intl.dart';
+
 class  ManageScanHistory extends StatefulWidget {
   final userInfo;
   bool showHamMenu = true;
@@ -26,6 +29,7 @@ class  ManageScanHistory extends StatefulWidget {
 
   bool changedFromDropdown = false;
   bool showAllValue = true;
+
 
   ManageScanHistory( {Key? key, required this.userInfo, required this.uid, showHamMenu } ) : super( key: key ) {
     if( showHamMenu != null ){
@@ -45,6 +49,11 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
   TextEditingController _timeController1 = TextEditingController();
   TextEditingController _timeController2 = TextEditingController();
 
+  DateTime selectedDate1 = DateTime.now();
+  DateTime selectedDate2 = DateTime.now();
+
+  bool getScanHistory = true;
+
   Map<String, String> header = {
     'UID' : "User ID",
     'coordinates' : "Coordinates",
@@ -56,7 +65,9 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
   };
 
   Future<void> init( ) async {
-    await getEmployeesScanHistory( widget.uid );
+    if( getScanHistory ) {
+      await getEmployeesScanHistory(widget.uid);
+    }
   }
 
   Future<void> _insertTimeDetails( String id, String start_time, String end_time ) async {
@@ -432,6 +443,108 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
     );
   }
 
+  Future<void> _selectDate1(BuildContext context ) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate1,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate1)  {
+      selectedDate1 = picked;
+
+      String _selectedDate1 = DateFormat("yyyy-M-dd").format(selectedDate1);
+      String _selectedDate2 = DateFormat("yyyy-M-dd").format(selectedDate2);
+
+      // getting all the scans from the start date to end date
+      String url;
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-4 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = ${widget.uid} AND `scans`.`time` > '${_selectedDate1}' AND `scans`.`time` < '${_selectedDate2}' OR `scans`.`time` LIKE '$_selectedDate1%' OR `scans`.`time` LIKE '$_selectedDate2%'";
+
+      print( url );
+
+      http.Response response = await http.get( Uri.parse( url ) );
+
+      print( response.body ) ;
+
+      List<dynamic> jsonData = jsonDecode( response.body );
+
+      if( response.body == '') {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Text("Failed to Load"),
+          ),
+        );
+      }
+      else {
+        // clearing the previous list of Employees
+        employees.clear();
+        records.clear();
+
+        for( int i=0 ; i < jsonData.length ; i++ ) {
+          Map<String,dynamic> data = jsonData[i];
+          print( data ) ;
+          employees.add( containerBuilder( data, true , true  ) );
+          records.add( [ data['UID'], data['coordinates'], data['time'], data['scanner_location'], data['start_time'], data['end_time'], data['description'], data['branch_name'] ] );
+        }
+      }
+
+      setState(() {
+        getScanHistory = false;
+      });
+    }
+  }
+
+  Future<void> _selectDate2(BuildContext context ) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate2,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate1)  {
+      selectedDate2 = picked;
+
+      String _selectedDate1 = DateFormat("yyyy-MM-dd").format(selectedDate1);
+      String _selectedDate2 = DateFormat("yyyy-MM-dd").format(selectedDate2);
+
+      // getting all the scans from the start date to end date
+      String url;
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-4 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = ${widget.uid} AND `scans`.`time` > '${_selectedDate1}' AND `scans`.`time` < '${_selectedDate2}' OR `scans`.`time` LIKE '$_selectedDate1%' OR `scans`.`time` LIKE '$_selectedDate2%'";
+
+      print( url );
+
+      http.Response response = await http.get( Uri.parse( url ) );
+
+      print( response.body ) ;
+
+      List<dynamic> jsonData = jsonDecode( response.body );
+
+      if( response.body == '') {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Text("Failed to Load"),
+          ),
+        );
+      }
+      else {
+        // clearing the previous list of Employees
+        employees.clear();
+        records.clear();
+
+        for( int i=0 ; i < jsonData.length ; i++ ) {
+          Map<String,dynamic> data = jsonData[i];
+          print( data ) ;
+          employees.add( containerBuilder( data, true , true  ) );
+          records.add( [ data['UID'], data['coordinates'], data['time'], data['scanner_location'], data['start_time'], data['end_time'], data['description'], data['branch_name'] ] );
+        }
+      }
+
+      setState(() {
+        getScanHistory = false;
+      });
+    }
+  }
+
   Container _employeeViewBuilder(){
     return Container(
       child: Stack(
@@ -444,7 +557,48 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                   return Column(
                     children: [
                       Container(
-                          height: MediaQuery.of(context).size.height - 30,
+                        width: MediaQuery.of(context).size.width > 725 ? MediaQuery.of(context).size.width / 1.5  : MediaQuery.of(context).size.width,
+                        margin: EdgeInsets.only( top: 50.0, ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text( 'From' ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: ElevatedButton(
+                                    onPressed: () => _selectDate1(context ),
+                                    child: Text("${selectedDate1.toLocal()}".split(' ')[0]),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text( 'To' ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: ElevatedButton(
+                                    onPressed: () => _selectDate2(context),
+                                    child: Text("${selectedDate2.toLocal()}".split(' ')[0]),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                          height: MediaQuery.of(context).size.height - 86,
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child : Container(

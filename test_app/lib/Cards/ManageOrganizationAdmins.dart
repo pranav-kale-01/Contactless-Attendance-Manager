@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'ManageScanHistory.dart';
 
 class ManageOrganizationsAdmins extends StatefulWidget {
   bool showHamMenu = false;
@@ -34,6 +33,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
   late String username;
   late String password;
+  late String rec_email;
   late String orgID;
   late String branchID;
 
@@ -55,6 +55,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     'username': "UserName",
     'org_name': "Organization Name",
     'org_mail': "Organization Mail",
+    'recovery_email' : "Recovery Email"
   };
 
   Future<void> insertOrgAdmin( ) async {
@@ -62,22 +63,192 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     if( widget.orgID != null )
       this.orgID = widget.orgID!;
 
-    // adding the user details to the mysql database
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&br_id=";
+    if( this.username == '' ){
+      showDialog(
+          context: context,
+          builder: (BuildContext context ) {
+            return AlertDialog(
+              title: Text("Field UserName cannot be empty"),
+            );
+          }
+      );
+    }
+    else if( this.password == '' ){
+      showDialog(
+          context: context,
+          builder: (BuildContext context ) {
+            return AlertDialog(
+              title: Text("Field password cannot be empty"),
+            );
+          }
+      );
+    }
+    else if( this.rec_email == '' ){
+      showDialog(
+          context: context,
+          builder: (BuildContext context ) {
+            return AlertDialog(
+              title: Text("Field Recovery Email cannot be empty"),
+            );
+          }
+      );
+    }
+    else {
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
 
-    print( url );
+      http.Response response = await http.get( Uri.parse( url ) );
 
-    await http.get( Uri.parse( url ) );
+      print( response.body );
+
+      if( response.body != '[]' ){
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Text("Username Already taken please try another one"),
+          ),
+        );
+      }
+      else {
+        // adding the user details to the mysql database
+        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&rec_email='${this.rec_email}'&br_id=";
+
+        await http.get( Uri.parse( url ) );
+
+        // closing the Popup
+        Navigator.pop(context);
+
+        // showing the confirmation message
+        showDialog(
+            context: context,
+            builder: (BuildContext context ) {
+              return AlertDialog(
+                title: Text("User Added Successfully"),
+              );
+            }
+        );
+
+        setState( ( ) {} );
+      }
+    }
+  }
+
+  Future<void> _deleteOrgAdmin(uid) async {
+    // delete the User
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid'";
+
+    http.Response response = await http.get(Uri.parse(url));
+
+    if (response.body == "1") {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text("User Deleted.."),
+            );
+          }
+      );
+    }
+  }
+
+  void _editOrgAdmin( String username , String uid, String rec_email ) {
+    // creating a controller for username TextField
+    TextEditingController usernameController = TextEditingController( text: username );
+    TextEditingController recEmailController = TextEditingController( text: rec_email );
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context ) {
+          this.username = username;
+
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: usernameController,
+                  onChanged: (value) {
+                    this.username = value;
+                  },
+                  decoration: InputDecoration(
+                    labelText: "username",
+                  ),
+                ),
+                TextField(
+                  controller: recEmailController,
+                  onChanged: (value) {
+                    this.rec_email = value;
+                  },
+                  decoration: InputDecoration(
+                    labelText: "Recovery Email",
+                  ),
+                ),
+                MaterialButton(
+                  onPressed: () async {
+
+                    if( this.username == '' ){
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              title: Text("Field UserName cannot be empty"),
+                            );
+                          }
+                      );
+                    }
+                    else if( this.rec_email == '' ){
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              title: Text("Field Recovery Email cannot be empty"),
+                            );
+                          }
+                      );
+                    }
+                    else {
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
+
+                      http.Response response = await http.get( Uri.parse( url ) );
+
+
+                      if( response.body != '[]' ){
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: Text("Username Already taken please try another one"),
+                          ),
+                        );
+                      }
+                      else{
+                        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_email='${this.rec_email}'&branch_id";
+                        response = await http.get( Uri.parse( url ) );
+
+                        // if response.body == 1, editing user details was successful
+                        if( response.body == '1') {
+                          Navigator.pop( context );
+
+                          setState(() { });
+                        }
+                      }
+                    }
+                  },
+                  child: Text("Edit"),
+                ),
+              ],
+            ),
+          );
+        }
+    );
   }
 
   Future<void> viewOrgAdmins( ) async {
     String url ;
 
     if( widget.orgID != null ) {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id`WHERE `users`.`authority`='org-admin' AND `users`.`org_id` = ${widget.orgID }";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`,`users`.`recovery_email` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin' AND `users`.`org_id` = ${widget.orgID }";
     }
     else {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin'";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`,`users`.`recovery_email` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin'";
     }
 
     http.Response response = await http.get( Uri.parse( url ), );
@@ -180,68 +351,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     }
   }
 
-  void _editOrgAdmin( String username , String uid) {
-    // creating a controller for username TextField
-    TextEditingController usernameController = TextEditingController( text: username );
-
-    showDialog(
-        context: context,
-        builder: (BuildContext context ) {
-          this.username = username;
-
-          return AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: usernameController,
-                  onChanged: (value) {
-                    this.username = value;
-                  },
-                  decoration: InputDecoration(
-                    labelText: "username",
-                  ),
-                ),
-                MaterialButton(
-                  onPressed: () async {
-                    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name='${this.username}'";
-
-                    http.Response response = await http.get( Uri.parse( url ) );
-
-                    // if response.body == 1, editing user details was successful
-                    if( response.body == '1') {
-                      Navigator.pop( context );
-
-                      setState(() { });
-                    }
-                  },
-                  child: Text("Edit"),
-                ),
-              ],
-            ),
-          );
-        }
-    );
-  }
-
-  Future<void> _deleteOrgAdmin(username) async {
-    // delete the User
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&user='$username'";
-
-    http.Response response = await http.get(Uri.parse(url));
-
-    if (response.body == "1") {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              content: Text("User Deleted.."),
-            );
-          }
-      );
-    }
-  }
-
   Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
@@ -297,6 +406,11 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['org_mail'] ),
                         ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['recovery_email'] ),
+                        ),
                       ],
                     ),
                   ),
@@ -330,6 +444,12 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( data['org_mail'] ),
                         ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['recovery_email'] == null ? '-' : data['recovery_email'] ),
+                        ),
                       ],
                     ),
                   ),
@@ -344,7 +464,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                 children: [
                   addEdit? MaterialButton(
                       onPressed: () {
-                        _editOrgAdmin( data['username'], data['UID'] );
+                        _editOrgAdmin( data['username'], data['UID'], data['recovery_email'] == null ? '' : data['recovery_email'] );
                       },
                       child: Container(
                         // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
@@ -364,7 +484,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                   ),
                   addDelete ?  MaterialButton(
                       onPressed: () async {
-                        await _deleteOrgAdmin( data['username'] );
+                        await _deleteOrgAdmin( data['UID'] );
                         setState( () {} );
                       },
                       child: Container(
@@ -392,6 +512,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
       ),
     );
   }
+
   @override
   void initState( ) {
     super.initState();
@@ -491,6 +612,14 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                                     ),
                                     TextField(
                                       onChanged: (value) {
+                                        this.rec_email = value;
+                                      },
+                                      decoration: InputDecoration(
+                                        labelText: "Recovery Email",
+                                      ),
+                                    ),
+                                    TextField(
+                                      onChanged: (value) {
                                         this.password = value;
                                       },
                                       decoration: InputDecoration(
@@ -502,20 +631,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                                         // adding the user to the users table
                                         insertOrgAdmin();
 
-                                        // closing the Popup
-                                        Navigator.pop(context);
 
-                                        // showing the confirmation message
-                                        showDialog(
-                                            context: context,
-                                            builder: (BuildContext context ) {
-                                              return AlertDialog(
-                                                title: Text("User Added Successfully"),
-                                              );
-                                            }
-                                        );
-
-                                        setState( ( ) {} );
                                       },
                                       child: Text("Add"),
                                     )
