@@ -453,11 +453,16 @@ class ViewBranchState extends State<ViewBranch>{
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child : Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: widget.branches,
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      setState( () {} );
+                    },
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: widget.branches,
+                      ),
                     ),
                   ),
                 ),

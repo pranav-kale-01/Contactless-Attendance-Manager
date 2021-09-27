@@ -602,11 +602,16 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child : Container(
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: employees,
+                              child: RefreshIndicator(
+                                onRefresh: () async {
+                                  setState( () {} );
+                                },
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.vertical,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: employees,
+                                  ),
                                 ),
                               ),
                             ),

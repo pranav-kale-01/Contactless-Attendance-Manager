@@ -382,11 +382,16 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: scanPoints,
+                        child: RefreshIndicator(
+                          onRefresh: () async {
+                            setState( () {} );
+                          },
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: scanPoints,
+                            ),
                           ),
                         ),
                       ),

@@ -13,8 +13,9 @@ import 'dart:convert';
 class ManageOrganizationsAdmins extends StatefulWidget {
   bool showHamMenu = false;
   String? orgID;
+  final userInfo;
 
-  ManageOrganizationsAdmins({Key? key, showHamMenu , orgID }) : super(key: key) {
+  ManageOrganizationsAdmins({Key? key, showHamMenu , orgID, required this.userInfo }) : super(key: key) {
     if( orgID != null ) {
       this.orgID = orgID ;
     }
@@ -531,10 +532,15 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child : Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: orgAdmins,
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      setState( () {} );
+                    },
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        children: orgAdmins,
+                      ),
                     ),
                   ),
                 ),
@@ -669,7 +675,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context)=> ViewOrganizations( ),
+                            builder: (context)=> ViewOrganizations( userInfo: widget.userInfo, ),
                           )
                       );
                     },
@@ -680,7 +686,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context)=> ManageOrganizationsAdmins(),
+                            builder: (context)=> ManageOrganizationsAdmins( userInfo: widget.userInfo, ),
                           )
                       );
                     },

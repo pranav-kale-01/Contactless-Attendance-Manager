@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
@@ -13,8 +14,9 @@ import 'dart:convert';
 
 class ViewOrganizations extends StatefulWidget {
   bool showHamMenu = true;
+  final userInfo;
 
-  ViewOrganizations({Key? key, showHamMenu }) : super(key: key) {
+  ViewOrganizations({Key? key, showHamMenu, required this.userInfo }) : super(key: key) {
     if( showHamMenu != null ) {
       this.showHamMenu = showHamMenu;
     }
@@ -38,12 +40,18 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     'org_name': "Name",
     'org_id': "ID",
     'org_mail': "Mail",
+    'created_by' : "Created By",
+    'created_date_time' : "Created Date Time",
+    'modified_by' : "Modified By",
+    'modified_date_time' : "Modified Date Time"
   };
 
   Future<void> insertOrg( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=0&name='${this.orgName}'&mail='${this.orgEmail}'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=0&name='${this.orgName}'&mail='${this.orgEmail}'&created='${widget.userInfo['username']}&created_dt=${DateTime.now()}&mod=''&mod_dt=''";
 
-    await http.get( Uri.parse( url ) );
+    http.Response response = await http.get( Uri.parse( url ) );
+
+    print( response.body );
   }
 
   Future<void> viewOrg( ) async {
@@ -200,15 +208,30 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['org_name'].toString() ),
                         ),
-                        // Container(
-                        //   // color: Colors.red,
-                        //   margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                        //   child: Text( this.header['org_id'] ),
-                        // ),
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['org_mail'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['created_by'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['created_date_time'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['modified_by'] ),
+                        ),
+                        Container(
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( this.header['modified_date_time'] ),
                         ),
                       ],
                     ),
@@ -231,17 +254,35 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                             ),
                           ),
                         ),
-                        // Container(
-                        //   alignment: Alignment.centerLeft,
-                        //   // color: Colors.red,
-                        //   margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                        //   child: Text( data['org_id'] ),
-                        // ),
                         Container(
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( data['org_mail'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['created_by'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['created_date_time'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['modified_by'] ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.red,
+                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
+                          child: Text( data['modified_date_time'] ),
                         ),
                       ],
                     ),
@@ -305,7 +346,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                         if(value == 0) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => ManageOrganizationsAdmins( orgID: data['org_id'] , showHamMenu: false,),
+                              builder: (context) => ManageOrganizationsAdmins( orgID: data['org_id'] , showHamMenu: false, userInfo: widget.userInfo ),
                             )
                           );
                         }
@@ -348,11 +389,16 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child : Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: organizations,
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      setState( () {} );
+                    },
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: organizations,
+                      ),
                     ),
                   ),
                 ),
@@ -463,7 +509,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context)=> ViewOrganizations( ),
+                            builder: (context)=> ViewOrganizations( userInfo: widget.userInfo, ),
                           )
                       );
                     },
@@ -474,7 +520,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context)=> ManageOrganizationsAdmins( showHamMenu: true,),
+                            builder: (context)=> ManageOrganizationsAdmins( showHamMenu: true, userInfo: widget.userInfo, ),
                           )
                       );
                     },

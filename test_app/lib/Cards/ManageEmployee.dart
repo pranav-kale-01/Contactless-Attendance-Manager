@@ -798,11 +798,17 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child : Container(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: employees,
+                        child: RefreshIndicator(
+                          onRefresh: () async {
+                            setState( () {} );
+                          },
+                          child: SingleChildScrollView(
+                            physics: AlwaysScrollableScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: employees,
+                            ),
                           ),
                         ),
                       ),

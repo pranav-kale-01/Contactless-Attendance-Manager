@@ -562,11 +562,16 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child : Container(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: users,
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    setState( () {} );
+                  },
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: users,
+                    ),
                   ),
                 ),
               ),
