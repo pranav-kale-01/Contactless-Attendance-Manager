@@ -137,8 +137,8 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
     widget.branchID = widget.branchIDs[0];
   }
 
-  Future<void> _editScanPoints( String qr) async {
-    TextEditingController descriptionController = TextEditingController();
+  Future<void> _editScanPoints( String qr, String description ) async {
+    TextEditingController descriptionController = TextEditingController( text: description );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -158,11 +158,11 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
               child: MaterialButton(
                 onPressed: () async {
                   // saving changes
-                  String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=2&qr=$qr&desc=${descriptionController.text}";
+                  String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=2&qr=$qr&desc=${descriptionController.text}&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
 
                   print( url );
 
-                  http.Response response = await http.get( Uri.parse( url ) );
+                  await http.get( Uri.parse( url ) );
 
                   setState( () {
                     Navigator.of(context).pop();
@@ -291,7 +291,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                 children: [
                   MaterialButton(
                     onPressed: () async {
-                      await _editScanPoints( data['qr']  );
+                      await _editScanPoints( data['qr'], data['description']  );
                     },
                     child: Container(
                       padding: EdgeInsets.all( 5.0 ),

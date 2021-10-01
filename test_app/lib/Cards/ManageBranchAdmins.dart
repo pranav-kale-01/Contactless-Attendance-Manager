@@ -37,7 +37,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
 
   late String username;
   late String password;
-  late String rec_email;
+  late String rec_mob;
   late String orgID;
   late String branchID;
 
@@ -56,8 +56,15 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     'username':'Username',
     'branch_id':'Branch ID',
     'branch_name':'Branch Name',
-    'recovery_email' : "Recovery Email"
+    'recovery_mob' : "Recovery Mobile Number"
   };
+
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
 
   Future<void> setBranches( id, bool addEmpty ) async {
     int i;
@@ -120,10 +127,184 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
       branchID = '';
   }
 
-  Future<void> _editBranchAdmin( String uid, String username, String rec_email )  async {
+  Future<void> _insertBranchAdmin( ) async {
+    this.index2=0;
+
+    // showing the popup to insert users
+    showDialog(
+        context: context,
+        builder: (BuildContext context ) {
+          return AlertDialog(
+              content:Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      onChanged: (value) {
+                        this.username = value;
+                      },
+                      decoration: InputDecoration(
+                          labelText: "user email"
+                      ),
+                    ),
+                    StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState ) {
+                          return Container(
+                            padding: EdgeInsets.zero,
+                            margin: EdgeInsets.zero,
+                            child: DropdownButton(
+                              isExpanded: true,
+                              value: this.index2,
+                              items: this._branches,
+                              onChanged: (int? value) {
+                                if( _branches[value!].child.toString() == "Text(\"\")" ) {
+                                  this.branchID = '';
+                                  setState( ( ) => this.index2 = 0 );
+                                }
+                                else {
+                                  this.branchID = this.branchIDs[value-1];
+                                  setState(() => this.index2 = this._branches[value].value );
+                                }
+                              },
+                            ),
+                          );
+                        }
+                    ),
+                    TextField(
+                      onChanged: (value) {
+                        this.rec_mob = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: "Recovery Mobile Number",
+                      ),
+                    ),
+                    TextField(
+                      onChanged: (value) {
+                        this.password = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: "password",
+                      ),
+                    ),
+                    MaterialButton(
+                      onPressed: () async {
+                        // adding the user to the users table
+
+                        // confirming that username is not empty
+                        if( this.username == '' ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Field Username cannot be empty"),
+                                );
+                              }
+                          );
+                          return;
+                        }
+                        else if( this.password == '' ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Field Password cannot be empty"),
+                                );
+                              }
+                          );
+                          return;
+                        }
+                        else if( this.rec_mob.length != 10 || isNumeric(this.rec_mob) == false ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Invalid Mobile Number"),
+                                );
+                              }
+                          );
+                          return;
+                        }
+                        else{
+                          String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}'";
+
+                          http.Response response = await http.get( Uri.parse( url ) );
+
+                          print( response.body );
+
+                          if( response.body != '[]' ){
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                content: Text("Username Already taken please try another one"),
+                              ),
+                            );
+                          }
+                          else {
+                            // checking if the user has selected 'None' from Branch options
+                            if( this.branchID == '' ) {
+                              url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&rec_mob='${this.rec_mob}'&br_id=&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
+                            }
+                            else{
+                              // adding the user details to the mysql database
+                              url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&rec_mob='${this.rec_mob}'&br_id=${this.branchID}&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
+                            }
+
+                            await http.get( Uri.parse( url ) );
+
+                            // closing the Popup
+                            Navigator.pop(context);
+
+                            // showing the confirmation message
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context ) {
+                                  return AlertDialog(
+                                    title: Text("User Added Successfully"),
+                                  );
+                                }
+                            );
+
+                            setState(() { });
+
+                          }
+                        }
+                      },
+                      child: Text("Add"),
+                    )
+                  ]
+              )
+
+          );
+        }
+    );
+  }
+
+  Future<void> _deleteBranchAdmin( String uid ) async {
+    // delete the User
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid';";
+
+    http.Response response = await http.get( Uri.parse( url ) );
+
+    print( response.body );
+
+    if( response.body == "1" ) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text("User Deleted.."),
+            );
+          }
+      );
+      setState(() { });
+    }
+  }
+
+  Future<void> _editBranchAdmin( String uid, String username, String rec_mob )  async {
     // creating a new TextEditingController for username Field
     TextEditingController usernameController = TextEditingController( text: username );
-    TextEditingController recEmailController = TextEditingController( text: rec_email );
+    TextEditingController recEmailController = TextEditingController( text: rec_mob );
+
+    this.rec_mob = rec_mob;
     this.username = username;
 
     // resetting the old index
@@ -171,205 +352,89 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                 TextField(
                   controller: recEmailController,
                   onChanged: (value) {
-                    this.rec_email = value;
+                    this.rec_mob = value;
                   },
                   decoration: InputDecoration(
-                    labelText: "Recover Email",
+                    labelText: "Recovery Mobile Number",
                   ),
                 ),
                 MaterialButton(
                   onPressed: () async {
-                    String url;
+                    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` != $uid";
 
-                    if( this.branchID == '' ) {
-                      url ="https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_email='${this.rec_email}'&branch_id=";
+                    print( url );
+
+                    http.Response response = await http.get( Uri.parse( url ) );
+
+                    if( this.username == '' ){
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              title: Text("Field UserName cannot be empty"),
+                            );
+                          }
+                      );
+                    }
+                    else if( recEmailController.text == '' ){
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              title: Text("Field Recovery Mobile Number cannot be empty"),
+                            );
+                          }
+                      );
+                    }
+                    else if( this.rec_mob.length != 10 || isNumeric(this.rec_mob) == false ) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              title: Text("Invalid Mobile Number"),
+                            );
+                          }
+                      );
+                      return;
                     }
                     else {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_email='${this.rec_email}'&branch_id=${this.branchID}";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` != $uid";
+
+                      print( url );
+
+                      http.Response response = await http.get( Uri.parse( url ) );
+
+                      print( response.body );
+
+                      if( response.body != '[]' ){
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: Text("Username Already taken please try another one"),
+                          ),
+                        );
+                      }
+                      else{
+                        if( this.branchID == '' ) {
+                          url ="https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_mob='${this.rec_mob}'&branch_id=&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
+                        }
+                        else {
+                          url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_mob='${this.rec_mob}'&branch_id=${this.branchID}&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
+                        }
+
+                        await http.get( Uri.parse( url ) );
+
+                        setState(() { });
+
+                        Navigator.pop(context);
+
+                      }
                     }
-
-                    await http.get( Uri.parse( url ) );
-
-                    setState(() { });
-
-                    Navigator.pop(context);
                   },
                   child: Text("Edit"),
                 ),
               ],
             ),
-          );
-        }
-    );
-  }
-
-  Future<void> _deleteBranchAdmin( String uid ) async {
-    // delete the User
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid';";
-
-    http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body );
-
-    if( response.body == "1" ) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              content: Text("User Deleted.."),
-            );
-          }
-      );
-      setState(() { });
-    }
-  }
-
-  Future<void> _insertBranchAdmin( ) async {
-    this.index2=0;
-
-    // showing the popup to insert users
-    showDialog(
-        context: context,
-        builder: (BuildContext context ) {
-          return AlertDialog(
-              content:Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      onChanged: (value) {
-                        this.username = value;
-                      },
-                      decoration: InputDecoration(
-                          labelText: "user email"
-                      ),
-                    ),
-                    StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState ) {
-                          return Container(
-                            padding: EdgeInsets.zero,
-                            margin: EdgeInsets.zero,
-                            child: DropdownButton(
-                              isExpanded: true,
-                              value: this.index2,
-                              items: this._branches,
-                              onChanged: (int? value) {
-                                if( _branches[value!].child.toString() == "Text(\"\")" ) {
-                                  this.branchID = '';
-                                  setState( ( ) => this.index2 = 0 );
-                                }
-                                else {
-                                  this.branchID = this.branchIDs[value-1];
-                                  setState(() => this.index2 = this._branches[value].value );
-                                }
-                              },
-                            ),
-                          );
-                        }
-                    ),
-                    TextField(
-                      onChanged: (value) {
-                        this.rec_email = value;
-                      },
-                      decoration: InputDecoration(
-                          labelText: "Recovery Email",
-                      ),
-                    ),
-                    TextField(
-                      onChanged: (value) {
-                        this.password = value;
-                      },
-                      decoration: InputDecoration(
-                        labelText: "password",
-                      ),
-                    ),
-                    MaterialButton(
-                      onPressed: () async {
-                        // adding the user to the users table
-
-                        // confirming that username is not empty
-                        if( this.username == '' ) {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context ) {
-                                return AlertDialog(
-                                  title: Text("Field Username cannot be empty"),
-                                );
-                              }
-                          );
-                          return;
-                        }
-                        else if( this.password == '' ) {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context ) {
-                                return AlertDialog(
-                                  title: Text("Field Password cannot be empty"),
-                                );
-                              }
-                          );
-                          return;
-                        }
-                        else if( this.rec_email == '' ) {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context ) {
-                                return AlertDialog(
-                                  title: Text("Field Recover Email cannot be empty"),
-                                );
-                              }
-                          );
-                          return;
-                        }
-                        else{
-                          String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
-
-                          http.Response response = await http.get( Uri.parse( url ) );
-
-                          print( response.body );
-
-                          if( response.body != '[]' ){
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                content: Text("Username Already taken please try another one"),
-                              ),
-                            );
-                          }
-                          else {
-                            // checking if the user has selected 'None' from Branch options
-                            if( this.branchID == '' ) {
-                              url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&rec_email='${this.rec_email}'&br_id=";
-                            }
-                            else{
-                              // adding the user details to the mysql database
-                              url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='br-admin'&orgid=${widget.userInfo['org_id']}&rec_email='${this.rec_email}'&br_id=${this.branchID}";
-                            }
-
-                            await http.get( Uri.parse( url ) );
-
-                            // closing the Popup
-                            Navigator.pop(context);
-
-                            // showing the confirmation message
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context ) {
-                                  return AlertDialog(
-                                    title: Text("User Added Successfully"),
-                                  );
-                                }
-                            );
-
-                            setState(() { });
-
-                          }
-                        }
-                      },
-                      child: Text("Add"),
-                    )
-                  ]
-              )
-
           );
         }
     );
@@ -428,7 +493,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['recovery_email'] ),
+                          child: Text( this.header['recovery_mob'] ),
                         ),
                       ],
                     ),
@@ -462,7 +527,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['recovery_email'] == null ? '-' : data['recovery_email'] ),
+                          child: Text( data['recovery_mob'] == null ? '-' : data['recovery_mob'] ),
                         ),
                       ],
                     ),
@@ -479,7 +544,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                   addEdit? MaterialButton(
                       onPressed: () {
                         // edit branch admin
-                        _editBranchAdmin( data['UID'], data['username'], data['recovery_email'] == null ? '' : data['recovery_email'] );
+                        _editBranchAdmin( data['UID'], data['username'], data['recovery_mob'] == null ? '' : data['recovery_mob'] );
                       },
                       child: Container(
                         padding: EdgeInsets.all( 10.0 ),
@@ -531,7 +596,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     // getting the list of organizations for later use
     setBranches( widget.userInfo['org_id'] , true );
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`branch_id`,`branches`.`branch_id`, `branches`.`branch_name`, `users`.`recovery_email` FROM `users` LEFT JOIN `branches` ON `users`.`branch_id`=`branches`.`branch_id` WHERE `users`.`authority`='br-admin' AND `users`.`org_id`= ${widget.userInfo['org_id']}";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`branch_id`,`branches`.`branch_id`, `branches`.`branch_name`, `users`.`recovery_mob` FROM `users` LEFT JOIN `branches` ON `users`.`branch_id`=`branches`.`branch_id` WHERE `users`.`authority`='br-admin' AND `users`.`org_id`= ${widget.userInfo['org_id']}";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
 

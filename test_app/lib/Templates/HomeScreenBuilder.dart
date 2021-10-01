@@ -12,12 +12,14 @@ class HomeScreenBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     if( this.listView == null ) {
       return Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: this.appbar == null ? null : this.appbar ,
         body: this.body,
       );
     }
     else {
       return Scaffold(
+        resizeToAvoidBottomInset: false,
         drawer: Container(
           width: 180.0,
           child: Drawer(

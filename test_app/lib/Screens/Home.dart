@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:test_app/Screens/BranchAdmin.dart';
 import 'package:test_app/Screens/OrgAdmin.dart';
 import 'package:test_app/utils/Location.dart';
-import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/Screens/Employee.dart';
 import 'package:test_app/Screens/SuperAdmin.dart';
@@ -43,6 +42,9 @@ class _HomeState extends State<Home> {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table&condition&post&condition2&post2&custom= * FROM `users` WHERE  `users`.`UID`='${widget.uid}'";
 
     http.Response response = await http.get( Uri.parse(url) );
+
+    print( response.body );
+
     if( response.body != 'false' ){
       this.data = jsonDecode( response.body )[0];
 
@@ -87,18 +89,16 @@ class _HomeState extends State<Home> {
                   onTap: ()  async {
                     setState(() { });
                   },
-                  child: GradientContainer(
-                    child: Text( snapshot.error.toString(), ),
-                  ),
+                  child: Text( snapshot.error.toString(), ),
                 ),
               )
           );
         }
         else {
-          return SafeArea(
-            child: GradientContainer(
-              child: CircularProgressIndicator(),
-            ),
+          return Container(
+            alignment: Alignment.center,
+            color: Colors.white,
+            child: CircularProgressIndicator(),
           );
         }
       },

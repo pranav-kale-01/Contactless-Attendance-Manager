@@ -135,12 +135,9 @@ class _ManageScanState extends State<ManageScan> {
       String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
       // inserting the scan data into the scans table
-      String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${coords['lat'].toString() + ':' + coords['lon'].toString()}&scanner_location=${this._lat.toString() + ':' + this._lon.toString() }&time=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}";
+      String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${coords['lat'].toString() + ':' + coords['lon'].toString()}&scanner_location=${this._lat.toString() + ':' + this._lon.toString() }&time=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
 
       http.Response response = await http.get( Uri.parse( url ) );
-
-      print("Printing the body of the response");
-      print( response.body );
 
       if( response.body == 'true' ) {
 

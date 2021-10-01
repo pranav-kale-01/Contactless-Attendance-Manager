@@ -47,7 +47,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   };
 
   Future<void> insertOrg( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=0&name='${this.orgName}'&mail='${this.orgEmail}'&created='${widget.userInfo['username']}&created_dt=${DateTime.now()}&mod=''&mod_dt=''";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=0&name='${this.orgName}'&mail='${this.orgEmail}'&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=&mod_dt='0000-00-00 00:00:00'";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -55,7 +55,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   }
 
   Future<void> viewOrg( ) async {
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition&post&condition2&post2&custom";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition&post&condition2&post2&custom= * FROM `organization`";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -80,7 +80,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Invalid Data '),
+              title: Text('Invalid Data'),
               content: Text('Organization Name cannot be Empty'),
             );
           }
@@ -88,7 +88,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
       return;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=2&id=$id&name='$name'&mail='$email'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=2&id=$id&name='$name'&mail='$email'&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
 
     http.Response response = await http.get( Uri.parse( url ) );
 
@@ -163,7 +163,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
   Widget containerBuilder( var data, bool addEdit,bool addDelete ) {
     return Container(
       alignment: Alignment.centerLeft,
-      margin: EdgeInsets.symmetric( horizontal: 7.0, vertical: 6.0 ),
+      margin: MediaQuery.of(context).size.width > 725 ? EdgeInsets.symmetric( vertical: 10.0, horizontal: 7.0 ) : EdgeInsets.symmetric( vertical: 10.0 ),
       padding: EdgeInsets.symmetric( vertical: 5.0 ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular( 20.0 ),
@@ -213,26 +213,6 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( this.header['org_mail'] ),
                         ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['created_by'] ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['created_date_time'] ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['modified_by'] ),
-                        ),
-                        Container(
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['modified_date_time'] ),
-                        ),
                       ],
                     ),
                   ),
@@ -259,30 +239,6 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
                           child: Text( data['org_mail'] ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['created_by'] ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['created_date_time'] ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['modified_by'] ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          // color: Colors.red,
-                          margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['modified_date_time'] ),
                         ),
                       ],
                     ),

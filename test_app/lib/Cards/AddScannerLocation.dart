@@ -79,9 +79,10 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
     }
 
     // adding the scanLocation to database
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=0&org_id=${widget.userInfo['org_id']}&branch_id=${widget.temp}&description=${widget.descriptionController.text}&qr=$qr;";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=0&org_id=${widget.userInfo['org_id']}&branch_id=${widget.temp}&description=${widget.descriptionController.text}&qr=$qr&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
 
     http.Response response = await http.get( Uri.parse( url ) );
+    print( response.body );
   }
 
   Future<void> init( ) async {
@@ -93,6 +94,21 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        Container(
+          padding: EdgeInsets.all( 5.0, ),
+          child: Text(
+            "Please Enter a Description for the scan location",
+          ),
+        ),
+        Container(
+            width: MediaQuery.of(context).size.width > 700 ? MediaQuery.of(context).size.width / 3 : MediaQuery.of(context).size.width,
+            margin: EdgeInsets.only( bottom: 20.0, left: 10.0, right: 10.0),
+            child: TextField(
+              textDirection: TextDirection.ltr,
+              controller: widget.descriptionController,
+              onChanged: (String value) { },
+            )
+        ),
         // if the user is a organization admin, then providing a dropdown menu of branches to select from
         widget.userInfo['authority'] == 'org-admin' ? Container(
           padding: EdgeInsets.all(5.0),
@@ -122,21 +138,6 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
         ) : Container() ,
         SizedBox(
           height: 50.0,
-        ),
-        Container(
-          padding: EdgeInsets.all( 5.0, ),
-          child: Text(
-            "Please Enter a Description for the scan location",
-          ),
-        ),
-        Container(
-            width: MediaQuery.of(context).size.width > 700 ? MediaQuery.of(context).size.width / 3 : MediaQuery.of(context).size.width,
-            margin: EdgeInsets.only( bottom: 20.0, ),
-            child: TextField(
-              textDirection: TextDirection.ltr,
-              controller: widget.descriptionController,
-              onChanged: (String value) { },
-            )
         ),
         Container(
           child: MaterialButton(
@@ -218,6 +219,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
       builder: (BuildContext context, snapshot ) {
         if( snapshot.connectionState == ConnectionState.done ) {
           return Scaffold(
+            resizeToAvoidBottomInset: false,
             backgroundColor: Colors.transparent,
             body: GestureDetector(
               onTap: ( ) {
@@ -272,6 +274,7 @@ class _AddScannerLocationState extends State<AddScannerLocation>{
         }
         else {
           return Scaffold(
+            resizeToAvoidBottomInset: false,
             backgroundColor: Colors.black38,
             body: GestureDetector(
               onTap: () {

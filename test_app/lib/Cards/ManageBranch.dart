@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Cards/ManageBranchAdmins.dart';
-import 'package:test_app/Cards/ManageScanHistory.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
@@ -92,7 +91,6 @@ class ViewBranchState extends State<ViewBranch>{
             );
           }
       );
-
       return;
     }
     else if( address == '' ) {
@@ -117,9 +115,11 @@ class ViewBranchState extends State<ViewBranch>{
       return ;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=0&org_id='${widget.userInfo['org_id']}'&name='$branchName'&address='$address'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=0&org_id='${widget.userInfo['org_id']}'&name='$branchName'&address='$address'&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
 
     http.Response response = await http.get( Uri.parse( url ) ) ;
+
+    print( response.body );
 
     if(response.body == 'false' ) {
       showDialog(
@@ -195,9 +195,12 @@ class ViewBranchState extends State<ViewBranch>{
       return ;
     }
 
-    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=2&id=$id&name='$branchName'&address='$address'";
+    String url = "https://test-pranav-kale.000webhostapp.com/scripts/branch.php?function=2&id=$id&name='$branchName'&address='$address'&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
+
+    print(url);
 
     http.Response response  = await http.get( Uri.parse( url ) );
+
 
     if( response.body == '1'){
 

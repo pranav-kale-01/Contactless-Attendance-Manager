@@ -170,7 +170,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
     }
   }
 
-  Future<void> _editTimeDetails ( String start_time, String end_time, String id ) async {
+  Future<void> _editTimeDetails ( String start_time, String end_time, String id, String time ) async {
     // setting up the TextEditingControllers with the provided values
     _timeController1.text = start_time ;
     _timeController2.text = end_time ;
@@ -207,9 +207,11 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                         Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
                       }
                       else {
-                        String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=2&id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'";
+                        String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=2&id=$id&time=$time&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
 
                         http.Response response = await http.get( Uri.parse( url ) );
+
+                        print( response.body );
 
                         if( response.body != '1' ) {
                           showDialog(
@@ -396,7 +398,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                 children: [
                   addEdit? MaterialButton(
                       onPressed: () async {
-                        await _editTimeDetails( data['start_time'] , data['end_time'] , data['UID'] );
+                        await _editTimeDetails( data['start_time'] , data['end_time'] , data['UID'], data['time'] );
                       },
                       child: Container(
                         margin: EdgeInsets.symmetric(horizontal: 20.0 ),

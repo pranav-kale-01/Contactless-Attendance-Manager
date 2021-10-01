@@ -41,7 +41,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
   late String username;
   late String password;
-  late String rec_email;
+  late String rec_mob;
 
   int? index2;
   bool CheckboxValue = false ;
@@ -51,8 +51,15 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     'branch_id' : "Branch ID",
     'username' : "UserName",
     "branch_name" : "Branch Name",
-    "recovery_email" : "Recovery Email",
+    "recovery_mob" : "Recovery Mobile Number",
   };
+
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
 
   Future<void> init( ) async {
     // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
@@ -81,11 +88,11 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
     // checking if the branch ID is empty, if empty then showing all the employees
     if( widget.branchID == '' || widget.showAllValue == true  ) {
-     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name`, `users`.`recovery_email` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
+     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name`, `users`.`recovery_mob` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp'";
     }
     else {
       // else showing employees of the current branch and employees with no branch assigned
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name`,`users`.`recovery_email` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) )";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name`,`users`.`recovery_mob` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) )";
     }
 
 
@@ -219,11 +226,12 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         }
                     ) : Container(),
                     TextField(
+                      keyboardType: TextInputType.number,
                       onChanged: (value) {
-                        rec_email = value;
+                        rec_mob = value;
                       },
                       decoration: InputDecoration(
-                        labelText: "recovery email",
+                        labelText: "recovery Mobile Number",
                       ),
                     ),
                     TextField(
@@ -260,6 +268,17 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           );
                           return;
                         }
+                        else if( this.rec_mob.length != 10 || isNumeric(this.rec_mob) == false ) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context ) {
+                                return AlertDialog(
+                                  title: Text("Invalid Mobile Number"),
+                                );
+                              }
+                          );
+                          return;
+                        }
                         else{
                           String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
 
@@ -277,7 +296,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           }
                           else {
                             // adding the user details to the mysql database
-                            url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}&rec_email='${this.rec_email}'";
+                            url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='emp'&orgid=${widget.userInfo['org_id']}&br_id=${widget.branchID}&rec_mob='${this.rec_mob}'&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
 
                             await http.get( Uri.parse( url ) );
 
@@ -293,6 +312,10 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                                   );
                                 }
                             );
+
+                            // resetting the value of index2 to 0
+                            this.index2 = 0 ;
+                            widget.showAllValue = true;
 
                             getEmployees();
                             setState( ( ) {} );
@@ -343,6 +366,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         Navigator.pop( context );
                       }
                       else {
+                        widget.showAllValue =  true ;
                         getEmployees();
 
                         // reloading the page
@@ -375,17 +399,18 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     );
   }
 
-  void _editEmployee( String id , String name , String rec_email ) {
+  void _editEmployee( String id , String name , String rec_mob ) {
     // edit user
     showDialog(
         context: context,
         builder: (BuildContext context ) {
           // creating a controller for Username TextField
           TextEditingController usernameController = TextEditingController( text: name );
-          TextEditingController recEmailController = TextEditingController( text: rec_email );
+          TextEditingController recEmailController = TextEditingController( text: rec_mob );
 
           this.username = name ;
           this.index2 = 0;
+          this.rec_mob = recEmailController.text;
 
           return AlertDialog(
             content: Column(
@@ -403,7 +428,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 TextField(
                   controller: recEmailController,
                   onChanged: (value) {
-                    this.rec_email = value;
+                    this.rec_mob = value;
                   },
                   decoration: InputDecoration(
                     labelText: "recovery Email",
@@ -498,34 +523,60 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
                         return;
                     }
-
-
-                    // checking if the user has selected the 'None' option for branches OR for an employee has checked the checkbox to keep the branch id null
-                    if( widget.branchID == ''  || this.CheckboxValue == false  ) {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&rec_email='${this.rec_email}'&branch_id=";
+                    else if( this.rec_mob.length != 10 || isNumeric(this.rec_mob) == false ) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context ) {
+                            return AlertDialog(
+                              title: Text("Invalid Mobile Number"),
+                            );
+                          }
+                      );
+                      return;
                     }
-                    else {
-                      url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&rec_email='${this.rec_email}'&branch_id=${widget.branchID}";
-                    }
 
-                    print( url );
+                    url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` != $id";
 
                     http.Response response = await http.get( Uri.parse( url ) );
 
                     print( response.body );
 
-                    // if response.body == 1, editing user details was successful
-                    if( response.body == '1') {
+                    if( response.body != '[]' ){
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          content: Text("Username Already taken please try another one"),
+                        ),
+                      );
+                    }
+                    else {
+                      // checking if the user has selected the 'None' option for branches OR for an employee has checked the checkbox to keep the branch id null
+                      if( widget.branchID == ''  || this.CheckboxValue == false  ) {
+                        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&rec_mob='${this.rec_mob}'&branch_id=&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
+                      }
+                      else {
+                        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&rec_mob='${this.rec_mob}'&branch_id=${widget.branchID}&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
+                      }
 
-                      this.index2 = 0 ;
-                      widget.showAllValue = true;
+                      print( url );
 
-                      // resetting the employees list
-                      getEmployees();
+                      http.Response response = await http.get( Uri.parse( url ) );
 
-                      setState(() { });
+                      print( response.body );
 
-                      Navigator.pop( context );
+                      // if response.body == 1, editing user details was successful
+                      if( response.body == '1') {
+
+                        this.index2 = 0 ;
+                        widget.showAllValue = true;
+
+                        // resetting the employees list
+                        getEmployees();
+
+                        setState(() { });
+
+                        Navigator.pop( context );
+                      }
                     }
                   },
                   child: Text("Edit"),
@@ -589,7 +640,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['recovery_email'] ),
+                          child: Text( this.header['recovery_mob'] ),
                         ),
                       ],
                     ),
@@ -623,7 +674,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['recovery_email'] == null ? '-' : data['recovery_email'] ),
+                          child: Text( data['recovery_mob'] == null ? '-' : data['recovery_mob'] ),
                         ),
                       ],
                     ),
@@ -639,7 +690,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 children: [
                   addEdit? MaterialButton(
                       onPressed: () {
-                        _editEmployee( data['UID'], data['username'], data['recovery_email'] == null ? '' : data['recovery_email'] );
+                        _editEmployee( data['UID'], data['username'], data['recovery_mob'] == null ? '' : data['recovery_mob'] );
                       },
                       child: Container(
                         // margin: EdgeInsets.symmetric(horizontal: 20.0 ),

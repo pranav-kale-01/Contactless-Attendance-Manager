@@ -291,9 +291,11 @@ class _ManageShiftsState extends State<ManageShifts> {
                     }
                     else {
                       // inserting the values to the shifts table
-                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=0&start_time='${_timeController1.text}'&end_time='${_timeController2.text}'&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=0&start_time='${_timeController1.text}'&end_time='${_timeController2.text}'&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
 
                       http.Response response = await http.get( Uri.parse( url ) );
+
+                      print( response.body );
 
                       // popping the current Window
                       Navigator.of( context ).pop();
@@ -367,12 +369,23 @@ class _ManageShiftsState extends State<ManageShifts> {
                       Future.delayed( Duration( seconds: 3 ), () => Navigator.pop(context) );
                     }
                     else {
-                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=2&id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=2&id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
+
+                      print( url );
 
                       http.Response response = await http.get( Uri.parse( url ) );
 
+                      print( response.body );
+
                       if( response.body != '1' ) {
-                        print( "Something Went Wrong ");
+                        showDialog(
+                          context: context,
+                          builder: ( BuildContext context ) {
+                            return AlertDialog(
+                                content: Text("Something Went Wrong"),
+                            );
+                          },
+                        );
                       }
                       else {
                         // removing the popup

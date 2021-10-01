@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/Cards/ForgotPassword.dart';
 
 import 'package:test_app/Screens/Home.dart';
 import 'package:test_app/utils/CredentialController.dart';
@@ -114,6 +115,30 @@ class SignUp extends StatelessWidget {
                           labelText: 'password',
                         ),
                         obscureText: true,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.zero,
+                        margin: EdgeInsets.symmetric( vertical: 8.0, ),
+                        child: MaterialButton(
+                          onPressed: () {
+                            print('pressed');
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>  ForgotPassword(),
+                              )
+                            );
+                          },
+                          child: Text(
+                            "Forgot password",
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                              decoration: TextDecoration.underline,
+                            )
+                          ),
+                        )
                       ),
                       Container(
                         margin: EdgeInsets.symmetric( vertical: 30.0 ) ,

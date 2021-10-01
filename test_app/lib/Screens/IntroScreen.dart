@@ -22,12 +22,12 @@ class IntroScreen extends StatelessWidget {
       // checking if Credential controller has any user data
       String user = '';
       try {
-        print("in try-block");
+        // print("in try-block");
 
         user = await CredentialController.readFile();
       }
       catch( e ) {
-        print("in catch block");
+        // print("in catch block");
 
         // if the operation of reading the file throw an exception then redirecting the user to the login page
         this.hasUser = false ;
@@ -39,7 +39,7 @@ class IntroScreen extends StatelessWidget {
         return;
       }
 
-      print("after try block");
+      // print("after try block");
       this.hasUser = true;
 
       // decoding the user data
@@ -50,7 +50,7 @@ class IntroScreen extends StatelessWidget {
 
       http.Response response = await http.get( Uri.parse( url ) );
 
-      print( response.body ) ;
+      // print( response.body ) ;
 
       if( response.body == 'no-user' ) {
         this.hasUser = false;

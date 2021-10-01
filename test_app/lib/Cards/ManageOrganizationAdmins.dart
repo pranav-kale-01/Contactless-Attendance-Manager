@@ -34,7 +34,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
   late String username;
   late String password;
-  late String rec_email;
+  late String rec_mob;
   late String orgID;
   late String branchID;
 
@@ -56,8 +56,15 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     'username': "UserName",
     'org_name': "Organization Name",
     'org_mail': "Organization Mail",
-    'recovery_email' : "Recovery Email"
+    'recovery_mob' : "Recovery Mobile Number"
   };
+
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
 
   Future<void> insertOrgAdmin( ) async {
     // if widget.user has data then using that data instead
@@ -84,22 +91,21 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
           }
       );
     }
-    else if( this.rec_email == '' ){
+    else if( this.rec_mob.length != 10 || isNumeric(this.rec_mob) == false ) {
       showDialog(
           context: context,
           builder: (BuildContext context ) {
             return AlertDialog(
-              title: Text("Field Recovery Email cannot be empty"),
+              title: Text("Invalid Mobile Number"),
             );
           }
       );
+      return;
     }
     else {
       String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
 
       http.Response response = await http.get( Uri.parse( url ) );
-
-      print( response.body );
 
       if( response.body != '[]' ){
         showDialog(
@@ -111,9 +117,9 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
       }
       else {
         // adding the user details to the mysql database
-        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&rec_email='${this.rec_email}'&br_id=";
+        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&rec_mob='${this.rec_mob}'&br_id=&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
 
-        await http.get( Uri.parse( url ) );
+        http.Response response = await http.get( Uri.parse( url ) );
 
         // closing the Popup
         Navigator.pop(context);
@@ -151,10 +157,10 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     }
   }
 
-  void _editOrgAdmin( String username , String uid, String rec_email ) {
+  void _editOrgAdmin( String username , String uid, String rec_mob ) {
     // creating a controller for username TextField
     TextEditingController usernameController = TextEditingController( text: username );
-    TextEditingController recEmailController = TextEditingController( text: rec_email );
+    TextEditingController recEmailController = TextEditingController( text: rec_mob );
 
     showDialog(
         context: context,
@@ -177,7 +183,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                 TextField(
                   controller: recEmailController,
                   onChanged: (value) {
-                    this.rec_email = value;
+                    this.rec_mob = value;
                   },
                   decoration: InputDecoration(
                     labelText: "Recovery Email",
@@ -196,21 +202,23 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           }
                       );
                     }
-                    else if( this.rec_email == '' ){
+                    else if( this.rec_mob.length != 10 || isNumeric(this.rec_mob) == false ) {
                       showDialog(
                           context: context,
                           builder: (BuildContext context ) {
                             return AlertDialog(
-                              title: Text("Field Recovery Email cannot be empty"),
+                              title: Text("Invalid Mobile Number"),
                             );
                           }
                       );
+                      return;
                     }
                     else {
-                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
+                      String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` IS NOT $uid";
+
+                      print( url );
 
                       http.Response response = await http.get( Uri.parse( url ) );
-
 
                       if( response.body != '[]' ){
                         showDialog(
@@ -221,7 +229,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                         );
                       }
                       else{
-                        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_email='${this.rec_email}'&branch_id";
+                        url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$uid&name=${this.username}&rec_mob='${this.rec_mob}'&branch_id&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
                         response = await http.get( Uri.parse( url ) );
 
                         // if response.body == 1, editing user details was successful
@@ -246,10 +254,10 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     String url ;
 
     if( widget.orgID != null ) {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`,`users`.`recovery_email` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin' AND `users`.`org_id` = ${widget.orgID }";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`,`users`.`recovery_mob` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin' AND `users`.`org_id` = ${widget.orgID }";
     }
     else {
-      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`,`users`.`recovery_email` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin'";
+      url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom=`users`.`UID`, `users`.`username`, `organization`.`org_name`, `organization`.`org_mail`,`organization`.`org_id`,`users`.`recovery_mob` FROM `users` INNER JOIN `organization` ON `users`.`org_id`=`organization`.`org_id` WHERE `users`.`authority`='org-admin'";
     }
 
     http.Response response = await http.get( Uri.parse( url ), );
@@ -410,7 +418,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                         Container(
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( this.header['recovery_email'] ),
+                          child: Text( this.header['recovery_mob'] ),
                         ),
                       ],
                     ),
@@ -449,7 +457,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           alignment: Alignment.centerLeft,
                           // color: Colors.red,
                           margin: EdgeInsets.symmetric( vertical: 4.0 ),
-                          child: Text( data['recovery_email'] == null ? '-' : data['recovery_email'] ),
+                          child: Text( data['recovery_mob'] == null ? '-' : data['recovery_mob'] ),
                         ),
                       ],
                     ),
@@ -465,7 +473,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                 children: [
                   addEdit? MaterialButton(
                       onPressed: () {
-                        _editOrgAdmin( data['username'], data['UID'], data['recovery_email'] == null ? '' : data['recovery_email'] );
+                        _editOrgAdmin( data['username'], data['UID'], data['recovery_mob'] == null ? '' : data['recovery_mob'] );
                       },
                       child: Container(
                         // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
@@ -618,7 +626,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                                     ),
                                     TextField(
                                       onChanged: (value) {
-                                        this.rec_email = value;
+                                        this.rec_mob = value;
                                       },
                                       decoration: InputDecoration(
                                         labelText: "Recovery Email",
