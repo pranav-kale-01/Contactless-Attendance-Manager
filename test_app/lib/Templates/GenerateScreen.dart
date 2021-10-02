@@ -87,24 +87,54 @@ class GenerateScreenState extends State<GenerateScreen> {
     final bodyHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
-      color: Colors.white,
       child: Center(
         child: RepaintBoundary(
           key: globalKey,
           child: Container(
+            padding: EdgeInsets.symmetric( vertical: 30.0, horizontal: 10.0 ),
             color: Colors.white,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                Container(
+                  padding: EdgeInsets.only( top: 30.0, bottom: 20.0,   ),
+                  child: Text(
+                    "JMK infosoft Hajeri",
+                    style: TextStyle(
+                      fontSize: 54.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only( top: 10.0, bottom: 50.0, ),
+                  child: Text(
                     "Contactless Attendance Manager",
+                    style: TextStyle(
+                      fontSize: 30.0,
+                      fontWeight: FontWeight.w200,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.all( 4.0, ),
+                  decoration: BoxDecoration(
+                    border: Border.all( color: Colors.black ),
+                  ),
+                  child: QrImage(
+                    data: widget.qrString,
+                    size: 0.5 * bodyHeight,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only( top: 30.0, ),
+                  child: Text(
+                    "Scan the Above code to mark your attendance",
                     style: TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.w200,
                     ),
-                ),
-                QrImage(
-                  data: widget.qrString,
-                  size: 0.5 * bodyHeight,
+                  ),
                 ),
               ],
             ),

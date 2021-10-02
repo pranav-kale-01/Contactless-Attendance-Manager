@@ -43,8 +43,6 @@ class _HomeState extends State<Home> {
 
     http.Response response = await http.get( Uri.parse(url) );
 
-    print( response.body );
-
     if( response.body != 'false' ){
       this.data = jsonDecode( response.body )[0];
 

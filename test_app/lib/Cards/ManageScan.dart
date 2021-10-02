@@ -1,22 +1,22 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:intl/intl.dart';
+
+import 'package:test_app/Cards/DateTimePicker.dart';
 import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/utils/CredentialController.dart';
-import 'dart:async';
-
 import 'package:test_app/utils/Location.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-
 import 'package:vector_math/vector_math.dart' as VMath;
-import 'dart:math';
 
 import 'package:http/http.dart' as http ;
 import 'dart:convert';
-
-import 'DateTimePicker.dart';
 
 class ManageScan extends StatefulWidget {
   final userInfo;
@@ -184,9 +184,7 @@ class _ManageScanState extends State<ManageScan> {
 
     // getting all the branches of the current organization
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=shifts&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
-
     http.Response response = await http.get( Uri.parse(url) );
-
     List<dynamic> jsonData = jsonDecode( response.body );
 
     // clearing the previous list
@@ -219,7 +217,9 @@ class _ManageScanState extends State<ManageScan> {
       );
       shiftIDs.add( '' );
     }
-    else index =0;
+    else {
+      index =0;
+    }
 
     // adding the data to _branches
     for( i=0; i< jsonData.length ; i++ ) {
@@ -239,10 +239,6 @@ class _ManageScanState extends State<ManageScan> {
 
     // setting the default value for branchID
     widget.shiftID = shiftIDs[0];
-
-    for( String temp in tempArr) {
-      print( temp );
-    }
   }
 
   @override
@@ -269,8 +265,6 @@ class _ManageScanState extends State<ManageScan> {
                           // sets the data into qrString
                           await scanQR();
 
-                          print("qrStringIsValid? " + this.qrStringIsValid.toString() );
-
                           if( qrStringIsValid ) {
                             var list = qrString.split(':');
 
@@ -294,13 +288,6 @@ class _ManageScanState extends State<ManageScan> {
                               return;
                             }
 
-                            // print( "coordinates" + coords['lat'].toString() + ' - ' + coords['lon'].toString() );
-
-                            // if( coords['lat'] == null || coords['lon'] == null ) {
-                            //   print('test');
-                            //
-                            // }
-
                             // calculating the distance of the device from the scanning location
                             double distance = calcDistance( this._lat , this._lon , double.parse( coords['lat']! )  , double.parse( coords['lon']! ) ) / 100;
 
@@ -315,6 +302,7 @@ class _ManageScanState extends State<ManageScan> {
                               showDialog(
                                 context: context,
                                 builder: (context)=> AlertDialog(
+                                  /// TODO: Change this
                                   content: Text("Out of Range by :" + distance.toString() + "cm " ),
                                 ),
                               );
@@ -564,7 +552,6 @@ class _ManageScanState extends State<ManageScan> {
                         MaterialButton(
                           onPressed: () async {
                             // adding the data to scans table
-
                             if( this.scanIsValid == false ) {
                               showDialog(
                                   context: context,
@@ -578,8 +565,6 @@ class _ManageScanState extends State<ManageScan> {
                             }
                             // checking if the user has scanned the qr-Code
                             if( this.qrStringIsValid == false || this.coords == {}  ) {
-
-                              print("This doesn't work!");
                               // The user has not scanned the code or the Scanned Code was Invalid
                               showDialog(
                                   context: context,
@@ -591,7 +576,6 @@ class _ManageScanState extends State<ManageScan> {
                               );
                             }
                             else{
-                              print("this does work!");
                               await _insertScan();
                             }
                           },
@@ -660,7 +644,7 @@ class _ManageScanState extends State<ManageScan> {
             body: Container(
               alignment: Alignment.center,
               child: CircularProgressIndicator(),
-            )
+            ),
           );
         }
       }

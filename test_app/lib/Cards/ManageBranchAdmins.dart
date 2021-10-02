@@ -187,8 +187,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     ),
                     MaterialButton(
                       onPressed: () async {
-                        // adding the user to the users table
-
                         // confirming that username is not empty
                         if( this.username == '' ) {
                           showDialog(
@@ -225,10 +223,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                         }
                         else{
                           String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}'";
-
                           http.Response response = await http.get( Uri.parse( url ) );
-
-                          print( response.body );
 
                           if( response.body != '[]' ){
                             showDialog(
@@ -281,10 +276,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
   Future<void> _deleteBranchAdmin( String uid ) async {
     // delete the User
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid';";
-
     http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body );
 
     if( response.body == "1" ) {
       showDialog(
@@ -361,10 +353,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                 MaterialButton(
                   onPressed: () async {
                     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` != $uid";
-
-                    print( url );
-
-                    http.Response response = await http.get( Uri.parse( url ) );
+                    await http.get( Uri.parse( url ) );
 
                     if( this.username == '' ){
                       showDialog(
@@ -399,12 +388,7 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                     }
                     else {
                       String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` != $uid";
-
-                      print( url );
-
                       http.Response response = await http.get( Uri.parse( url ) );
-
-                      print( response.body );
 
                       if( response.body != '[]' ){
                         showDialog(
@@ -568,7 +552,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                         setState(() { });
                       },
                       child: Container(
-                        // margin: EdgeInsets.symmetric(horizontal: 20.0 ),
                         padding: EdgeInsets.all( 10.0 ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -597,11 +580,15 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
     setBranches( widget.userInfo['org_id'] , true );
 
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`branch_id`,`branches`.`branch_id`, `branches`.`branch_name`, `users`.`recovery_mob` FROM `users` LEFT JOIN `branches` ON `users`.`branch_id`=`branches`.`branch_id` WHERE `users`.`authority`='br-admin' AND `users`.`org_id`= ${widget.userInfo['org_id']}";
-
     http.Response response = await http.get( Uri.parse( url ) ) ;
 
     if( response.body == 'false' ) {
-      print("something went wrong");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("something went wrong"),
+        ),
+      );
     }
     else {
       // decoding the data
@@ -713,7 +700,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-
                           builder: (context) => ManageBranchAdmins( context: context, setState: setState, userInfo: widget.userInfo, ),
                         ),
                       );
@@ -782,7 +768,6 @@ class _ManageBranchAdminsState extends State<ManageBranchAdmins>  {
                   iconTheme: IconThemeData(color: Colors.blueAccent),
                   elevation: 0,
                   backgroundColor: Colors.transparent,
-                  title: Text( "View Branch Admins" ),
                 ),
                 body: Center(
                   child: GradientContainer(

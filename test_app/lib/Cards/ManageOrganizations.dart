@@ -48,17 +48,12 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
 
   Future<void> insertOrg( ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=0&name='${this.orgName}'&mail='${this.orgEmail}'&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=&mod_dt='0000-00-00 00:00:00'";
-
-    http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body );
+    await http.get( Uri.parse( url ) );
   }
 
   Future<void> viewOrg( ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition&post&condition2&post2&custom= * FROM `organization`";
-
     http.Response response = await http.get( Uri.parse( url ) );
-
     jsonData = jsonDecode( response.body ) ;
 
     if( jsonData == 'false') {
@@ -89,11 +84,7 @@ class _ViewOrganizationsState extends State<ViewOrganizations> {
     }
 
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/org.php?function=2&id=$id&name='$name'&mail='$email'&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
-
-    http.Response response = await http.get( Uri.parse( url ) );
-
-    if( response.body != '1' )
-      print( response.body ) ;
+    await http.get( Uri.parse( url ) );
 
     // closing the AlertBox
     Navigator.pop(context);

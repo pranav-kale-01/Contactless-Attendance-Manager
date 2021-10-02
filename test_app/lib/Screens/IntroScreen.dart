@@ -22,13 +22,9 @@ class IntroScreen extends StatelessWidget {
       // checking if Credential controller has any user data
       String user = '';
       try {
-        // print("in try-block");
-
         user = await CredentialController.readFile();
       }
       catch( e ) {
-        // print("in catch block");
-
         // if the operation of reading the file throw an exception then redirecting the user to the login page
         this.hasUser = false ;
         return;
@@ -39,7 +35,6 @@ class IntroScreen extends StatelessWidget {
         return;
       }
 
-      // print("after try block");
       this.hasUser = true;
 
       // decoding the user data
@@ -50,8 +45,6 @@ class IntroScreen extends StatelessWidget {
 
       http.Response response = await http.get( Uri.parse( url ) );
 
-      // print( response.body ) ;
-
       if( response.body == 'no-user' ) {
         this.hasUser = false;
         return;
@@ -59,7 +52,6 @@ class IntroScreen extends StatelessWidget {
 
       // assigning the UID
       this.uid = jsonDecode( response.body )['UID'];
-
 
       this.hasUser = true;
       return;
@@ -70,8 +62,6 @@ class IntroScreen extends StatelessWidget {
 
   @override
   Widget build( BuildContext context ){
-    print("build method starts here");
-
     return FutureBuilder(
       future: _init(),
       builder: ( context, snapshot) {

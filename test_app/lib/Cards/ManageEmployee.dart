@@ -95,11 +95,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
       url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `users`.`UID`, `users`.`username`, `users`.`org_id`, `users`.`branch_id`, `users`.`authority`, `branches`.`branch_name`,`users`.`recovery_mob` FROM `users` LEFT JOIN `branches` ON `branches`.`branch_id` = `users`.`branch_id` WHERE  ( `users`.`org_id` = ${widget.userInfo['org_id']} AND `users`.`authority`='emp' AND  (`users`.`branch_id`=${widget.branchID} OR `users`.`branch_id` IS NULL ) )";
     }
 
-
     http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body );
-
     List<dynamic> jsonData = jsonDecode( response.body );
 
     if( response.body == '') {
@@ -132,7 +128,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
 
     http.Response response = await http.get( Uri.parse(url) );
-
     List<dynamic> jsonData = jsonDecode( response.body );
 
     // clearing the previous list
@@ -148,7 +143,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
           child: Text(''),
         ),
       ) ;
-
       return;
     }
 
@@ -156,7 +150,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
     if( addEmpty ) {
       index =1 ;
-
       _branches.add(
           DropdownMenuItem(
             value: 0,
@@ -165,7 +158,9 @@ class _ManageEmployeeState extends State<ManageEmployee> {
       );
       branchIDs.add( '' );
     }
-    else index =0;
+    else {
+      index =0;
+    }
 
     // adding the data to _branches
     for( i=0; i< jsonData.length ; i++ ) {
@@ -244,7 +239,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     ),
                     MaterialButton(
                       onPressed: () async {
-                        // adding the user to the users table
                         // confirming that username is not empty
                         if( this.username == '' ) {
                           showDialog(
@@ -281,10 +275,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         }
                         else{
                           String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' ";
-
                           http.Response response = await http.get( Uri.parse( url ) );
-
-                          print( response.body );
 
                           if( response.body != '[]' ){
                             showDialog(
@@ -348,7 +339,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     onPressed: () async {
                       // Deleting the user
                       String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid'";
-
                       http.Response response = await http.get( Uri.parse( url ) );
 
                       // if response.body == 1, then something went wrong
@@ -445,16 +435,15 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                           value: index2,
                           items: _branches,
                           onChanged: (int? value) {
+                            this.CheckboxValue = true;
+                            widget.showAllValue = false;
+
                             if( _branches[value!].child.toString() == "Text(\"\")" ) {
                               widget.branchID = '';
-                              this.CheckboxValue = true;
-                              widget.showAllValue = false;
                               setState( ( ) => this.index2 = 0 );
                             }
                             else {
                               widget.branchID = this.branchIDs[value];
-                              this.CheckboxValue = true;
-                              widget.showAllValue = false;
                               setState(() => this.index2 = this._branches[value].value );
 
                             }
@@ -485,8 +474,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 ),
                 MaterialButton(
                   onPressed: () async {
-                    print("clicking on button Edit");
-
                     // checking if username has been left empty
                     if( this.username == '' ) {
                       showDialog(
@@ -536,10 +523,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                     }
 
                     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` != $id";
-
                     http.Response response = await http.get( Uri.parse( url ) );
-
-                    print( response.body );
 
                     if( response.body != '[]' ){
                       showDialog(
@@ -558,11 +542,7 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                         url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=2&id=$id&name=${this.username}&rec_mob='${this.rec_mob}'&branch_id=${widget.branchID}&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
                       }
 
-                      print( url );
-
                       http.Response response = await http.get( Uri.parse( url ) );
-
-                      print( response.body );
 
                       // if response.body == 1, editing user details was successful
                       if( response.body == '1') {
@@ -572,7 +552,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
 
                         // resetting the employees list
                         getEmployees();
-
                         setState(() { });
 
                         Navigator.pop( context );
@@ -999,7 +978,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
               ],
             ),
             body: _employeeViewBuilder()
-
           );
         }
         else if( snapshot.hasError == true ) {
@@ -1008,7 +986,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 elevation: 0,
                 backgroundColor: Colors.transparent,
                 iconTheme: IconThemeData(color: Colors.blueAccent),
-                title: Text( "" ),
               ),
               body: Center(
                 child: Text( snapshot.error.toString() ),
@@ -1021,7 +998,6 @@ class _ManageEmployeeState extends State<ManageEmployee> {
                 elevation: 0,
                 backgroundColor: Colors.transparent,
                 iconTheme: IconThemeData(color: Colors.blueAccent),
-                title: Text( "" ),
               ),
               body: Center(
                 child: CircularProgressIndicator(),

@@ -1,4 +1,3 @@
-import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
@@ -9,17 +8,14 @@ import 'package:test_app/Cards/ManageScanLocations.dart';
 import 'package:test_app/Cards/ManageShifts.dart';
 import 'package:test_app/Cards/DateTimePicker.dart';
 import 'package:test_app/Screens/SignUp.dart';
-
-import 'package:test_app/utils/CredentialController.dart';
-
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
-
+import 'package:test_app/utils/CredentialController.dart';
 import 'package:test_app/utils/Location.dart';
+
+import 'package:intl/intl.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'package:intl/intl.dart';
 
 class  ManageScanHistory extends StatefulWidget {
   final userInfo;
@@ -92,7 +88,6 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                     color: Colors.blue,
                     onPressed: () async {
                       // checking if the startTime == endTime
-                      // checking if the startTime == endTime
                       if( _timeController1.text == _timeController2.text ) {
                         showDialog(
                             context: context,
@@ -110,7 +105,6 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                       else {
                         // getting current time
                         DateTime currentTime = DateTime.now();
-
 
                         // getting current location
                         Location locator = Location();
@@ -153,7 +147,6 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
   Future<void> _deleteTimeDetails( String id , String time ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=1&id=$id&time=$time";
-
     http.Response response = await http.get( Uri.parse( url ) );
 
     if( response.body != '1' ) {
@@ -208,10 +201,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
                       }
                       else {
                         String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=2&id=$id&time=$time&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
-
                         http.Response response = await http.get( Uri.parse( url ) );
-
-                        print( response.body );
 
                         if( response.body != '1' ) {
                           showDialog(
@@ -242,14 +232,9 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
   Future<void> getEmployeesScanHistory( String uid ) async {
     String url;
+
     url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-4 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = $uid";
-
-    print( url );
-
     http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body ) ;
-
     List<dynamic> jsonData = jsonDecode( response.body );
 
     if( response.body == '') {
@@ -267,7 +252,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
       for( int i=0 ; i < jsonData.length ; i++ ) {
         Map<String,dynamic> data = jsonData[i];
-        print( data ) ;
+
         employees.add( containerBuilder( data, true , true  ) );
         records.add( [ data['UID'], data['coordinates'], data['time'], data['scanner_location'], data['start_time'], data['end_time'], data['description'], data['branch_name'] ] );
       }
@@ -450,8 +435,10 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
         context: context,
         initialDate: selectedDate1,
         firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate1)  {
+        lastDate: DateTime(2101)
+    );
+
+    if (picked != null && picked != selectedDate1) {
       selectedDate1 = picked;
 
       String _selectedDate1 = DateFormat("yyyy-M-dd").format(selectedDate1);
@@ -460,12 +447,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
       // getting all the scans from the start date to end date
       String url;
       url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-4 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = ${widget.uid} AND `scans`.`time` > '${_selectedDate1}' AND `scans`.`time` < '${_selectedDate2}' OR `scans`.`time` LIKE '$_selectedDate1%' OR `scans`.`time` LIKE '$_selectedDate2%'";
-
-      print( url );
-
       http.Response response = await http.get( Uri.parse( url ) );
-
-      print( response.body ) ;
 
       List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -484,7 +466,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
         for( int i=0 ; i < jsonData.length ; i++ ) {
           Map<String,dynamic> data = jsonData[i];
-          print( data ) ;
+
           employees.add( containerBuilder( data, true , true  ) );
           records.add( [ data['UID'], data['coordinates'], data['time'], data['scanner_location'], data['start_time'], data['end_time'], data['description'], data['branch_name'] ] );
         }
@@ -501,8 +483,10 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
         context: context,
         initialDate: selectedDate2,
         firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate1)  {
+        lastDate: DateTime(2101)
+    );
+
+    if (picked != null && picked != selectedDate1) {
       selectedDate2 = picked;
 
       String _selectedDate1 = DateFormat("yyyy-MM-dd").format(selectedDate1);
@@ -510,14 +494,9 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
       // getting all the scans from the start date to end date
       String url;
+
       url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-4 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = ${widget.uid} AND `scans`.`time` > '${_selectedDate1}' AND `scans`.`time` < '${_selectedDate2}' OR `scans`.`time` LIKE '$_selectedDate1%' OR `scans`.`time` LIKE '$_selectedDate2%'";
-
-      print( url );
-
       http.Response response = await http.get( Uri.parse( url ) );
-
-      print( response.body ) ;
-
       List<dynamic> jsonData = jsonDecode( response.body );
 
       if( response.body == '') {
@@ -535,7 +514,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
 
         for( int i=0 ; i < jsonData.length ; i++ ) {
           Map<String,dynamic> data = jsonData[i];
-          print( data ) ;
+
           employees.add( containerBuilder( data, true , true  ) );
           records.add( [ data['UID'], data['coordinates'], data['time'], data['scanner_location'], data['start_time'], data['end_time'], data['description'], data['branch_name'] ] );
         }
@@ -865,7 +844,6 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
           );
         }
       }
-
     );
   }
 }

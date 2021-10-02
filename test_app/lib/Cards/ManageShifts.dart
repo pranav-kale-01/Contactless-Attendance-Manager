@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:test_app/Screens/SignUp.dart';
-import 'package:test_app/Templates/HomeScreenBuilder.dart';
-import 'package:test_app/utils/CredentialController.dart';
-
 import 'package:test_app/Cards/ManageBranch.dart';
 import 'package:test_app/Cards/ManageBranchAdmins.dart';
 import 'package:test_app/Cards/ManageEmployee.dart';
 import 'package:test_app/Cards/ManageScanLocations.dart';
 import 'package:test_app/Cards/DateTimePicker.dart';
+import 'package:test_app/Screens/SignUp.dart';
+import 'package:test_app/Templates/HomeScreenBuilder.dart';
+import 'package:test_app/utils/CredentialController.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'ManageScanHistory.dart';
 
 class ManageShifts extends StatefulWidget {
   final userInfo;
@@ -50,7 +47,6 @@ class _ManageShiftsState extends State<ManageShifts> {
     'branch_name' : "Branch Name",
   };
 
-
   Future<void> init( ) async {
     // checking if the current user is a Organization admin, if not then setting the branchID tu the Branch Admins associated branch
     if( widget.userInfo['authority'] == 'br-admin') {
@@ -69,9 +65,7 @@ class _ManageShiftsState extends State<ManageShifts> {
 
     // getting all the branches of the current organization
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
-
     http.Response response = await http.get( Uri.parse(url) );
-
     List<dynamic> jsonData = jsonDecode( response.body );
 
     // clearing the previous list
@@ -141,13 +135,16 @@ class _ManageShiftsState extends State<ManageShifts> {
     }
 
     http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body );
-
     List<dynamic> jsonData = jsonDecode( response.body );
 
     if( response.body == '') {
-      print('failed to load');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text('failed to load'),
+        ),
+      );
+      return;
     }
     else {
       // clearing the previous list of Employees
@@ -292,10 +289,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                     else {
                       // inserting the values to the shifts table
                       String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=0&start_time='${_timeController1.text}'&end_time='${_timeController2.text}'&org_id=${widget.userInfo['org_id']}&branch_id=${widget.branchID}&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
-
                       http.Response response = await http.get( Uri.parse( url ) );
-
-                      print( response.body );
 
                       // popping the current Window
                       Navigator.of( context ).pop();
@@ -370,12 +364,7 @@ class _ManageShiftsState extends State<ManageShifts> {
                     }
                     else {
                       String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=2&id=$id&s_time='${_timeController1.text}'&e_time='${_timeController2.text}'&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
-
-                      print( url );
-
                       http.Response response = await http.get( Uri.parse( url ) );
-
-                      print( response.body );
 
                       if( response.body != '1' ) {
                         showDialog(
@@ -408,11 +397,16 @@ class _ManageShiftsState extends State<ManageShifts> {
 
   Future<void> _deleteShift( String id ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/shift.php?function=1&id=$id";
-
     http.Response response = await http.get( Uri.parse( url ) );
 
     if( response.body != '1' ) {
-      print("Something went wrong");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("Something went wrong"),
+        ),
+      );
+      return;
     }
     else{
       // reloading the screen

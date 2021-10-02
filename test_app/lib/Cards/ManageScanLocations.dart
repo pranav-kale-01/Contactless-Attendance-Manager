@@ -46,13 +46,11 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
   Future<void> init() async {
     await _setBranches();
-
     await _getScanPoints();
   }
 
   Future<bool> _getScanPoints( ) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=scan_locations&condition&post&condition2&post2&custom= `scan_locations`.`org_id`, `scan_locations`.`branch_id`, `scan_locations`.`description`, `scan_locations`.`qr`, `branches`.`branch_name`, `branches`.`address` FROM `scan_locations` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scan_locations`.`org_id`=${widget.userInfo['org_id']}";
-
     http.Response response = await http.get(  Uri.parse( url ) );
     List<dynamic> jsonData = jsonDecode( response.body );
 
@@ -88,7 +86,6 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
     // getting all the branches of the current organization
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=branches&condition=org_id&post=${widget.userInfo['org_id']}&condition2=&post2=&custom";
-
     http.Response response = await http.get(Uri.parse(url));
     List<dynamic> jsonData = jsonDecode(response.body);
 
@@ -159,9 +156,6 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
                 onPressed: () async {
                   // saving changes
                   String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=2&qr=$qr&desc=${descriptionController.text}&mod='${widget.userInfo['username']}'&mod_dt='${DateTime.now()}'";
-
-                  print( url );
-
                   await http.get( Uri.parse( url ) );
 
                   setState( () {
@@ -179,8 +173,7 @@ class _ManageScanLocationsState extends State<ManageScanLocations> {
 
   Future<void> removeScanPoint( String qr) async {
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/scanpoint.php?function=1&qr=$qr";
-
-    http.Response response = await http.get( Uri.parse( url ) );
+    await http.get( Uri.parse( url ) );
 
     setState(() {
       _getScanPoints( );

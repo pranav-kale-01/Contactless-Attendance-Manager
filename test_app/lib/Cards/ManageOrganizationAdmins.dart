@@ -118,8 +118,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
       else {
         // adding the user details to the mysql database
         url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=0&user='${this.username}'&pass='${this.password}'&authority='org-admin'&orgid=${this.orgID}&rec_mob='${this.rec_mob}'&br_id=&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
-
-        http.Response response = await http.get( Uri.parse( url ) );
+        await http.get( Uri.parse( url ) );
 
         // closing the Popup
         Navigator.pop(context);
@@ -133,7 +132,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
               );
             }
         );
-
         setState( ( ) {} );
       }
     }
@@ -142,7 +140,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
   Future<void> _deleteOrgAdmin(uid) async {
     // delete the User
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/user.php?function=1&UID='$uid'";
-
     http.Response response = await http.get(Uri.parse(url));
 
     if (response.body == "1") {
@@ -191,7 +188,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                 ),
                 MaterialButton(
                   onPressed: () async {
-
                     if( this.username == '' ){
                       showDialog(
                           context: context,
@@ -215,9 +211,6 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                     }
                     else {
                       String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=&condition=&post=&condition2=&post2=&custom= * FROM `users` WHERE `users`.`username` = '${this.username}' AND `users`.`UID` IS NOT $uid";
-
-                      print( url );
-
                       http.Response response = await http.get( Uri.parse( url ) );
 
                       if( response.body != '[]' ){
@@ -261,11 +254,16 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
     }
 
     http.Response response = await http.get( Uri.parse( url ), );
-
     jsonData = jsonDecode( response.body ) ;
 
     if( jsonData == 'false') {
-      print("something went wrong ") ;
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("something went wrong"),
+        ),
+      );
+      return;
     }
 
     // clearing organizations list
@@ -288,10 +286,9 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
 
   Future<void> viewOrg( ) async {
     int j;
+
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=organization&condition=&post=&condition2=&post2=&custom";
-
     http.Response response = await http.get( Uri.parse( url ) );
-
     jsonData = jsonDecode( response.body ) ;
 
     // clearing organizations list
@@ -644,14 +641,11 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                                       onPressed: () {
                                         // adding the user to the users table
                                         insertOrgAdmin();
-
-
                                       },
                                       child: Text("Add"),
-                                    )
-                                  ]
-                              )
-
+                                    ),
+                                  ],
+                              ),
                             );
                           }
                         );
@@ -669,8 +663,8 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                               Colors.blue,
                               Colors.blueAccent,
                               Colors.lightBlueAccent,
-                            ]
-                        )
+                            ],
+                        ),
                     ),
                     child: Icon(
                       Icons.account_circle,
@@ -684,7 +678,7 @@ class _ManageOrganizationsAdminsState extends State<ManageOrganizationsAdmins> {
                           context,
                           MaterialPageRoute(
                             builder: (context)=> ViewOrganizations( userInfo: widget.userInfo, ),
-                          )
+                          ),
                       );
                     },
                   ),

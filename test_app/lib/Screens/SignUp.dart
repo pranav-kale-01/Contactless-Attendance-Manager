@@ -14,15 +14,10 @@ class SignUp extends StatelessWidget {
   late String statusString;
 
   Future<void> registerToFb(BuildContext context) async {
-    print( 'test' );
-
     // getting the uid for current mail ID
     String url = "https://test-pranav-kale.000webhostapp.com/scripts/sign_in.php?mail='${this._email}'";
 
     http.Response response = await http.get( Uri.parse( url ) );
-
-    print( response.body ) ;
-    print("test");
 
     if( response.body == 'no-user' ) {
       // this means that there is no user with provided credentials
@@ -87,18 +82,50 @@ class SignUp extends StatelessWidget {
   @override
   Widget build( BuildContext context ) {
     return Scaffold(
+        backgroundColor: Colors.white,
         body: Center(
           child: Container(
             alignment: Alignment.center,
             width: 400.0,
             child: SafeArea(
                 child: Container(
-                  padding: EdgeInsets.all( 20.0 ),
+                  padding: EdgeInsets.symmetric( horizontal: 20.0, vertical: 10.0 ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(25.0),
+                    color: Colors.white,
+                    boxShadow: MediaQuery.of(context).size.width > 725 ? [
+                      BoxShadow(
+                        color: Colors.black26,
+                        offset: Offset( 0.0, 5.0),
+                        blurRadius: 10.0,
+                      ),
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset( 2.0, 0.0),
+                        blurRadius: 10.0,
+                      ),
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset( -2.0, 0.0),
+                        blurRadius: 10.0,
+                      ),
+                    ] : [] ,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Container(
+                        margin: EdgeInsets.only( bottom: 30.0 ),
+                        child: Text(
+                          "JMK INFOSOFT",
+                          style: TextStyle(
+                            fontSize: 44.0,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
                       TextField(
                         onChanged: (value) {
                           this._email = value;
@@ -122,8 +149,6 @@ class SignUp extends StatelessWidget {
                         margin: EdgeInsets.symmetric( vertical: 8.0, ),
                         child: MaterialButton(
                           onPressed: () {
-                            print('pressed');
-
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -136,12 +161,12 @@ class SignUp extends StatelessWidget {
                             style: TextStyle(
                               color: Colors.blueAccent,
                               decoration: TextDecoration.underline,
-                            )
+                            ),
                           ),
                         )
                       ),
                       Container(
-                        margin: EdgeInsets.symmetric( vertical: 30.0 ) ,
+                        margin: EdgeInsets.only( top: 10.0 ) ,
                         child: MaterialButton(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.0),
