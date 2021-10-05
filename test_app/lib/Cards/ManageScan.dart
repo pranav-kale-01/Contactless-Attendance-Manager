@@ -129,20 +129,32 @@ class _ManageScanState extends State<ManageScan> {
       return;
     }
 
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (context, _ , __ ) => Container(
+          color: Colors.black45,
+          alignment: Alignment.center,
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
+
     // checking if the qrString's organization id and the user's organization id matches
-    if( qrString.substring(0 , qrString.length -1 ).split(":")[2] == widget.userInfo['org_id'] ) {
+    if( qrString.substring(0 , qrString.length ).split(":")[2] == widget.userInfo['org_id'] ) {
       // getting the current Datetime
       String formattedDateTime = DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.now()).toString();
 
       // inserting the scan data into the scans table
       String url = "https://test-pranav-kale.000webhostapp.com/scripts/scan.php?function=0&uid=${widget.userInfo['UID']}&coordinates=${coords['lat'].toString() + ':' + coords['lon'].toString()}&scanner_location=${this._lat.toString() + ':' + this._lon.toString() }&time=$formattedDateTime&start_time=${this._timeController1.text}&end_time=${this._timeController2.text}&created='${widget.userInfo['username']}'&created_dt='${DateTime.now()}'&mod=NULL&mod_dt='00:00:00'";
-
       http.Response response = await http.get( Uri.parse( url ) );
 
       if( response.body == 'true' ) {
 
         this.qrStringIsValid = false;
         this.scanIsValid = false ;
+
+        Navigator.of(context).pop();
 
         // everything is valid, marking the attendance of the user
         showDialog(
@@ -156,6 +168,8 @@ class _ManageScanState extends State<ManageScan> {
       }
       else {
         // the request was not processed by the user
+        Navigator.of(context).pop();
+
         showDialog(
             context: context,
             builder: (context) {
@@ -167,6 +181,8 @@ class _ManageScanState extends State<ManageScan> {
       }
     }
     else {
+      Navigator.of(context).pop();
+
       // This Scanned QR Code is created by one of the instance of this application but belongs to some other organization
       showDialog(
           context: context,
@@ -273,6 +289,16 @@ class _ManageScanState extends State<ManageScan> {
 
                             // getting the current user location
                             try {
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  opaque: false,
+                                  pageBuilder: (context, _ , __ ) => Container(
+                                    color: Colors.black45,
+                                    alignment: Alignment.center,
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                              );
                               await loadCoordinates();
                             }
                             catch( e ) {
@@ -287,9 +313,12 @@ class _ManageScanState extends State<ManageScan> {
 
                               return;
                             }
+                            Navigator.of(context).pop();
 
                             // calculating the distance of the device from the scanning location
                             double distance = calcDistance( this._lat , this._lon , double.parse( coords['lat']! )  , double.parse( coords['lon']! ) ) / 100;
+
+                            print( "distance : " + distance.toString() );
 
                             if( distance < 50.0 ) {
                               // if the device is in the range then adding the scan to the scans list..

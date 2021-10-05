@@ -1,18 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Cards/ManageBranchAdmins.dart';
+import 'package:test_app/Cards/ManageEmployee.dart';
+import 'package:test_app/Cards/ManageScanLocations.dart';
+import 'package:test_app/Cards/ManageShifts.dart';
+import 'package:test_app/Cards/UserDetails.dart';
+import 'package:test_app/Screens/SignUp.dart';
 import 'package:test_app/Templates/GradientContainer.dart';
 import 'package:test_app/Templates/HomeScreenBuilder.dart';
 import 'package:test_app/utils/CredentialController.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'ManageEmployee.dart';
-import 'ManageScanLocations.dart';
-import 'ManageShifts.dart';
 
 class ViewBranch extends StatefulWidget {
   final userInfo;
@@ -561,8 +561,16 @@ class ViewBranchState extends State<ViewBranch>{
                                 ]
                             )
                         ),
-                        child: Icon(
-                          Icons.account_circle,
+                        child: IconButton(
+                          onPressed: () {
+                            // opening the UesrDetails Panel
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => UserDetails( userInfo: widget.userInfo,),
+                              ),
+                            );
+                          },
+                          icon: Icon( Icons.account_circle ),
                           color: Colors.white,
                         ),
                       ),

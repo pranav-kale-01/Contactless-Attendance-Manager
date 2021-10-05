@@ -27,36 +27,39 @@ class GenerateScreenState extends State<GenerateScreen> {
   Widget build( BuildContext context ) {
     return Scaffold(
       backgroundColor: Colors.black12,
-      body: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only( topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0) ),
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.blueAccent),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Container(
           color: Colors.white,
-        ),
-        margin: EdgeInsets.only(top: MediaQuery.of(context).size.height / 3 ),
-        // height: 400.0,
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            _contentWidget(),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular( 20.0 ),
-                color: Colors.blue,
-              ),
-              padding: EdgeInsets.symmetric( horizontal: 20.0 ),
-              child: MaterialButton(
-                onPressed: () {
-                  _captureAndSharePng();
-                },
-                child: Icon(
-                    Icons.share,
-                    color: Colors.white,
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              _contentWidget(),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular( 20.0 ),
+                  color: Colors.blue,
                 ),
+                padding: EdgeInsets.symmetric( horizontal: 20.0 ),
+                child: MaterialButton(
+                  onPressed: () {
+                    _captureAndSharePng();
+                  },
+                  child: Icon(
+                      Icons.download_sharp,
+                      color: Colors.white,
+                  ),
+                )
               )
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );

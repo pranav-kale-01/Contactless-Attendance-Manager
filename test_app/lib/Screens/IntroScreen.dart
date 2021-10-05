@@ -66,7 +66,16 @@ class IntroScreen extends StatelessWidget {
       future: _init(),
       builder: ( context, snapshot) {
         if( snapshot.connectionState == ConnectionState.done ) {
-          return this.hasUser ? Home( email: data['user'], uid: this.uid ) : SignUp();
+          if( this.hasUser ) {
+            if( data['user'] == null || this.uid == null ){
+              snapshot.connectionState == ConnectionState.waiting;
+              _init();
+            }
+            return Home( email: data['user'], uid: this.uid );
+          }
+          else {
+            return SignUp();
+          }
         }
         else {
           return Scaffold(

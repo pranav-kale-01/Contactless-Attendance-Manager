@@ -233,7 +233,7 @@ class ManageScanHistoryState extends State<ManageScanHistory> {
   Future<void> getEmployeesScanHistory( String uid ) async {
     String url;
 
-    url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-4 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = $uid";
+    url = "https://test-pranav-kale.000webhostapp.com/scripts/get.php?table=users&condition=&post=&condition2=&post2=&custom= `scans`.`UID`, `scans`.`coordinates`, `scans`.`time`, `scans`.`start_time`, `scans`.`end_time`, `scan_locations`.`description`, `branches`.`branch_name` FROM `scans` INNER JOIN `scan_locations` ON ( SELECT SUBSTRING(`scan_locations`.`qr`, LENGTH(`scan_locations`.`qr`)*-1 , LENGTH(`scan_locations`.`qr`)-3 ) AS Scanner_location ) = `scans`.`scanner_location` LEFT JOIN `branches` ON `branches`.`branch_id` = `scan_locations`.`branch_id` WHERE `scans`.`UID` = $uid";
     http.Response response = await http.get( Uri.parse( url ) );
     List<dynamic> jsonData = jsonDecode( response.body );
 

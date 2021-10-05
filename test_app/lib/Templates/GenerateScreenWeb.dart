@@ -27,48 +27,53 @@ class GenerateScreenWebState extends State<GenerateScreenWeb> {
   Widget build( BuildContext context ) {
     return Scaffold(
       backgroundColor: Colors.black45,
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.blueAccent),
+        elevation: 0,
+      ),
       body: GestureDetector(
         onTap: () {
           Navigator.pop( context );
         },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black45,
-          ) ,
-          alignment: Alignment.bottomCenter,
+        child: SingleChildScrollView(
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.only( topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0) ),
-              color: Colors.white,
+              color: Colors.black45,
+              border: Border( top: BorderSide( color: Colors.black, width: 1 ) ),
             ),
-            // margin: EdgeInsets.only(top: MediaQuery.of(context).size.height / 3 ),
-            width: MediaQuery.of(context).size.width,
+            alignment: Alignment.bottomCenter,
             child: Container(
-              child: GestureDetector(
-                onTap: () {},
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    _contentWidget(),
-                    Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular( 20.0 ),
-                          color: Colors.blue,
-                        ),
-                        margin: EdgeInsets.only( bottom: 10.0, ),
-                        padding: EdgeInsets.symmetric( horizontal: 20.0 ),
-                        child: MaterialButton(
-                          onPressed: () {
-                            _captureAndSharePdf();
-                          },
-                          child: Icon(
-                            Icons.download_sharp,
-                            color: Colors.white,
+              color: Colors.white,
+              width: MediaQuery.of(context).size.width,
+              child: Container(
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      _contentWidget(),
+                      Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular( 20.0 ),
+                            color: Colors.blue,
                           ),
-                        )
-                    )
-                  ],
+                          margin: EdgeInsets.only( bottom: 10.0, ),
+                          padding: EdgeInsets.symmetric( horizontal: 20.0 ),
+                          child: MaterialButton(
+                            onPressed: () {
+                              _captureAndSharePdf();
+                            },
+                            child: Icon(
+                              Icons.download_sharp,
+                              color: Colors.white,
+                            ),
+                          )
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
